@@ -12,7 +12,7 @@ from app.data.cache import FileCache
 
 FIXTURES = Path(__file__).parent / "fixtures"
 DAILY = json.loads((FIXTURES / "power_daily_15.6_120.9_2024.json").read_text())
-CLIM = json.loads((FIXTURES / "power_climatology_15.6_120.9_1991-2020.json").read_text())
+CLIM = json.loads((FIXTURES / "power_climatology_15.6_120.9_1996-2025.json").read_text())
 LAT, LON = 15.6, 120.9
 Y2024 = (date(2024, 1, 1), date(2024, 12, 31))
 
@@ -62,7 +62,7 @@ def test_parse_daily_2024():
 
 def test_parse_climatology_shows_wet_and_dry_seasons():
     c = power.parse_climatology(CLIM)
-    assert c.period == "1991-2020"
+    assert c.period == "1996-2025"
     assert all(len(values) == 12 for values in c.monthly.values())
     rain = c.monthly["PRECTOTCORR"]
     assert min(rain[6:9]) > 3 * max(rain[0:3])  # Jul-Sep far wetter than Jan-Mar in Central Luzon
@@ -147,7 +147,7 @@ def test_retries_server_errors_then_succeeds(tmp_path):
     client = replay_client([(503, "busy"), (200, CLIM)], calls)
     c = power.fetch_climatology(LAT, LON, client=client, cache=FileCache(tmp_path))
     assert len(calls) == 2
-    assert c.period == "1991-2020"
+    assert c.period == "1996-2025"
 
 
 def test_retries_timeouts(tmp_path):

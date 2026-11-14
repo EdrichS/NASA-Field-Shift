@@ -40,7 +40,9 @@ PARAMETERS: dict[str, str] = {
 }
 
 DAILY_FIRST_DAY = date(1981, 1, 1)
-CLIMATOLOGY_YEARS = (1991, 2020)  # the WMO 30-year standard normal
+# The latest 30 complete years: still a 30-year normal, but reflects today's warmer climate
+# better than the WMO 1991-2020 standard would.
+CLIMATOLOGY_YEARS = (1996, 2025)
 MONTHS = ("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
 
 DATASET = "NASA POWER (Agroclimatology)"
@@ -87,7 +89,7 @@ class Climatology:
     lat: float
     lon: float
     elevation_m: float | None
-    period: str  # e.g. "1991-2020"
+    period: str  # e.g. "1996-2025"
     monthly: dict[str, list[float | None]]  # parameter -> 12 values, January first
     annual: dict[str, float | None]
     units: dict[str, str]
