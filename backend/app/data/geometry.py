@@ -48,6 +48,17 @@ def geom_hash(geometry: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
+def centroid(geometry: dict[str, Any]) -> tuple[float, float]:
+    """(lon, lat) of the field: the point itself, or the average of a polygon's outer ring
+    (close enough for fields; used to pick the POWER weather cell)."""
+    g = validate(geometry)
+    if g["type"] == "Point":
+        return g["coordinates"][0], g["coordinates"][1]
+    ring = g["coordinates"][0] if g["type"] == "Polygon" else g["coordinates"][0][0]
+    pts = ring[:-1] if len(ring) > 1 and ring[0] == ring[-1] else ring
+    return sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)
+
+
 def to_ee_geometry(ee: Any, geometry: dict[str, Any]) -> Any:
     """The field as an ee.Geometry (points are buffered to FIELD_BUFFER_M)."""
     g = validate(geometry)

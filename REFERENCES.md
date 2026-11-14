@@ -44,6 +44,7 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 | earthengine-api | Google | https://developers.google.com/earth-engine/guides/python_install | Apache-2.0 | Earth Engine Python client |
 | pytest | pytest-dev | https://pytest.org | MIT | Backend tests |
 | Ruff | Astral | https://docs.astral.sh/ruff/ | MIT | Python linter |
+| Matplotlib | Matplotlib Development Team | https://matplotlib.org | Matplotlib License (PSF-based, BSD-compatible) | Feature-table chart; charts in the PDF report |
 
 ## Frontend libraries
 

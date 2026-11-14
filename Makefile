@@ -6,7 +6,7 @@ PY     := $(VENV)/bin/python
 API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
-.PHONY: setup dev-backend dev-frontend check check-setup check-db migrate smoke
+.PHONY: setup dev-backend dev-frontend check check-setup check-db migrate features smoke
 
 # Create .venv if missing, install backend and frontend dependencies
 setup:
@@ -36,6 +36,10 @@ check-setup:
 # Apply new SQL migrations to TigerData (safe to re-run: applied files are skipped)
 migrate:
 	cd backend && ../$(PY) -m db.migrate
+
+# 12-month feature table for the Philippines test point: timings, table, chart, stored in TigerData
+features:
+	$(PY) scripts/feature_table.py
 
 # Live database tests: schema, constraints, delete-my-data cascade, cache (needs DATABASE_URL)
 check-db:

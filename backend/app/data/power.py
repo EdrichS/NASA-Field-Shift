@@ -39,6 +39,12 @@ PARAMETERS: dict[str, str] = {
     "WS2M": "wind speed at 2 m (crop water demand)",
 }
 
+# POWER's climatology T2M_MIN / T2M_MAX are the single most extreme hour in the whole 30-year
+# period (verified: 14.92 °C = the lowest of 30 January minimums at the test point). The
+# year-by-year monthly endpoint gives each year's extreme, so we can compute a *typical* extreme
+# and count how many years reached frost or heat stress.
+EXTREME_PARAMETERS = ("T2M_MIN", "T2M_MAX")
+
 DAILY_FIRST_DAY = date(1981, 1, 1)
 # The latest 30 complete years: still a 30-year normal, but reflects today's warmer climate
 # better than the WMO 1991-2020 standard would.
@@ -99,6 +105,19 @@ class Climatology:
     native_resolution: str = NATIVE_RESOLUTION
 
 
+@dataclass(frozen=True)
+class YearlyMonthly:
+    """One value per year and month, e.g. each January's coldest hour 1996-2025."""
+
+    lat: float
+    lon: float
+    period: str
+    values: dict[str, dict[str, float | None]]  # parameter -> {"YYYY-MM": value}
+    units: dict[str, str]
+    sources: list[str]
+    api_version: str
+
+
 # --- requests ------------------------------------------------------------------------------
 
 
@@ -130,6 +149,24 @@ def climatology_request(
     _check_point(lat, lon)
     return f"{BASE_URL}/climatology/point", {
         "parameters": ",".join(PARAMETERS),
+        "community": COMMUNITY,
+        "latitude": str(round(lat, 4)),
+        "longitude": str(round(lon, 4)),
+        "start": str(years[0]),
+        "end": str(years[1]),
+        "format": "JSON",
+    }
+
+
+def monthly_request(
+    lat: float,
+    lon: float,
+    years: tuple[int, int] = CLIMATOLOGY_YEARS,
+    parameters: tuple[str, ...] = EXTREME_PARAMETERS,
+) -> tuple[str, dict[str, str]]:
+    _check_point(lat, lon)
+    return f"{BASE_URL}/monthly/point", {
+        "parameters": ",".join(parameters),
         "community": COMMUNITY,
         "latitude": str(round(lat, 4)),
         "longitude": str(round(lon, 4)),
@@ -175,6 +212,22 @@ def fetch_climatology_payload(
 
 def fetch_climatology(lat: float, lon: float, **kwargs: Any) -> Climatology:
     return parse_climatology(fetch_climatology_payload(lat, lon, **kwargs))
+
+
+def fetch_monthly_payload(
+    lat: float,
+    lon: float,
+    years: tuple[int, int] = CLIMATOLOGY_YEARS,
+    *,
+    client: httpx.Client | None = None,
+    cache: Cache | None = None,
+) -> dict[str, Any]:
+    url, params = monthly_request(lat, lon, years)
+    return _get_json(url, params, client=client, cache=cache, max_age_s=None)
+
+
+def fetch_monthly(lat: float, lon: float, **kwargs: Any) -> YearlyMonthly:
+    return parse_monthly(fetch_monthly_payload(lat, lon, **kwargs))
 
 
 def _get_json(
@@ -268,6 +321,27 @@ def parse_daily(payload: dict[str, Any]) -> DailyWeather:
         start=rows[0]["date"],
         end=rows[-1]["date"],
         rows=rows,
+        units=units,
+        sources=sources,
+        api_version=version,
+    )
+
+
+def parse_monthly(payload: dict[str, Any]) -> YearlyMonthly:
+    series, lat, lon, _ = _common(payload)
+    fill, units, sources, version = _meta(payload)
+    values: dict[str, dict[str, float | None]] = {}
+    for name, by_key in series.items():
+        # Keys are YYYYMM; month "13" is POWER's annual value, which we skip.
+        values[name] = {
+            f"{k[:4]}-{k[4:]}": _clean(v, fill) for k, v in sorted(by_key.items()) if k[4:] != "13"
+        }
+    years = sorted({m[:4] for v in values.values() for m in v})
+    return YearlyMonthly(
+        lat=lat,
+        lon=lon,
+        period=f"{years[0]}-{years[-1]}" if years else "",
+        values=values,
         units=units,
         sources=sources,
         api_version=version,
