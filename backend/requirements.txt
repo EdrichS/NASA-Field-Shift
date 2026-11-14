@@ -1,0 +1,13 @@
+# Pinned to the versions installed on Nov 14, 2026. Bump deliberately.
+
+# Runtime
+fastapi==0.163.0
+uvicorn[standard]==0.54.0
+pydantic-settings==2.16.3
+httpx==0.28.1
+psycopg[binary]==3.3.9
+earthengine-api==1.7.52
+
+# Dev
+pytest==9.2.0
+ruff==0.17.5

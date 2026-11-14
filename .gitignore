@@ -1,0 +1,40 @@
+# Local-only folders
+/docs
+/.claude
+
+# Secrets: .env, .env.local and similar (the .env.example templates stay tracked)
+*.env
+.env.*
+!.env.example
+
+# Credential files: keep them outside the repo; never commit one that lands here
+*.pem
+*.key
+*.p12
+.netrc
+*credentials*.json
+service-account*.json
+
+# Python
+.venv/
+__pycache__/
+
+# Node
+node_modules/
+
+# Data: raw satellite files, caches and generated PDFs never go in git
+data/raw/
+data/cache/
+data/pdf/
+
+# macOS
+.DS_Store
+
+# Logs (can contain farm locations, which are personal data)
+*.log
+
+# Personal editor settings
+.vscode/
+.idea/
+
+CLAUDE.md
