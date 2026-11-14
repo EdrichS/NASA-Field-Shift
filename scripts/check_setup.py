@@ -3,7 +3,8 @@
 Usage:  make check-setup   (or: .venv/bin/python scripts/check_setup.py)
 
 Checks: TigerData (connection + extensions), Earth Engine (1+1), FIRMS (mapkey_status),
-xAI (/models list, free), Auth0 (public JWKS). Exits 1 if anything fails.
+xAI (/models list, free), Auth0 (public JWKS), alert email (SMTP login, sends nothing).
+Exits 1 if anything fails.
 """
 
 from __future__ import annotations
@@ -41,6 +42,8 @@ def secret_values(s: Settings) -> list[str]:
         s.earthdata_password.get_secret_value(),
         s.firms_map_key.get_secret_value(),
         s.xai_api_key.get_secret_value(),
+        s.smtp_password.get_secret_value(),
+        s.vapid_private_key.get_secret_value(),
         db_url,
     ]
     # Pull the password out of scheme://user:PASSWORD@host by pattern, not urlsplit: urlsplit
@@ -167,12 +170,54 @@ def check_auth0(s: Settings) -> Result:
     return Result(name, ok, detail)
 
 
+def mask_email(address: str) -> str:
+    """'sowsmart.alerts@gmail.com' -> 's***@gmail.com' (usernames are personal data)."""
+    local, _, domain = address.partition("@")
+    return f"{local[:1]}***@{domain}" if domain else f"{address[:1]}***"
+
+
+def check_email(s: Settings) -> Result:
+    """Log in to the SMTP server. Sends nothing."""
+    import smtplib
+    import ssl
+
+    name = "Alert email (SMTP)"
+    missing = [
+        var
+        for var, value in (
+            ("SMTP_HOST", s.smtp_host),
+            ("SMTP_USERNAME", s.smtp_username),
+            ("SMTP_PASSWORD", s.smtp_password.get_secret_value()),
+            ("ALERT_EMAIL_FROM", s.alert_email_from),
+        )
+        if not value
+    ]
+    if missing:
+        return Result(name, False, f"{', '.join(missing)} is empty")
+    context = ssl.create_default_context()
+    if s.smtp_port == 465:
+        server = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=TIMEOUT, context=context)
+    else:
+        server = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=TIMEOUT)
+        server.starttls(context=context)
+    try:
+        server.login(s.smtp_username, s.smtp_password.get_secret_value())
+    except smtplib.SMTPAuthenticationError:
+        return Result(name, False, "login refused: check SMTP_USERNAME / SMTP_PASSWORD (Gmail "
+                      "needs an App Password, not your normal password)")
+    finally:
+        server.quit()
+    return Result(name, True, f"logged in to {s.smtp_host}:{s.smtp_port} as "
+                  f"{mask_email(s.smtp_username)} (no email sent)")
+
+
 CHECKS: list[Callable[[Settings], Result]] = [
     check_database,
     check_earth_engine,
     check_firms,
     check_xai,
     check_auth0,
+    check_email,
 ]
 
 NAMES = {
@@ -181,6 +226,7 @@ NAMES = {
     check_firms: "NASA FIRMS",
     check_xai: "xAI (Grok)",
     check_auth0: "Auth0",
+    check_email: "Alert email (SMTP)",
 }
 
 

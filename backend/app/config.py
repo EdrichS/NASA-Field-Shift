@@ -39,6 +39,21 @@ class Settings(BaseSettings):
     # TigerData
     database_url: SecretStr = SecretStr("")
 
+    # Alert email (any SMTP provider: Gmail app password, Resend, Brevo, ...)
+    smtp_host: str = ""
+    smtp_port: int = 587  # 587 = STARTTLS, 465 = SSL
+    smtp_username: str = ""
+    smtp_password: SecretStr = SecretStr("")
+    alert_email_from: str = ""  # e.g. "SowSmart Alerts <sowsmart.alerts@gmail.com>"
+
+    # Browser push (Web Push / VAPID). Keys are generated in step 4.3.
+    vapid_public_key: str = ""  # public: also goes to the frontend
+    vapid_private_key: SecretStr = SecretStr("")
+    vapid_subject: str = ""  # "mailto:" contact required by the Web Push standard
+
+    # How often the background alert check runs while the backend is up
+    alert_check_interval_hours: float = 6.0
+
     # App: comma-separated list of allowed frontend origins
     frontend_origins: str = "http://localhost:5173"
 
