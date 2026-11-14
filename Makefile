@@ -6,7 +6,7 @@ PY     := $(VENV)/bin/python
 API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
-.PHONY: setup dev-backend dev-frontend check check-setup smoke
+.PHONY: setup dev-backend dev-frontend check check-setup check-db migrate smoke
 
 # Create .venv if missing, install backend and frontend dependencies
 setup:
@@ -33,9 +33,18 @@ check:
 check-setup:
 	$(PY) scripts/check_setup.py
 
+# Apply new SQL migrations to TigerData (safe to re-run: applied files are skipped)
+migrate:
+	cd backend && ../$(PY) -m db.migrate
+
+# Live database tests: schema, constraints, delete-my-data cascade, cache (needs DATABASE_URL)
+check-db:
+	$(VENV)/bin/pytest -q -m db
+
 # Against the running servers
 smoke:
 	@curl -fsS $(API)/health | grep -q '"status":"ok"' \
 		&& echo "✅ backend /health" || { echo "❌ backend /health at $(API)"; exit 1; }
 	@curl -fsS $(WEB)/ | grep -q 'id="root"' \
 		&& echo "✅ frontend serves the app" || { echo "❌ frontend at $(WEB)"; exit 1; }
+	@$(MAKE) --no-print-directory check-db

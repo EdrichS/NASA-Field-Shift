@@ -11,3 +11,5 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
 pythonpath = ["backend", "scripts"]
+markers = ["db: live tests against TigerData (run with `make check-db`)"]
+addopts = "-m 'not db'"

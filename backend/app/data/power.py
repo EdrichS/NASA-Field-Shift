@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from app.data.cache import Cache, FileCache
+from app.data.cache import Cache, default_cache
 
 BASE_URL = "https://power.larc.nasa.gov/api/temporal"
 COMMUNITY = "AG"
@@ -183,7 +183,7 @@ def _get_json(
     cache: Cache | None,
     max_age_s: float | None,
 ) -> dict[str, Any]:
-    cache = cache if cache is not None else FileCache()
+    cache = cache if cache is not None else default_cache()
     key = "power:" + url + "?" + "&".join(f"{k}={params[k]}" for k in sorted(params))
     cached = cache.get(key, max_age_s=max_age_s)
     if cached is not None:
