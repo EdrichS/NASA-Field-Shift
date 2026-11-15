@@ -40,3 +40,4 @@ data/pdf/
 *.md
 *.txt
 !README.md
+!disclosure.txt
