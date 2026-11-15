@@ -1,0 +1,47 @@
+SOWSMART: USE OF SUPER INTELLIGENCE (SI) / AI DISCLOSURE
+NASA Space Apps Challenge 2026 · Challenge: "Adapting Farms with NASA Data"
+
+The 2026 Space Apps rules allow SI tools and ask teams to say clearly where and how they were
+used. This file is that statement.
+
+1. HOW THE TEAM USED AI TO BUILD SOWSMART
+
+   The idea, the choice of problem, the product decisions (who it is for, what it recommends,
+   which data to trust, what to show farmers) and the final review are the team's.
+
+   Claude Code (Anthropic) was used as a coding assistant, directed and reviewed by the team, for:
+   - Code: most of the backend (Python/FastAPI), frontend (React/TypeScript), database
+     migrations and scripts. The teammate's screen designs were kept and connected to the data.
+   - Tests: the automated test suite (240 tests).
+   - Data preparation: the crop-trait table (data/crops_traits.csv) and pest-weather rules
+     (data/pest_rules.csv) were compiled with its help from cited sources; every row names its
+     source. The country crop table (data/regional_crops.csv) is computed from FAOSTAT by a
+     script, not written by AI.
+   - Writing: documentation, the project page draft, the demo guide and the slide deck text.
+   - Checking: verifying dataset IDs, API parameters and source links against official pages.
+
+2. HOW AI IS USED INSIDE THE APP
+
+   - Grok (xAI) writes the plain-language reports (Tier 1 summary and Tier 2 follow-up answers)
+     from the scoring engine's results, in the farmer's chosen language(s).
+   - Grok never decides. A rules-based Python engine computes every recommendation and score
+     from NASA and partner data. Grok only explains them and cannot change the ranking.
+   - Every number in an AI report is checked against the engine's output. A report with a
+     number that isn't in the data is retried once, then the unsupported sentence is removed.
+   - AI-written text is labeled "Written by AI from SowSmart's results" in the app and in the
+     PDF. Alert messages are fixed templates, not AI.
+   - Reports in languages other than English are marked as less reliable in the app.
+
+3. IMAGES, VIDEO AND AUDIO
+
+   - No AI-generated images, video or audio are used anywhere (app, deck or project page).
+   - All visuals are screenshots of our app, maps from NASA GIBS and Esri, and charts our code
+     made from NASA data.
+   - No NASA logos, flags or mission identifiers are used or altered.
+
+4. WHAT THIS MEANS FOR USERS
+
+   SowSmart supports farmer judgment and local agricultural expertise; it never replaces them.
+   Every report ends with questions for a local expert.
+
+Full list of data, libraries and tools: REFERENCES.md
