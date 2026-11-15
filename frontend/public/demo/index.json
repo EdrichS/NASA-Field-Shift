@@ -1,0 +1,45 @@
+[
+ {
+  "id": "central-luzon-rice",
+  "name": "Central Luzon rice farm",
+  "persona": "Illustrative smallholder rice farmer, Nueva Ecija",
+  "country": "Philippines",
+  "place": "Nueva Ecija province, Central Luzon, about 13 km south of the Science City of Munoz",
+  "story": "Two irrigated rice crops a year leave a hot, dry gap from April to June (35 C+ in 29-30 of the last 30 years, driest soil in April). A short, heat-tolerant legume such as mungbean could fill it. Typhoons and heavy rain are a real risk (August 2026 rain was 2.6x normal).",
+  "geometry": {
+   "type": "Point",
+   "coordinates": [
+    120.9,
+    15.6
+   ]
+  },
+  "report_languages": [
+   "en",
+   "tl"
+  ],
+  "available": true,
+  "generated_at": "2026-11-15T03:17:12+00:00",
+  "model": "grok-4.20-0309-non-reasoning"
+ },
+ {
+  "id": "iowa-corn-soybean",
+  "name": "Central Iowa corn-soybean farm",
+  "persona": "Illustrative mechanized corn-soybean farmer, Boone County",
+  "country": "United States",
+  "place": "Rural Boone County, Iowa, west of Ames",
+  "story": "The classic two-crop rotation, mechanized and rain-fed. Fields sit bare from the October harvest to the May planting, through frost and snowmelt. A cereal rye cover crop could hold the soil over winter. A strong contrast with the Philippines farm.",
+  "geometry": {
+   "type": "Point",
+   "coordinates": [
+    -93.768,
+    41.976
+   ]
+  },
+  "report_languages": [
+   "en"
+  ],
+  "available": true,
+  "generated_at": "2026-11-15T03:17:21+00:00",
+  "model": "grok-4.20-0309-non-reasoning"
+ }
+]

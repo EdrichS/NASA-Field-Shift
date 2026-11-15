@@ -8,6 +8,7 @@ Guests get results back but nothing is stored (saving comes with sign-in, step 3
 from __future__ import annotations
 
 import time
+import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
@@ -15,10 +16,12 @@ from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 
+from app import store
 from app.ai import reports
 from app.ai.client import LLMClient, client_from_settings
 from app.api import showcase
 from app.api.ratelimit import RateLimiter, client_key
+from app.auth import MaybeUser
 from app.config import get_settings
 from app.engine.catalog import CropInfo, default_catalog
 from app.engine.engine import run_engine
@@ -184,12 +187,40 @@ def showcase_analysis(farm_id: str) -> dict[str, Any]:
 
 @router.post("/reports/followup", response_model=AIReportOut,
              dependencies=[Depends(followup_limit)])
-def followup(body: FollowupRequest, request: Request) -> dict[str, Any]:
-    """Tier 2: a detailed answer with the dataset behind each claim. Only on request."""
+def followup(body: FollowupRequest, request: Request,
+             user: MaybeUser) -> dict[str, Any]:
+    """Tier 2: a detailed answer with the dataset behind each claim. Only on request.
+    Guests send the analysis itself; signed-in users can send a saved analysis_id, and the
+    answer is stored with it (ai_reports) and served from there next time."""
+    question = (body.question or "").strip()
+    if body.analysis_id:
+        if user is None:
+            raise HTTPException(status_code=401, detail="Please log in to open a saved analysis.")
+        analysis = store.get_analysis(user.sub, body.analysis_id) if _uuid(body.analysis_id) \
+            else None
+        if analysis is None:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        kept = store.get_report(user.sub, body.analysis_id, 2, body.language,
+                                body.language_level, question)
+        if kept is not None:
+            return {**kept, "cached": True}
+    else:
+        assert body.analysis_payload is not None
+        analysis = body.analysis_payload.model_dump()
     try:
-        return reports.tier2(body.analysis_payload.model_dump(), body.language,
-                             body.language_level, body.question, get_llm(),
-                             allow_call=_ai_allowance(request))
+        report = reports.tier2(analysis, body.language, body.language_level, question,
+                               get_llm(), allow_call=_ai_allowance(request))
     except reports.ReportUnavailable as exc:
         raise HTTPException(status_code=429 if exc.status == "limit" else 503,
                             detail=str(exc)) from exc
+    if body.analysis_id and user is not None:
+        store.store_report(user.sub, body.analysis_id, report)
+    return report
+
+
+def _uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        return False
+    return True

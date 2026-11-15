@@ -6,9 +6,11 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 
 | Name | Provider | URL | License | How it's used |
 |---|---|---|---|---|
-| Global Imagery Browse Services (GIBS), layer `BlueMarble_ShadedRelief_Bathymetry` | NASA ESDIS | https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml | NASA open data, no restrictions; credit NASA GIBS / ESDIS | Base map tiles for the world map (WMTS, EPSG:3857) |
+| Global Imagery Browse Services (GIBS): WMTS layers `MODIS_Terra_CorrectedReflectance_TrueColor`, `HLS_S30_Nadir_BRDF_Adjusted_Reflectance`, `MODIS_Terra_NDVI_8Day`, `SMAP_L4_Analyzed_Root_Zone_Soil_Moisture`, `IMERG_Precipitation_Rate`; WMS GetMap (EPSG:4326) | NASA ESDIS | https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml (layer IDs and tile matrix sets checked Nov 15, 2026) | NASA open data, no restrictions; credit NASA GIBS / ESDIS | "Browse NASA maps" mode: pick a layer and a date, then tap a spot; the PDF cover's regional MODIS true-color image (WMS GetMap) |
+| Harmonized Landsat Sentinel-2 (HLS) S30, via GIBS | NASA (LP DAAC), with ESA Sentinel-2 | https://www.earthdata.nasa.gov/data/projects/hls | NASA open data | 30 m "field detail" browse layer (clear days only) |
+| EONET (Earth Observatory Natural Event Tracker) API v3 | NASA | https://eonet.gsfc.nasa.gov/docs/v3 (category IDs checked at /api/v3/categories, Nov 15, 2026) | NASA open data | Open severe storms/typhoons, floods, wildfires, drought, landslides, volcanoes and temperature extremes; stored in TigerData and matched with PostGIS against every saved field for region-wide alerts (storm tracks also tell whether a storm is moving closer) |
 | NASA POWER API v2.10 (Agroclimatology community), accessed 2026/11/14 | NASA Langley Research Center | https://power.larc.nasa.gov/docs/services/api/ (parameters: https://power.larc.nasa.gov/api/system/manager/parameters?community=AG&temporal=daily) | NASA data, free. Credit: "The data was obtained from National Aeronautics and Space Administration (NASA) Langley Research Center's Prediction Of Worldwide Energy Resources (POWER) project funded through the NASA Earth Science Division." | Daily temperature (mean/max/min), dew point, rainfall, humidity, solar radiation and wind for each field, plus 1996–2025 (latest 30 complete years) monthly climatology (0.5° x 0.625° meteorology, 1° x 1° solar) |
-| FIRMS (Fire Information for Resource Management System) Area API | NASA LANCE | https://firms.modaps.eosdis.nasa.gov/api/ | NASA data, free with a MAP_KEY | Active-fire detections near saved fields for alerts (step 4.2); key checked by `scripts/check_setup.py` |
+| FIRMS (Fire Information for Resource Management System) Area API, sources `VIIRS_NOAA20_NRT` and `VIIRS_NOAA21_NRT` | NASA LANCE | https://firms.modaps.eosdis.nasa.gov/api/ | NASA data, free with a MAP_KEY | Active-fire detections within 5 km of a saved field in the last 2 days (fire alerts). VIIRS S-NPP NRT is not used: its data stopped on 2026-11-02 per FIRMS `data_availability` |
 | SRTM Digital Elevation 30m (`USGS/SRTMGL1_003`) | NASA / USGS | https://developers.google.com/earth-engine/datasets/catalog/USGS_SRTMGL1_003 | NASA data, public domain | Elevation and slope per field (erosion risk); accessed through Earth Engine |
 | SMAP L4 Global 3-hourly 9 km Surface and Root Zone Soil Moisture v8 (`NASA/SMAP/SPL4SMGP/008`) | NASA (NSIDC DAAC) | https://developers.google.com/earth-engine/datasets/catalog/NASA_SMAP_SPL4SMGP_008 | NASA data, public domain | Monthly root-zone (0–100 cm) and surface (0–5 cm) soil moisture per field, 2015–present; drought-stress anomalies. Chosen over SMAP L3 enhanced v006, whose record only starts Dec 2023; v007 is deprecated. |
 | MODIS Terra Vegetation Indices 16-Day 250 m v6.1 (`MODIS/061/MOD13Q1`) | NASA (LP DAAC) | https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD13Q1 | NASA data, public domain | Monthly NDVI per field, 2001–present: bare-field months and vegetation stress |
@@ -28,6 +30,9 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 | USDA NASS Cropland Data Layer 2021–2025 | USDA NASS | https://developers.google.com/earth-engine/datasets/catalog/USDA_NASS_CDL | Public domain (US government) | Found an Iowa field that alternated soybean and corn every year 2021–2025 |
 | MODIS Land Cover Type (MCD12Q1 v6.1) | NASA | https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MCD12Q1 | NASA data, public domain | Confirmed the Philippines showcase point is classified Croplands (2025) |
 | Showcase-farm rotation sources | PhilRice / Daily Tribune, DA Bureau of Plant Industry, DA AMIA (rice-rice-mungbean), AGRIS/UPLB, PAGASA, USDA NASS Iowa Crop Progress 2024, Iowa State University Extension | listed in `data/showcase_farms.json` | Cited per claim | Typical rotations and months for the two demo farms |
+| JAXA GSMaP v8 operational, hourly (`JAXA/GPM_L3/GSMaP/v8/operational`, band `hourlyPrecipRate`) | JAXA (2026 Space Agency Partner), via Google Earth Engine | https://developers.google.com/earth-engine/datasets/catalog/JAXA_GPM_L3_GSMaP_v8_operational | JAXA G-Portal terms: free use with credit to JAXA | Rain in the last 24 hours at each saved field for heavy-rain alerts (near real time, newest image about half a day old; IMERG Final Run lags months) |
+| Heavy-rain terms ("heavy" 64.5-115.5 mm in 24 h, "very heavy" 115.6-204.4 mm) | India Meteorological Department (RSMC New Delhi terminology) | https://rsmcnewdelhi.imd.gov.in/images/pdf/terminology.pdf | Public reference | Thresholds for heavy-rain alert severity |
+| Esri World Imagery and World Light Gray Canvas basemaps | Esri (Maxar, Earthstar Geographics) | https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9 | Esri terms of use; attribution shown on every map | Close-up satellite view so a farmer can recognize the field (NASA imagery is 30 m-250 m, too coarse to see one field) and the street map for finding a place |
 | SoilGrids 2.0, 250 m (`projects/soilgrids-isric/{clay,sand,silt,soc,phh2o,bdod}_mean`) | ISRIC – World Soil Information | https://gee-community-catalog.org/projects/isric/ (Poggio et al. 2021, SOIL 7, 217–240) | CC BY 4.0 | Estimated 0–30 cm clay/sand/silt (→ USDA texture class), organic carbon, pH and bulk density per field; farmer's soil test values override it |
 
 ## Platforms and services
@@ -36,8 +41,11 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 |---|---|---|---|---|
 | Google Earth Engine (project `sowsmart-ee`, noncommercial) | Google | https://earthengine.google.com | Earth Engine terms of service (noncommercial use) | Fetches and reduces NASA satellite data and SoilGrids over each field |
 | TigerData (Tiger Cloud free service: Postgres + TimescaleDB + PostGIS) | TigerData (sponsor) | https://www.tigerdata.com | Free tier, TigerData terms | The app's only database: daily climate in a TimescaleDB hypertable, field geometries and region-wide alert matching with PostGIS, users' saved fields, analyses, reports and alerts. Only the backend connects. |
-| Auth0 (free plan) | Okta / Auth0 (sponsor) | https://auth0.com | Free plan, Auth0 terms | Sign-up and login: SPA app "SowSmart Web" in the browser, API "SowSmart API" (RS256) whose tokens the backend validates. Guests can analyze without it; an account saves fields and gets alerts. |
-| Grok API | xAI (sponsor) | https://docs.x.ai | xAI API terms (paid per token, sponsor credits) | Writes the plain-language Tier 1 and Tier 2 reports from the engine's JSON results through the Chat Completions endpoint with structured outputs (JSON schema). Models: `grok-4.20-0309-non-reasoning` while building, `grok-4.7` for the demo. Explains only; never decides; every number is checked against the input. |
+| Auth0 (free plan) | Okta / Auth0 (sponsor) | https://auth0.com | Free plan, Auth0 terms | Sign-up and login with Auth0 Universal Login (passwords never touch our app): SPA app "SowSmart Web" (Auth0 React SDK) and API "SowSmart API" (RS256). The backend checks every token against the tenant's JWKS, audience and issuer, filters all user data by the token's `sub`, and reads the verified email from `/userinfo` for alert emails. Guests can analyze without it; an account saves fields, keeps history and gets alerts. |
+| Cloudflare: Quick Tunnel (`cloudflared`) and Pages | Cloudflare (sponsor) | https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/ · https://pages.cloudflare.com | Free, Cloudflare terms | Quick Tunnel gives the live app (and its API, through one origin) a public HTTPS link for phones, judges and browser push during the event (`make tunnel`). Pages hosts a static copy that keeps the two demo farms working after the event without our server (`make pages`). |
+| Gmail SMTP (App Password) | Google | https://support.google.com/accounts/answer/185833 | Google terms | Sends alert emails when SMTP_* is set in `.env` (optional; alerts always show in the app) |
+| Web Push (VAPID, RFC 8292) | IETF / browser push services | https://datatracker.ietf.org/doc/html/rfc8292 | Open standard | Phone and browser notifications for alerts; keys made by `make vapid` |
+| Grok API | xAI (sponsor) | https://docs.x.ai | xAI API terms (paid per token, sponsor credits) | Writes the plain-language Tier 1 and Tier 2 reports from the engine's JSON results through the Chat Completions endpoint with structured outputs (JSON schema). Model: `grok-4.20-0309-non-reasoning` (the showcase reports, reviewed by the team in English and Tagalog, were written with it and are kept for the demo). Explains only; never decides; every number is checked against the input. |
 
 ## Backend libraries
 
@@ -46,7 +54,9 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 | FastAPI | Sebastián Ramírez and contributors | https://fastapi.tiangolo.com | MIT | Backend API |
 | Uvicorn | Encode | https://www.uvicorn.org | BSD-3-Clause | Runs the FastAPI app |
 | pydantic-settings | Pydantic | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | MIT | Loads config from `.env`; secrets kept as `SecretStr` |
-| HTTPX | Encode | https://www.python-httpx.org | BSD-3-Clause | HTTP client for outside APIs (setup checks) |
+| HTTPX | Encode | https://www.python-httpx.org | BSD-3-Clause | HTTP client for NASA POWER, xAI, EONET, FIRMS and Auth0 `/userinfo` |
+| PyJWT (+ cryptography) | José Padilla and contributors; Python Cryptographic Authority | https://pyjwt.readthedocs.io · https://cryptography.io | MIT; Apache-2.0/BSD | Verifies Auth0 RS256 access tokens with the tenant's JWKS; makes the VAPID key pair |
+| pywebpush (+ py-vapid) | Mozilla Services and contributors | https://github.com/web-push-libs/pywebpush | MPL-2.0 | Sends browser push notifications for alerts |
 | psycopg 3 | Psycopg team | https://www.psycopg.org/psycopg3/ | LGPL-3.0 | Postgres driver for TigerData |
 | earthengine-api | Google | https://developers.google.com/earth-engine/guides/python_install | Apache-2.0 | Earth Engine Python client |
 | pytest | pytest-dev | https://pytest.org | MIT | Backend tests |
@@ -60,7 +70,11 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 | React | Meta and contributors | https://react.dev | MIT | UI |
 | Vite | VoidZero and contributors | https://vite.dev | MIT | Dev server and build |
 | TypeScript | Microsoft | https://www.typescriptlang.org | Apache-2.0 | Typed frontend code |
-| MapLibre GL JS | MapLibre | https://maplibre.org | BSD-3-Clause | Interactive map |
+| MapLibre GL JS | MapLibre | https://maplibre.org | BSD-3-Clause | Every map: locate, satellite preview, field drawing in detailed mode, alert maps |
+| Terra Draw (+ MapLibre adapter) | James Milner and contributors | https://terradraw.io | MIT | "Draw the field" mode (polygon boundary) |
+| Turf (`@turf/area`, `@turf/circle`) | Turf.js contributors | https://turfjs.org | MIT | Field area in hectares; the 250 m circle shown around a point |
+| Auth0 React SDK (`@auth0/auth0-react`) | Auth0 | https://github.com/auth0/auth0-react | MIT | Login, sign-up and access tokens in the browser |
+| Google Fonts: Fraunces, Outfit, Noto Sans Devanagari | Google Fonts (font authors) | https://fonts.google.com | SIL Open Font License 1.1 | Typography (teammate's screen designs) |
 | Oxlint | Oxc project | https://oxc.rs/docs/guide/usage/linter | MIT | Frontend linter |
 
 ## Tools
@@ -69,3 +83,5 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 |---|---|---|---|---|
 | Claude Code | Anthropic | https://claude.com/claude-code | Commercial | AI coding assistant used during development |
 | Auth0 CLI | Auth0 (Okta) | https://github.com/auth0/auth0-cli | MIT | Creates the Auth0 SPA app and API from the terminal instead of the dashboard |
+| cloudflared and Wrangler | Cloudflare | https://github.com/cloudflare/cloudflared · https://developers.cloudflare.com/workers/wrangler/ | Apache-2.0; MIT/Apache-2.0 | Quick Tunnel and the Pages deploy |
+| Cursor | Anysphere (sponsor) | https://cursor.com | Commercial | The team's editor, with Claude Code running in its terminal |

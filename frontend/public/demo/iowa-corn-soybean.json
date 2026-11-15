@@ -1,0 +1,4067 @@
+{
+ "farm_id": "iowa-corn-soybean",
+ "generated_at": "2026-11-15T03:17:21+00:00",
+ "model": "grok-4.20-0309-non-reasoning",
+ "request_key": "b7fb33ba73aee730b837e5658243a36c139ee349b36a6e68c922c39bb626a8d6",
+ "analysis": {
+  "analysis_id": null,
+  "field": {
+   "geom_hash": "d94fe82347c1651a",
+   "lat": 41.976,
+   "lon": -93.768,
+   "end_month": "2026-10"
+  },
+  "warning": null,
+  "prefill": [
+   {
+    "id": "land_cover",
+    "title": "What the land is",
+    "statement": "From space this spot looks like 100% cropland.",
+    "value": {
+     "cropland": 1.0
+    },
+    "confidence": "high",
+    "evidence": [
+     {
+      "claim": "Land cover share of the field",
+      "value": {
+       "cropland": 1.0
+      },
+      "unit": "share",
+      "dataset": "ESA WorldCover 10 m v200 (2021)",
+      "native_resolution": "10 m",
+      "period": "2021",
+      "confidence": "high"
+     }
+    ],
+    "edit": {
+     "type": "choice",
+     "options": [
+      "it's farmland",
+      "it's not farmland"
+     ]
+    }
+   },
+   {
+    "id": "bare_months",
+    "title": "When your field looks bare",
+    "statement": "Your field usually looks bare or newly planted in Oct–Apr.",
+    "value": [
+     1,
+     2,
+     3,
+     4,
+     10,
+     11,
+     12
+    ],
+    "confidence": "high",
+    "evidence": [
+     {
+      "claim": "Greenness in Jan is 0.11",
+      "value": 0.112,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Feb is 0.13",
+      "value": 0.1346,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Mar is 0.25",
+      "value": 0.2462,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Apr is 0.29",
+      "value": 0.2894,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Oct is 0.27",
+      "value": 0.2658,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Nov is 0.25",
+      "value": 0.2486,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenness in Dec is 0.18",
+      "value": 0.1785,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     },
+     {
+      "claim": "Greenest month normal is 0.88; bare threshold 0.34",
+      "value": 0.883,
+      "unit": "NDVI",
+      "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+      "native_resolution": "250 m",
+      "period": "2001-2026",
+      "confidence": "high"
+     }
+    ],
+    "edit": {
+     "type": "months"
+    }
+   },
+   {
+    "id": "driest_soil",
+    "title": "When the soil is driest",
+    "statement": "The root zone is driest in Sep (0.28 m³/m³) and wettest in May (0.36).",
+    "value": [
+     8,
+     9
+    ],
+    "confidence": "medium",
+    "evidence": [
+     {
+      "claim": "Root-zone soil moisture in Sep",
+      "value": 0.2765,
+      "unit": "m³/m³",
+      "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+      "native_resolution": "9 km",
+      "period": "2015-2026",
+      "confidence": "medium"
+     },
+     {
+      "claim": "Root-zone soil moisture in Aug",
+      "value": 0.2837,
+      "unit": "m³/m³",
+      "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+      "native_resolution": "9 km",
+      "period": "2015-2026",
+      "confidence": "medium"
+     },
+     {
+      "claim": "Root-zone soil moisture in May",
+      "value": 0.3638,
+      "unit": "m³/m³",
+      "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+      "native_resolution": "9 km",
+      "period": "2015-2026",
+      "confidence": "medium"
+     }
+    ],
+    "edit": {
+     "type": "months"
+    }
+   },
+   {
+    "id": "rain",
+    "title": "Typical rain",
+    "statement": "About 840 mm of rain a year: as little as 0.8 mm/day in Jan, up to 4.3 mm/day in Jun.",
+    "value": [
+     0.79,
+     0.94,
+     1.52,
+     2.75,
+     3.69,
+     4.3,
+     3.2,
+     3.29,
+     2.46,
+     2.16,
+     1.37,
+     1.08
+    ],
+    "confidence": "low",
+    "evidence": [
+     {
+      "claim": "Yearly rainfall (30-year normal)",
+      "value": 840,
+      "unit": "mm/year",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Driest month: Jan",
+      "value": 0.79,
+      "unit": "mm/day",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Wettest month: Jun",
+      "value": 4.3,
+      "unit": "mm/day",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ],
+    "edit": {
+     "type": "choice",
+     "options": [
+      "drier than this",
+      "about right",
+      "wetter than this"
+     ]
+    }
+   },
+   {
+    "id": "heat",
+    "title": "Hot spells",
+    "statement": "Heat of 35 °C or more is common in Jul–Aug.",
+    "value": [
+     7,
+     8
+    ],
+    "confidence": "low",
+    "evidence": [
+     {
+      "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+      "value": 14,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+      "value": 12,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ],
+    "edit": {
+     "type": "months"
+    }
+   },
+   {
+    "id": "frost",
+    "title": "Frost",
+    "statement": "Frost (0 °C or below) is likely in Oct–May.",
+    "value": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     10,
+     11,
+     12
+    ],
+    "confidence": "low",
+    "evidence": [
+     {
+      "claim": "Jan dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Feb dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Mar dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Apr dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+      "value": 5,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+      "value": 27,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Nov dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     },
+     {
+      "claim": "Dec dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ],
+    "edit": {
+     "type": "months"
+    }
+   },
+   {
+    "id": "slope",
+    "title": "Slope",
+    "statement": "The land is gently sloping (about 4°).",
+    "value": 3.99,
+    "confidence": "high",
+    "evidence": [
+     {
+      "claim": "Average slope over the field",
+      "value": 3.99,
+      "unit": "degrees",
+      "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+      "native_resolution": "30 m",
+      "period": "static",
+      "confidence": "high"
+     }
+    ],
+    "edit": {
+     "type": "choice",
+     "options": [
+      "flat",
+      "gentle slope",
+      "steep"
+     ]
+    }
+   },
+   {
+    "id": "soil",
+    "title": "Soil",
+    "statement": "The soil is probably clay loam (about 32% clay, pH 6.7). A soil test would be more accurate.",
+    "value": "clay loam",
+    "confidence": "medium",
+    "evidence": [
+     {
+      "claim": "Estimated soil texture (0-30 cm)",
+      "value": "clay loam",
+      "unit": "USDA class",
+      "dataset": "ISRIC SoilGrids 2.0 (not NASA)",
+      "native_resolution": "250 m",
+      "period": "static",
+      "confidence": "medium"
+     },
+     {
+      "claim": "Estimated soil pH (0-30 cm)",
+      "value": 6.74,
+      "unit": "pH",
+      "dataset": "ISRIC SoilGrids 2.0 (not NASA)",
+      "native_resolution": "250 m",
+      "period": "static",
+      "confidence": "medium"
+     }
+    ],
+    "edit": {
+     "type": "choice",
+     "options": [
+      "sandy",
+      "loam",
+      "clay",
+      "silty",
+      "I have a soil test"
+     ]
+    }
+   },
+   {
+    "id": "groundwater",
+    "title": "Regional water storage",
+    "statement": "Water stored in the wider region has been stable since 2002 (-0.2 cm/year). This is a regional picture, not your well.",
+    "value": -0.154,
+    "confidence": "low",
+    "evidence": [
+     {
+      "claim": "Regional water storage trend",
+      "value": -0.154,
+      "unit": "cm/year",
+      "dataset": "NASA/GFZ GRACE & GRACE-FO, JPL mascons RL06.3 v4 (CRI filtered)",
+      "native_resolution": "0.5° grid (3° mascons)",
+      "period": "2002-04 to 2024-09",
+      "confidence": "low"
+     }
+    ],
+    "edit": {
+     "type": "choice",
+     "options": [
+      "my water is getting scarcer",
+      "about right",
+      "I don't know"
+     ]
+    }
+   }
+  ],
+  "features": {
+   "t_mean": {
+    "key": "t_mean",
+    "label": "Air temperature, monthly average",
+    "unit": "°C",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     -6.6,
+     -4.12,
+     2.83,
+     9.65,
+     16.18,
+     21.96,
+     24.25,
+     23.06,
+     18.85,
+     10.93,
+     3.06,
+     -3.67
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     -7.0697,
+     -0.2089,
+     5.92,
+     11.3347,
+     16.9032,
+     22.179,
+     25.5365,
+     23.309,
+     20.6953,
+     15.0903,
+     4.3087,
+     -4.5039
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -0.4697,
+     3.9111,
+     3.09,
+     1.6847,
+     0.7232,
+     0.219,
+     1.2865,
+     0.249,
+     1.8453,
+     4.1603,
+     1.2487,
+     -0.8339
+    ],
+    "note": "mean air temperature (crop suitability, heat stress)",
+    "extra": {}
+   },
+   "t_hottest": {
+    "key": "t_hottest",
+    "label": "Hottest hour of the month (air)",
+    "unit": "°C",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     8.423,
+     13.084,
+     21.6257,
+     26.92,
+     30.0073,
+     33.0327,
+     35.0,
+     34.7743,
+     33.2117,
+     27.9883,
+     20.1007,
+     11.4503
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     10.23,
+     18.64,
+     29.41,
+     28.86,
+     30.31,
+     33.36,
+     37.75,
+     34.77,
+     36.22,
+     29.12,
+     22.42,
+     8.1
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     1.807,
+     5.556,
+     7.7843,
+     1.94,
+     0.3027,
+     0.3273,
+     2.75,
+     -0.0043,
+     3.0083,
+     1.1317,
+     2.3193,
+     -3.3503
+    ],
+    "note": "daily maximum temperature (heat stress)",
+    "extra": {
+     "record_30y": [
+      12.92,
+      23.25,
+      26.33,
+      30.68,
+      35.88,
+      40.22,
+      42.12,
+      40.1,
+      38.38,
+      34.3,
+      24.8,
+      20.71
+     ],
+     "years": "1996-2025",
+     "heat_years": [
+      0,
+      0,
+      0,
+      0,
+      2,
+      6,
+      14,
+      12,
+      7,
+      0,
+      0,
+      0
+     ],
+     "heat_threshold_c": 35.0
+    }
+   },
+   "t_coldest": {
+    "key": "t_coldest",
+    "label": "Coldest hour of the month (air)",
+    "unit": "°C",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     -23.2093,
+     -20.1797,
+     -12.5233,
+     -4.8933,
+     2.2457,
+     9.112,
+     12.8387,
+     11.785,
+     4.6527,
+     -3.2127,
+     -9.3127,
+     -18.3017
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     -24.06,
+     -17.3,
+     -14.87,
+     -2.58,
+     1.69,
+     10.61,
+     13.91,
+     13.1,
+     9.18,
+     1.76,
+     -8.01,
+     -23.41
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -0.8507,
+     2.8797,
+     -2.3467,
+     2.3133,
+     -0.5557,
+     1.498,
+     1.0713,
+     1.315,
+     4.5273,
+     4.9727,
+     1.3027,
+     -5.1083
+    ],
+    "note": "daily minimum temperature (frost risk)",
+    "extra": {
+     "record_30y": [
+      -35.47,
+      -38.23,
+      -24.1,
+      -10.38,
+      -2.27,
+      4.55,
+      9.35,
+      7.8,
+      1.86,
+      -8.34,
+      -15.4,
+      -28.89
+     ],
+     "years": "1996-2025",
+     "frost_years": [
+      30,
+      30,
+      30,
+      30,
+      5,
+      0,
+      0,
+      0,
+      0,
+      27,
+      30,
+      30
+     ],
+     "frost_threshold_c": 0.0
+    }
+   },
+   "rain": {
+    "key": "rain",
+    "label": "Rainfall",
+    "unit": "mm/day",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     0.79,
+     0.94,
+     1.52,
+     2.75,
+     3.69,
+     4.3,
+     3.2,
+     3.29,
+     2.46,
+     2.16,
+     1.37,
+     1.08
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     0.8961,
+     0.4854,
+     1.7961,
+     4.7427,
+     2.0371,
+     3.9703,
+     5.3229,
+     3.9035,
+     7.178,
+     1.9229,
+     1.301,
+     0.6706
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     0.1061,
+     -0.4546,
+     0.2761,
+     1.9927,
+     -1.6529,
+     -0.3297,
+     2.1229,
+     0.6135,
+     4.718,
+     -0.2371,
+     -0.069,
+     -0.4094
+    ],
+    "note": "rainfall (water supply, heavy rain, dry spells)",
+    "extra": {}
+   },
+   "humidity": {
+    "key": "humidity",
+    "label": "Relative humidity",
+    "unit": "%",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     84.2,
+     80.37,
+     74.38,
+     69.89,
+     71.82,
+     72.64,
+     70.29,
+     68.45,
+     66.5,
+     69.07,
+     75.91,
+     83.42
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     74.3942,
+     75.7886,
+     71.7823,
+     72.3933,
+     64.0229,
+     70.8227,
+     71.7729,
+     74.0271,
+     78.425,
+     74.6126,
+     73.9133,
+     84.5813
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -9.8058,
+     -4.5814,
+     -2.5977,
+     2.5033,
+     -7.7971,
+     -1.8173,
+     1.4829,
+     5.5771,
+     11.925,
+     5.5426,
+     -1.9967,
+     1.1613
+    ],
+    "note": "relative humidity (disease and pest-risk rules)",
+    "extra": {}
+   },
+   "dew_point": {
+    "key": "dew_point",
+    "label": "Dew point",
+    "unit": "°C",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     -9.06,
+     -7.34,
+     -1.8,
+     3.71,
+     10.43,
+     16.21,
+     17.81,
+     16.15,
+     11.58,
+     4.77,
+     -1.16,
+     -6.32
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     -10.9326,
+     -4.3886,
+     0.7335,
+     5.9847,
+     9.2948,
+     16.068,
+     19.6197,
+     17.9887,
+     16.3813,
+     10.2161,
+     -0.3927,
+     -6.8684
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -1.8726,
+     2.9514,
+     2.5335,
+     2.2747,
+     -1.1352,
+     -0.142,
+     1.8097,
+     1.8387,
+     4.8013,
+     5.4461,
+     0.7673,
+     -0.5484
+    ],
+    "note": "dew point (disease and pest-risk rules)",
+    "extra": {}
+   },
+   "solar": {
+    "key": "solar",
+    "label": "Sunlight (solar radiation)",
+    "unit": "MJ/m^2/day",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     7.04,
+     10.72,
+     14.01,
+     17.48,
+     20.22,
+     22.58,
+     22.84,
+     19.91,
+     16.57,
+     11.52,
+     7.77,
+     5.98
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     7.6839,
+     11.54,
+     14.2406,
+     17.0487,
+     21.799,
+     22.2943,
+     23.0474,
+     17.9923,
+     12.1931,
+     12.4281,
+     7.6183,
+     5.8558
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     0.6439,
+     0.82,
+     0.2306,
+     -0.4313,
+     1.579,
+     -0.2857,
+     0.2074,
+     -1.9177,
+     -4.3769,
+     0.9081,
+     -0.1517,
+     -0.1242
+    ],
+    "note": "solar radiation (crop water demand)",
+    "extra": {}
+   },
+   "wind": {
+    "key": "wind",
+    "label": "Wind speed at 2 m",
+    "unit": "m/s",
+    "source": "NASA POWER (Agroclimatology), API v2.10.3",
+    "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+    "spatial_detail": "regional",
+    "normal": [
+     3.87,
+     3.92,
+     4.03,
+     4.11,
+     3.49,
+     2.84,
+     2.4,
+     2.38,
+     2.79,
+     3.26,
+     3.52,
+     3.63
+    ],
+    "normal_period": "1996-2025",
+    "recent": [
+     3.8303,
+     3.3771,
+     4.1077,
+     4.2627,
+     3.0881,
+     2.848,
+     2.0171,
+     2.1145,
+     2.4483,
+     2.8177,
+     3.3247,
+     3.729
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -0.0397,
+     -0.5429,
+     0.0777,
+     0.1527,
+     -0.4019,
+     0.008,
+     -0.3829,
+     -0.2655,
+     -0.3417,
+     -0.4423,
+     -0.1953,
+     0.099
+    ],
+    "note": "wind speed at 2 m (crop water demand)",
+    "extra": {}
+   },
+   "ndvi": {
+    "key": "ndvi",
+    "label": "Greenness (NDVI)",
+    "unit": "index (-1 to 1)",
+    "source": "NASA MODIS Terra MOD13Q1 v6.1",
+    "native_resolution": "250 m",
+    "spatial_detail": "field",
+    "normal": [
+     0.112,
+     0.1346,
+     0.2462,
+     0.2894,
+     0.3548,
+     0.7121,
+     0.883,
+     0.7965,
+     0.396,
+     0.2658,
+     0.2486,
+     0.1785
+    ],
+    "normal_period": "2001-2026",
+    "recent": [
+     0.2303,
+     0.2366,
+     0.2522,
+     0.2891,
+     0.4315,
+     0.9095,
+     0.928,
+     0.8475,
+     0.363,
+     0.2793,
+     0.248,
+     0.1188
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     0.1183,
+     0.102,
+     0.006,
+     -0.0003,
+     0.0767,
+     0.1974,
+     0.045,
+     0.051,
+     -0.033,
+     0.0135,
+     -0.0006,
+     -0.0597
+    ],
+    "note": "Greenness. Low values mean bare soil or stressed plants.",
+    "extra": {}
+   },
+   "et": {
+    "key": "et",
+    "label": "Water use (evapotranspiration)",
+    "unit": "mm/day",
+    "source": "NASA MODIS Terra MOD16A2 v6.1 (gap-filled, newest months from 8-day)",
+    "native_resolution": "500 m",
+    "spatial_detail": "field",
+    "normal": [
+     0.5516,
+     0.7756,
+     1.2155,
+     1.3242,
+     1.6538,
+     2.6327,
+     4.2416,
+     3.4235,
+     1.2655,
+     0.8126,
+     0.7449,
+     0.5169
+    ],
+    "normal_period": "2001-2026",
+    "recent": [
+     0.6556,
+     0.9015,
+     1.239,
+     1.45,
+     1.4876,
+     3.2374,
+     5.7601,
+     3.9256,
+     1.4391,
+     0.9149,
+     0.7112,
+     0.4375
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     0.104,
+     0.1259,
+     0.0235,
+     0.1258,
+     -0.1662,
+     0.6047,
+     1.5185,
+     0.5021,
+     0.1736,
+     0.1023,
+     -0.0337,
+     -0.0794
+    ],
+    "note": "Water used by plants and soil. 8-day totals shown per day; codes 32761+ masked.",
+    "extra": {}
+   },
+   "lst_day": {
+    "key": "lst_day",
+    "label": "Daytime ground temperature",
+    "unit": "°C",
+    "source": "NASA MODIS Terra MOD11A2 v6.1",
+    "native_resolution": "1 km",
+    "spatial_detail": "field",
+    "normal": [
+     -2.8797,
+     -0.9307,
+     12.3077,
+     23.5651,
+     29.141,
+     31.9904,
+     27.5121,
+     25.9261,
+     25.6745,
+     18.2302,
+     8.8886,
+     -0.8093
+    ],
+    "normal_period": "2001-2022",
+    "recent": [
+     -4.5115,
+     4.4038,
+     19.4749,
+     17.2261,
+     28.8133,
+     26.1422,
+     25.7285,
+     25.3669,
+     20.1441,
+     17.48,
+     6.9988,
+     -7.7427
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "note": "Daytime land surface temperature (the ground, not the air). Normal uses 2001-2022 only and no anomaly is reported: readings drift cooler from 2023 (-0.8, -1.6, -2.3 °C in 2024-26 at the test point while air temperature was warmer than normal), consistent with Terra's drifting overpass time.",
+    "extra": {}
+   },
+   "soil_moisture_root": {
+    "key": "soil_moisture_root",
+    "label": "Root-zone soil moisture",
+    "unit": "m³/m³",
+    "source": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+    "native_resolution": "9 km",
+    "spatial_detail": "local",
+    "normal": [
+     0.3181,
+     0.3312,
+     0.356,
+     0.3612,
+     0.3638,
+     0.3489,
+     0.3199,
+     0.2837,
+     0.2765,
+     0.2871,
+     0.2908,
+     0.3011
+    ],
+    "normal_period": "2015-2026",
+    "recent": [
+     0.3036,
+     0.3028,
+     0.3311,
+     0.3762,
+     0.358,
+     0.3396,
+     0.3475,
+     0.3185,
+     0.3226,
+     0.3579,
+     0.2707,
+     0.2792
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -0.0145,
+     -0.0284,
+     -0.0249,
+     0.015,
+     -0.0058,
+     -0.0093,
+     0.0276,
+     0.0348,
+     0.0461,
+     0.0708,
+     -0.0201,
+     -0.0219
+    ],
+    "note": "Root zone (0-100 cm). SMAP satellite data assimilated into a land model.",
+    "extra": {}
+   },
+   "soil_moisture_surface": {
+    "key": "soil_moisture_surface",
+    "label": "Surface soil moisture",
+    "unit": "m³/m³",
+    "source": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+    "native_resolution": "9 km",
+    "spatial_detail": "local",
+    "normal": [
+     0.2843,
+     0.3002,
+     0.3225,
+     0.3104,
+     0.3072,
+     0.2816,
+     0.2571,
+     0.2238,
+     0.2128,
+     0.2302,
+     0.2429,
+     0.2627
+    ],
+    "normal_period": "2015-2026",
+    "recent": [
+     0.2681,
+     0.2667,
+     0.2951,
+     0.347,
+     0.2689,
+     0.2845,
+     0.2882,
+     0.2811,
+     0.2939,
+     0.3216,
+     0.2199,
+     0.246
+    ],
+    "recent_months": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06",
+     "2026-07",
+     "2026-08",
+     "2026-09",
+     "2026-10",
+     "2025-11",
+     "2025-12"
+    ],
+    "anomaly": [
+     -0.0162,
+     -0.0335,
+     -0.0274,
+     0.0366,
+     -0.0383,
+     0.0029,
+     0.0311,
+     0.0573,
+     0.0811,
+     0.0914,
+     -0.023,
+     -0.0167
+    ],
+    "note": "Top layer (0-5 cm).",
+    "extra": {}
+   },
+   "precip_imerg": {
+    "key": "precip_imerg",
+    "label": "Rainfall (satellite + rain gauges)",
+    "unit": "mm/day",
+    "source": "NASA GPM IMERG V07 Final Run, monthly",
+    "native_resolution": "0.1° (~11 km)",
+    "spatial_detail": "local",
+    "normal": [
+     1.2413,
+     1.5101,
+     2.2387,
+     3.4013,
+     4.2672,
+     4.729,
+     3.6874,
+     3.5654,
+     3.119,
+     2.472,
+     1.696,
+     1.707
+    ],
+    "normal_period": "2001-2025",
+    "recent": [
+     0.216,
+     0.672,
+     2.544,
+     3.672,
+     3.168,
+     5.472,
+     8.136,
+     2.736,
+     2.016,
+     2.064,
+     2.856,
+     1.608
+    ],
+    "recent_months": [
+     "2025-01",
+     "2025-02",
+     "2025-03",
+     "2025-04",
+     "2025-05",
+     "2025-06",
+     "2025-07",
+     "2025-08",
+     "2025-09",
+     "2024-10",
+     "2024-11",
+     "2024-12"
+    ],
+    "anomaly": [
+     -1.0253,
+     -0.8381,
+     0.3053,
+     0.2707,
+     -1.0992,
+     0.743,
+     4.4486,
+     -0.8294,
+     -1.103,
+     -0.408,
+     1.16,
+     -0.099
+    ],
+    "note": "Satellite rainfall merged with rain gauges. Final Run lags a few months.",
+    "extra": {}
+   }
+  },
+  "static": {
+   "water_storage": {
+    "trend_cm_per_year": -0.154,
+    "period": "2002-04 to 2024-09",
+    "source": "NASA/GFZ GRACE & GRACE-FO, JPL mascons RL06.3 v4 (CRI filtered)",
+    "native_resolution": "0.5° grid (3° mascons)",
+    "spatial_detail": "regional"
+   },
+   "terrain": {
+    "elevation_m": 324.8,
+    "slope_deg": 3.99,
+    "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+    "native_resolution": "30 m"
+   },
+   "soil": {
+    "clay_pct": 31.98,
+    "sand_pct": 29.28,
+    "silt_pct": 38.75,
+    "soc_g_kg": 20.71,
+    "ph": 6.74,
+    "bulk_density_g_cm3": 1.56,
+    "texture": "clay loam",
+    "depth": "0-30 cm",
+    "dataset": "ISRIC SoilGrids 2.0 (not NASA)",
+    "native_resolution": "250 m"
+   },
+   "land_cover": {
+    "shares": {
+     "cropland": 1.0
+    },
+    "dataset": "ESA WorldCover 10 m v200 (2021)",
+    "native_resolution": "10 m",
+    "main_class": "cropland"
+   }
+  },
+  "profile": {
+   "mode": "quick",
+   "water": "rainfed",
+   "equipment": "full_machinery",
+   "goals": [
+    "build_soil"
+   ],
+   "wont_grow": [],
+   "rotation_source": "farmer"
+  },
+  "weights": {
+   "water": 0.1,
+   "soil": 0.35,
+   "erosion": 0.2,
+   "pest_cycle": 0.15,
+   "climate_risk": 0.1,
+   "income": 0.05,
+   "labor": 0.05
+  },
+  "bare_months": {
+   "satellite": [
+    1,
+    2,
+    3,
+    4,
+    10,
+    11,
+    12
+   ],
+   "satellite_evidence": [
+    {
+     "claim": "Greenness in Jan is 0.11",
+     "value": 0.112,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Feb is 0.13",
+     "value": 0.1346,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Mar is 0.25",
+     "value": 0.2462,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Apr is 0.29",
+     "value": 0.2894,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Oct is 0.27",
+     "value": 0.2658,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Nov is 0.25",
+     "value": 0.2486,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenness in Dec is 0.18",
+     "value": 0.1785,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    },
+    {
+     "claim": "Greenest month normal is 0.88; bare threshold 0.34",
+     "value": 0.883,
+     "unit": "NDVI",
+     "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+     "native_resolution": "250 m",
+     "period": "2001-2026",
+     "confidence": "high"
+    }
+   ],
+   "current_rotation": [
+    1,
+    2,
+    3,
+    4,
+    11,
+    12
+   ]
+  },
+  "stress_calendar": [
+   {
+    "month": 1,
+    "name": "Jan",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Jan dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 2,
+    "name": "Feb",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Feb dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 3,
+    "name": "Mar",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Mar dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 4,
+    "name": "Apr",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Apr dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 5,
+    "name": "May",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+      "value": 5,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 6,
+    "name": "Jun",
+    "flags": [],
+    "evidence": []
+   },
+   {
+    "month": 7,
+    "name": "Jul",
+    "flags": [
+     "heat"
+    ],
+    "evidence": [
+     {
+      "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+      "value": 14,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 8,
+    "name": "Aug",
+    "flags": [
+     "heat"
+    ],
+    "evidence": [
+     {
+      "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+      "value": 12,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 9,
+    "name": "Sep",
+    "flags": [],
+    "evidence": []
+   },
+   {
+    "month": 10,
+    "name": "Oct",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+      "value": 27,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 11,
+    "name": "Nov",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Nov dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "month": 12,
+    "name": "Dec",
+    "flags": [
+     "frost"
+    ],
+    "evidence": [
+     {
+      "claim": "Dec dropped to 0 °C or below in 30 of the last 30 years",
+      "value": 30,
+      "unit": "years of 30",
+      "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+      "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+      "period": "1996-2025",
+      "confidence": "low"
+     }
+    ]
+   }
+  ],
+  "strategies": [
+   {
+    "key": "fill_bare",
+    "name": "Fill the bare gap",
+    "title": "maize (May–Oct) + cereal rye (Oct–May) + soybean (May–Oct) + cereal rye (Oct–May)",
+    "rotation": [
+     [
+      {
+       "crop": "maize",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      },
+      {
+       "crop": "cereal rye",
+       "plant_month": 10,
+       "harvest_month": 5,
+       "new": true
+      }
+     ],
+     [
+      {
+       "crop": "soybean",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      },
+      {
+       "crop": "cereal rye",
+       "plant_month": 10,
+       "harvest_month": 5,
+       "new": true
+      }
+     ]
+    ],
+    "calendar": [
+     {
+      "month": 1,
+      "name": "Jan",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 2,
+      "name": "Feb",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 3,
+      "name": "Mar",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 4,
+      "name": "Apr",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 5,
+      "name": "May",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "cereal rye",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       },
+       {
+        "crop": "cereal rye",
+        "share": 0.5,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 6,
+      "name": "Jun",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 7,
+      "name": "Jul",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 8,
+      "name": "Aug",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 9,
+      "name": "Sep",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 10,
+      "name": "Oct",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "cereal rye",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       },
+       {
+        "crop": "cereal rye",
+        "share": 0.5,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 11,
+      "name": "Nov",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 12,
+      "name": "Dec",
+      "crops": [
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "cereal rye",
+        "share": 1.0,
+        "year": 2,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "frost"
+      ]
+     }
+    ],
+    "components": {
+     "water": {
+      "score": 80.1,
+      "summary": "About 239 mm/year of water stress beyond rainfall",
+      "evidence": [
+       {
+        "claim": "Yearly rainfall (30-year normal)",
+        "value": 840,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
+        "value": 239,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "maize water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "cereal rye water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "deficit_mm": 239
+      }
+     },
+     "soil": {
+      "score": 78.5,
+      "summary": "Soil covered 100% of the year; legumes 21% of crop time",
+      "evidence": [
+       {
+        "claim": "Share of the year the soil is covered by a crop",
+        "value": 1.0,
+        "unit": "fraction",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "maize root depth",
+        "value": 1.35,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "cereal rye root depth",
+        "value": 1.25,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean root depth",
+        "value": 0.95,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "cover": 1.0,
+       "legume_share": 0.21,
+       "root_depth_m": 1.2,
+       "cover_crop": true
+      }
+     },
+     "erosion": {
+      "score": 100.0,
+      "summary": "0 mostly bare month(s) on 4° slope",
+      "evidence": [
+       {
+        "claim": "Average slope",
+        "value": 3.99,
+        "unit": "degrees",
+        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+        "native_resolution": "30 m",
+        "period": "static",
+        "confidence": "high"
+       },
+       {
+        "claim": "Mostly bare months",
+        "value": "none",
+        "unit": "months",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "bare_months": []
+      }
+     },
+     "pest_cycle": {
+      "score": 60.0,
+      "summary": "2 plant families; same family back-to-back 2 time(s)",
+      "evidence": [
+       {
+        "claim": "Plant families in the rotation, in order",
+        "value": "Poaceae → Poaceae → Fabaceae → Poaceae",
+        "unit": "families",
+        "dataset": "Crop traits (FAO EcoCrop / team)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "families": [
+        "Fabaceae",
+        "Poaceae"
+       ]
+      }
+     },
+     "climate_risk": {
+      "score": 75.0,
+      "summary": "8 crop-month(s) overlap heat, frost, dry or very wet months",
+      "evidence": [
+       {
+        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+        "value": 5,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+        "value": 14,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+        "value": 27,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "maize heat / drought / waterlogging tolerance",
+        "value": "medium / low / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "cereal rye heat / drought / waterlogging tolerance",
+        "value": "low / medium / medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean heat / drought / waterlogging tolerance",
+        "value": "medium / medium / medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "overlaps": [
+        "maize: frost in May",
+        "maize: heat in Jul",
+        "maize: heat in Aug",
+        "maize: frost in Oct",
+        "soybean: frost in May",
+        "soybean: heat in Jul",
+        "soybean: heat in Aug",
+        "soybean: frost in Oct"
+       ]
+      }
+     },
+     "income": {
+      "score": 45.0,
+      "summary": "0.9 sellable or edible harvest(s) per year",
+      "evidence": [
+       {
+        "claim": "Harvests per year that can be sold or eaten",
+        "value": 0.9,
+        "unit": "harvest-equivalents",
+        "dataset": "Strategy calendar (no market info given)",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {
+       "harvests_per_year": 1.0
+      }
+     },
+     "labor": {
+      "score": 85.6,
+      "summary": "Hand work 3 points/year (full machinery)",
+      "evidence": [
+       {
+        "claim": "maize hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "cereal rye hand labor need",
+        "value": "low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "soybean hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {}
+     }
+    },
+    "total": 78.5,
+    "rank": 1,
+    "confidence": "medium",
+    "why": "Your field sits bare from mid-Oct to mid-May (about 210 days). Cereal rye needs as little as 110 days (FAO EcoCrop) and is a cover crop that protects the soil.",
+    "changes": [
+     "Add cereal rye between harvest and the next planting"
+    ],
+    "benefits": [
+     "Builds soil: the soil is covered more months; a cover crop protects and feeds the soil (+16)",
+     "Less bare soil exposed to rain (+37)"
+    ],
+    "risks": [
+     "Less variety of plant families (-10)"
+    ],
+    "gaps": [],
+    "expert_questions": [
+     "Where can I get good cereal rye seed?"
+    ]
+   },
+   {
+    "key": "current",
+    "name": "Your current rotation",
+    "title": "maize (May–Oct) + soybean (May–Oct)",
+    "rotation": [
+     [
+      {
+       "crop": "maize",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      }
+     ],
+     [
+      {
+       "crop": "soybean",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      }
+     ]
+    ],
+    "calendar": [
+     {
+      "month": 1,
+      "name": "Jan",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 2,
+      "name": "Feb",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 3,
+      "name": "Mar",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 4,
+      "name": "Apr",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 5,
+      "name": "May",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 6,
+      "name": "Jun",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 7,
+      "name": "Jul",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 8,
+      "name": "Aug",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 9,
+      "name": "Sep",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 10,
+      "name": "Oct",
+      "crops": [
+       {
+        "crop": "maize",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 11,
+      "name": "Nov",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 12,
+      "name": "Dec",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     }
+    ],
+    "components": {
+     "water": {
+      "score": 82.5,
+      "summary": "About 210 mm/year of water stress beyond rainfall",
+      "evidence": [
+       {
+        "claim": "Yearly rainfall (30-year normal)",
+        "value": 840,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
+        "value": 210,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "maize water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "deficit_mm": 210
+      }
+     },
+     "soil": {
+      "score": 62.0,
+      "summary": "Soil covered 42% of the year; legumes 50% of crop time",
+      "evidence": [
+       {
+        "claim": "Share of the year the soil is covered by a crop",
+        "value": 0.42,
+        "unit": "fraction",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "maize root depth",
+        "value": 1.35,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean root depth",
+        "value": 0.95,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "cover": 0.42,
+       "legume_share": 0.5,
+       "root_depth_m": 1.15,
+       "cover_crop": false
+      }
+     },
+     "erosion": {
+      "score": 63.0,
+      "summary": "8 mostly bare month(s) on 4° slope",
+      "evidence": [
+       {
+        "claim": "Average slope",
+        "value": 3.99,
+        "unit": "degrees",
+        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+        "native_resolution": "30 m",
+        "period": "static",
+        "confidence": "high"
+       },
+       {
+        "claim": "Mostly bare months",
+        "value": "Jan, Feb, Mar, Apr, May, Oct, Nov, Dec",
+        "unit": "months",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "bare_months": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Oct",
+        "Nov",
+        "Dec"
+       ]
+      }
+     },
+     "pest_cycle": {
+      "score": 70.0,
+      "summary": "2 plant families; same family back-to-back 0 time(s)",
+      "evidence": [
+       {
+        "claim": "Plant families in the rotation, in order",
+        "value": "Poaceae → Fabaceae",
+        "unit": "families",
+        "dataset": "Crop traits (FAO EcoCrop / team)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "families": [
+        "Fabaceae",
+        "Poaceae"
+       ]
+      }
+     },
+     "climate_risk": {
+      "score": 75.0,
+      "summary": "8 crop-month(s) overlap heat, frost, dry or very wet months",
+      "evidence": [
+       {
+        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+        "value": 5,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+        "value": 14,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+        "value": 27,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "maize heat / drought / waterlogging tolerance",
+        "value": "medium / low / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean heat / drought / waterlogging tolerance",
+        "value": "medium / medium / medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "overlaps": [
+        "maize: frost in May",
+        "maize: heat in Jul",
+        "maize: heat in Aug",
+        "maize: frost in Oct",
+        "soybean: frost in May",
+        "soybean: heat in Jul",
+        "soybean: heat in Aug",
+        "soybean: frost in Oct"
+       ]
+      }
+     },
+     "income": {
+      "score": 40.0,
+      "summary": "0.8 sellable or edible harvest(s) per year",
+      "evidence": [
+       {
+        "claim": "Harvests per year that can be sold or eaten",
+        "value": 0.8,
+        "unit": "harvest-equivalents",
+        "dataset": "Strategy calendar (no market info given)",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {
+       "harvests_per_year": 1.0
+      }
+     },
+     "labor": {
+      "score": 90.4,
+      "summary": "Hand work 2 points/year (full machinery)",
+      "evidence": [
+       {
+        "claim": "maize hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "soybean hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {}
+     }
+    },
+    "total": 67.1,
+    "rank": 2,
+    "confidence": "high",
+    "why": "The baseline: what you grow now, scored the same way as the alternatives.",
+    "changes": [],
+    "benefits": [],
+    "risks": [],
+    "gaps": [],
+    "expert_questions": []
+   },
+   {
+    "key": "break_pest",
+    "name": "Break the pest cycle",
+    "title": "sunflower (May–Oct) + soybean (May–Oct)",
+    "rotation": [
+     [
+      {
+       "crop": "sunflower",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": true
+      }
+     ],
+     [
+      {
+       "crop": "soybean",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      }
+     ]
+    ],
+    "calendar": [
+     {
+      "month": 1,
+      "name": "Jan",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 2,
+      "name": "Feb",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 3,
+      "name": "Mar",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 4,
+      "name": "Apr",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 5,
+      "name": "May",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 6,
+      "name": "Jun",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 7,
+      "name": "Jul",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 8,
+      "name": "Aug",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 9,
+      "name": "Sep",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 10,
+      "name": "Oct",
+      "crops": [
+       {
+        "crop": "sunflower",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 11,
+      "name": "Nov",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 12,
+      "name": "Dec",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     }
+    ],
+    "components": {
+     "water": {
+      "score": 77.1,
+      "summary": "About 274 mm/year of water stress beyond rainfall",
+      "evidence": [
+       {
+        "claim": "Yearly rainfall (30-year normal)",
+        "value": 840,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
+        "value": 274,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "sunflower water need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "deficit_mm": 274
+      }
+     },
+     "soil": {
+      "score": 60.7,
+      "summary": "Soil covered 42% of the year; legumes 50% of crop time",
+      "evidence": [
+       {
+        "claim": "Share of the year the soil is covered by a crop",
+        "value": 0.42,
+        "unit": "fraction",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sunflower root depth",
+        "value": 1.15,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean root depth",
+        "value": 0.95,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "cover": 0.42,
+       "legume_share": 0.5,
+       "root_depth_m": 1.05,
+       "cover_crop": false
+      }
+     },
+     "erosion": {
+      "score": 63.0,
+      "summary": "8 mostly bare month(s) on 4° slope",
+      "evidence": [
+       {
+        "claim": "Average slope",
+        "value": 3.99,
+        "unit": "degrees",
+        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+        "native_resolution": "30 m",
+        "period": "static",
+        "confidence": "high"
+       },
+       {
+        "claim": "Mostly bare months",
+        "value": "Jan, Feb, Mar, Apr, May, Oct, Nov, Dec",
+        "unit": "months",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "bare_months": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Oct",
+        "Nov",
+        "Dec"
+       ]
+      }
+     },
+     "pest_cycle": {
+      "score": 70.0,
+      "summary": "2 plant families; same family back-to-back 0 time(s)",
+      "evidence": [
+       {
+        "claim": "Plant families in the rotation, in order",
+        "value": "Asteraceae → Fabaceae",
+        "unit": "families",
+        "dataset": "Crop traits (FAO EcoCrop / team)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "families": [
+        "Asteraceae",
+        "Fabaceae"
+       ]
+      }
+     },
+     "climate_risk": {
+      "score": 82.5,
+      "summary": "6 crop-month(s) overlap heat, frost, dry or very wet months",
+      "evidence": [
+       {
+        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+        "value": 5,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+        "value": 14,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+        "value": 27,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "sunflower heat / drought / waterlogging tolerance",
+        "value": "medium / medium / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean heat / drought / waterlogging tolerance",
+        "value": "medium / medium / medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "overlaps": [
+        "sunflower: heat in Jul",
+        "sunflower: heat in Aug",
+        "soybean: frost in May",
+        "soybean: heat in Jul",
+        "soybean: heat in Aug",
+        "soybean: frost in Oct"
+       ]
+      }
+     },
+     "income": {
+      "score": 40.0,
+      "summary": "0.8 sellable or edible harvest(s) per year",
+      "evidence": [
+       {
+        "claim": "Harvests per year that can be sold or eaten",
+        "value": 0.8,
+        "unit": "harvest-equivalents",
+        "dataset": "Strategy calendar (no market info given)",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {
+       "harvests_per_year": 1.0
+      }
+     },
+     "labor": {
+      "score": 90.4,
+      "summary": "Hand work 2 points/year (full machinery)",
+      "evidence": [
+       {
+        "claim": "sunflower hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "soybean hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {}
+     }
+    },
+    "total": 66.8,
+    "rank": 3,
+    "confidence": "high",
+    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 1 time(s)). Sunflower is from the Asteraceae family, so they lose their host for a season.",
+    "changes": [
+     "Grow sunflower instead of maize once in the rotation"
+    ],
+    "benefits": [
+     "Less exposure to heat, frost, dry spells or flooding (+8)"
+    ],
+    "risks": [
+     "Sunflower needs well-drained soil; clay loam soil can stay wet after heavy rain",
+     "Heat of 35 °C+ is common while sunflower grows",
+     "Needs more water beyond rainfall (-5)"
+    ],
+    "gaps": [],
+    "expert_questions": [
+     "Can the field drain well enough for sunflower?",
+     "Which sunflower varieties handle heat above 35 °C here?",
+     "Is there a buyer or local market for sunflower?",
+     "Where can I get good sunflower seed?"
+    ]
+   },
+   {
+    "key": "save_water",
+    "name": "Save water",
+    "title": "cowpea (May–Oct) + soybean (May–Oct)",
+    "rotation": [
+     [
+      {
+       "crop": "cowpea",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": true
+      }
+     ],
+     [
+      {
+       "crop": "soybean",
+       "plant_month": 5,
+       "harvest_month": 10,
+       "new": false
+      }
+     ]
+    ],
+    "calendar": [
+     {
+      "month": 1,
+      "name": "Jan",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 2,
+      "name": "Feb",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 3,
+      "name": "Mar",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 4,
+      "name": "Apr",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 5,
+      "name": "May",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 6,
+      "name": "Jun",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 7,
+      "name": "Jul",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 8,
+      "name": "Aug",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 9,
+      "name": "Sep",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 1.0,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 10,
+      "name": "Oct",
+      "crops": [
+       {
+        "crop": "cowpea",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "soybean",
+        "share": 0.5,
+        "year": 2,
+        "new": false
+       }
+      ],
+      "bare": 0.5,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 11,
+      "name": "Nov",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     },
+     {
+      "month": 12,
+      "name": "Dec",
+      "crops": [],
+      "bare": 1.0,
+      "stress": [
+       "frost"
+      ]
+     }
+    ],
+    "components": {
+     "water": {
+      "score": 82.5,
+      "summary": "About 210 mm/year of water stress beyond rainfall",
+      "evidence": [
+       {
+        "claim": "Yearly rainfall (30-year normal)",
+        "value": 840,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
+        "value": 210,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "cowpea water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "deficit_mm": 210
+      }
+     },
+     "soil": {
+      "score": 58.3,
+      "summary": "Soil covered 42% of the year; legumes 100% of crop time",
+      "evidence": [
+       {
+        "claim": "Share of the year the soil is covered by a crop",
+        "value": 0.42,
+        "unit": "fraction",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "cowpea is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "cowpea root depth",
+        "value": 0.8,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean root depth",
+        "value": 0.95,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "cover": 0.42,
+       "legume_share": 1.0,
+       "root_depth_m": 0.88,
+       "cover_crop": false
+      }
+     },
+     "erosion": {
+      "score": 63.0,
+      "summary": "8 mostly bare month(s) on 4° slope",
+      "evidence": [
+       {
+        "claim": "Average slope",
+        "value": 3.99,
+        "unit": "degrees",
+        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+        "native_resolution": "30 m",
+        "period": "static",
+        "confidence": "high"
+       },
+       {
+        "claim": "Mostly bare months",
+        "value": "Jan, Feb, Mar, Apr, May, Oct, Nov, Dec",
+        "unit": "months",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "bare_months": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Oct",
+        "Nov",
+        "Dec"
+       ]
+      }
+     },
+     "pest_cycle": {
+      "score": 10.0,
+      "summary": "1 plant family; same family back-to-back 2 time(s)",
+      "evidence": [
+       {
+        "claim": "Plant families in the rotation, in order",
+        "value": "Fabaceae → Fabaceae",
+        "unit": "families",
+        "dataset": "Crop traits (FAO EcoCrop / team)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "families": [
+        "Fabaceae"
+       ]
+      }
+     },
+     "climate_risk": {
+      "score": 86.0,
+      "summary": "6 crop-month(s) overlap heat, frost, dry or very wet months",
+      "evidence": [
+       {
+        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
+        "value": 5,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
+        "value": 14,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
+        "value": 27,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "cowpea heat / drought / waterlogging tolerance",
+        "value": "high / high / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "soybean heat / drought / waterlogging tolerance",
+        "value": "medium / medium / medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "overlaps": [
+        "cowpea: heat in Jul",
+        "cowpea: heat in Aug",
+        "soybean: frost in May",
+        "soybean: heat in Jul",
+        "soybean: heat in Aug",
+        "soybean: frost in Oct"
+       ]
+      }
+     },
+     "income": {
+      "score": 40.0,
+      "summary": "0.8 sellable or edible harvest(s) per year",
+      "evidence": [
+       {
+        "claim": "Harvests per year that can be sold or eaten",
+        "value": 0.8,
+        "unit": "harvest-equivalents",
+        "dataset": "Strategy calendar (no market info given)",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {
+       "harvests_per_year": 1.0
+      }
+     },
+     "labor": {
+      "score": 90.4,
+      "summary": "Hand work 2 points/year (full machinery)",
+      "evidence": [
+       {
+        "claim": "cowpea hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "soybean hand labor need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {}
+     }
+    },
+    "total": 57.9,
+    "rank": 4,
+    "confidence": "high",
+    "why": "Maize is the thirstiest crop in your rotation. Cowpea needs about the same water but handles dry spells better (high vs low drought tolerance).",
+    "changes": [
+     "Grow cowpea instead of maize"
+    ],
+    "benefits": [
+     "Less exposure to heat, frost, dry spells or flooding (+11)"
+    ],
+    "risks": [
+     "Cowpea needs well-drained soil; clay loam soil can stay wet after heavy rain",
+     "Less variety of plant families (-60)"
+    ],
+    "gaps": [],
+    "expert_questions": [
+     "Can the field drain well enough for cowpea?",
+     "Is there a buyer or local market for cowpea?",
+     "Where can I get good cowpea seed and the right inoculant (rhizobia)?"
+    ]
+   }
+  ],
+  "gaps": [
+   "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
+   "Soil values are SoilGrids estimates; a soil test would be more accurate"
+  ],
+  "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
+  "reports_tier1": {
+   "en": {
+    "tier": 1,
+    "language": "en",
+    "language_level": "farmer",
+    "question": "",
+    "ai_generated": true,
+    "content": {
+     "title": "Your Crop Rotation Report",
+     "summary": "Your current rotation scores 67.1. The fill the bare gap option scores highest at 78.5. It keeps the soil covered all year by adding cereal rye as a cover crop. The break pest cycle and save water options score a bit lower than what you do now. SowSmart gives you ideas based on satellite data but it never replaces your own judgment and local expertise.",
+     "what_satellites_see": "From space this spot looks like 100% cropland. Your field usually looks bare or newly planted from October to April. The root zone is driest in September and wettest in May. About 840 mm of rain falls a year, with very little in January and more in June. Heat of 35 °C or more is common in July and August. Frost is likely from October to May.",
+     "bare_and_risky_seasons": "Your current rotation leaves the field bare for eight months: January to May and October to December. These are the same months when frost is likely. July and August are hot and can be dry. This leaves the soil open to rain on your gentle 4° slope.",
+     "strategies": [
+      {
+       "key": "current",
+       "name": "Your current rotation",
+       "headline": "Maize and soybean grown May to October each year",
+       "why": "This is the baseline of what you grow now, scored the same way as the other options.",
+       "benefits": [],
+       "risks": [],
+       "information_gaps": [],
+       "expert_questions": [],
+       "rank": 2,
+       "engine_name": "Your current rotation"
+      },
+      {
+       "key": "fill_bare",
+       "name": "Fill the bare gap",
+       "headline": "Add cereal rye as a cover crop from October to May between your maize and soybean",
+       "why": "Your field sits bare from mid-October to mid-May, about 210 days. Cereal rye can grow in as little as 110 days and protects the soil as a cover crop.",
+       "benefits": [
+        "Builds soil because the soil is covered all year and the cover crop protects and feeds the soil",
+        "Much less bare soil exposed to rain",
+        "Soil covered 100% of the year instead of 42%",
+        "0 mostly bare months instead of 8"
+       ],
+       "risks": [
+        "Less variety of plant families",
+        "Needs 29 mm more water stress beyond rainfall than now",
+        "Same family back-to-back 2 times instead of 0",
+        "Legumes make up 21% of crop time instead of 50%"
+       ],
+       "information_gaps": [],
+       "expert_questions": [
+        "Where can I get good cereal rye seed?"
+       ],
+       "rank": 1,
+       "engine_name": "Fill the bare gap"
+      },
+      {
+       "key": "break_pest",
+       "name": "Break the pest cycle",
+       "headline": "Grow sunflower instead of maize once in the rotation with soybean",
+       "why": "Growing the grass family again and again lets its pests and diseases carry over. Sunflower is from the daisy family, so they lose their host for a season.",
+       "benefits": [
+        "Less exposure to heat, frost, dry spells or flooding",
+        "6 crop-months overlap risky times instead of 8"
+       ],
+       "risks": [
+        "Sunflower needs well-drained soil and your clay loam can stay wet after heavy rain",
+        "Heat of 35 °C or more is common while sunflower grows",
+        "Needs 64 mm more water stress beyond rainfall a year than now",
+        "Average root depth 1.05 m instead of 1.15 m"
+       ],
+       "information_gaps": [],
+       "expert_questions": [
+        "Can the field drain well enough for sunflower?",
+        "Which sunflower varieties handle heat above 35 °C here?",
+        "Is there a buyer or local market for sunflower?",
+        "Where can I get good sunflower seed?"
+       ],
+       "rank": 3,
+       "engine_name": "Break the pest cycle"
+      },
+      {
+       "key": "save_water",
+       "name": "Save water",
+       "headline": "Grow cowpea instead of maize along with soybean",
+       "why": "Maize is the thirstiest crop in your rotation. Cowpea needs about the same water but handles dry spells better.",
+       "benefits": [
+        "Less exposure to heat, frost, dry spells or flooding",
+        "6 crop-months overlap risky times instead of 8",
+        "Legumes make up 100% of crop time instead of 50%"
+       ],
+       "risks": [
+        "Cowpea needs well-drained soil and your clay loam can stay wet after heavy rain",
+        "Less variety of plant families",
+        "Same family back-to-back 2 times instead of 0",
+        "Average root depth 0.88 m instead of 1.15 m"
+       ],
+       "information_gaps": [],
+       "expert_questions": [
+        "Can the field drain well enough for cowpea?",
+        "Is there a buyer or local market for cowpea?",
+        "Where can I get good cowpea seed and the right inoculant?"
+       ],
+       "rank": 4,
+       "engine_name": "Save water"
+      }
+     ],
+     "idea_to_discuss": "Talk with a local expert about adding a short cover crop or changing planting dates to cut the bare months on your field.",
+     "glossary": [
+      {
+       "term": "evapotranspiration",
+       "meaning": "The water that leaves the field through plant leaves and from the soil surface."
+      },
+      {
+       "term": "NDVI",
+       "meaning": "A measure from satellites that shows how green and healthy the plants look from space."
+      },
+      {
+       "term": "soil moisture anomaly",
+       "meaning": "How much wetter or drier the soil is than the long-term average for that time of year."
+      },
+      {
+       "term": "frost risk",
+       "meaning": "The chance that temperatures will drop to 0 °C or below and harm the crop."
+      }
+     ],
+     "datasets_line": "This report uses ESA WorldCover land cover, NASA MODIS vegetation greenness, NASA SMAP soil moisture, NASA POWER weather, NASA SRTM elevation, ISRIC SoilGrids soil maps, NASA/GFZ GRACE water storage, FAO crop water needs, FAO irrigation manual and FAO EcoCrop crop ranges.",
+     "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
+     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
+    },
+    "checks": {
+     "numbers_ok": true,
+     "retried": false,
+     "unknown_numbers": [],
+     "removed_items": 0
+    },
+    "meta": {
+     "model": "grok-4.20-0309-non-reasoning",
+     "calls": 1,
+     "prompt_version": "2026-11-14.5",
+     "input_tokens": 3207,
+     "cached_tokens": 128,
+     "output_tokens": 1353,
+     "reasoning_tokens": 0,
+     "seconds": 6.2,
+     "cost_usd": 0.007257
+    },
+    "cached": false
+   }
+  },
+  "report_status": {
+   "en": {
+    "status": "ok",
+    "message": ""
+   }
+  },
+  "timings_ms": {
+   "data": 11,
+   "engine": 4,
+   "reports": 6204
+  }
+ }
+}

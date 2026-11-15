@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.data.geometry import validate as validate_geometry
 
@@ -169,8 +169,10 @@ class AnalyzeResponse(BaseModel):
 
 
 class FollowupRequest(BaseModel):
-    analysis_payload: AnalyzeResponse = Field(
-        description="The /analyze response (guests). Saved analyses will send analysis_id.")
+    analysis_payload: AnalyzeResponse | None = Field(
+        None, description="The /analyze response (guests)")
+    analysis_id: str | None = Field(
+        None, description="A saved analysis (signed in): answers are stored with it")
     language: str = "en"
     language_level: Literal["farmer", "advanced"] = "farmer"
     question: str | None = Field(None, max_length=500)
@@ -179,6 +181,69 @@ class FollowupRequest(BaseModel):
     @classmethod
     def _language(cls, value: str) -> str:
         return _check_language(value)
+
+    @model_validator(mode="after")
+    def _one_source(self) -> FollowupRequest:
+        if self.analysis_payload is None and not self.analysis_id:
+            raise ValueError("send analysis_payload or analysis_id")
+        return self
+
+
+Units = Literal["metric", "imperial"]
+InputMode = Literal["geolocation", "point", "polygon", "browse"]
+
+
+class ProfileIn(BaseModel):
+    display_name: str | None = Field(None, max_length=40)
+    language: str = "en"
+    units: Units = "metric"
+
+    @field_validator("language")
+    @classmethod
+    def _language(cls, value: str) -> str:
+        return _check_language(value)
+
+
+class FieldSummary(BaseModel):
+    id: str
+    name: str
+    area_ha: float | None
+    input_mode: str
+    lat: float
+    lon: float
+    analysis_id: str | None
+    top_strategy: str | None
+    analyzed_at: Any = None
+    created_at: Any = None
+    alert_types: list[str]
+    email: bool
+    push: bool
+    unread: int
+
+
+class MeOut(BaseModel):
+    display_name: str | None
+    language: str
+    units: str
+    has_email: bool = Field(description="True when a verified email is known (for alert emails)")
+    fields: list[FieldSummary]
+
+
+class SaveRequest(BaseModel):
+    request: AnalyzeRequest = Field(description="What was sent to /analyze")
+    analysis: AnalyzeResponse = Field(description="What /analyze returned")
+    field_name: str = Field("My field", min_length=1, max_length=60)
+    input_mode: InputMode = "point"
+
+
+class SaveOut(BaseModel):
+    analysis_id: str
+    field_id: str
+    new_findings: bool
+
+
+class FieldPatch(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
 
 
 class ShowcaseFarmOut(BaseModel):

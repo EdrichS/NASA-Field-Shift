@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from app.engine import corrections
 from app.engine.answers import FarmProfile, parse_answers
 from app.engine.candidates import Candidate, break_pest, fill_bare, save_water
 from app.engine.catalog import CropInfo, default_catalog
@@ -218,8 +219,13 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
                catalog: dict[str, CropInfo] | None = None) -> EngineResult:
     catalog = catalog if catalog is not None else default_catalog()
     calendar = stress_calendar(ff)
+    fixes = corrections.corrected(raw_answers)  # the farmer's card corrections win
+    notes = corrections.apply_to_calendar(calendar, fixes)
     ctx = FieldContext.build(ff, calendar)
+    notes += corrections.apply_to_context(ctx, fixes, raw_answers)
     sat_bare, sat_ev = satellite_bare_months(ff)
+    sat_bare, bare_notes = corrections.bare_months(sat_bare, fixes)
+    notes += bare_notes
     green = [m for m in range(1, 13) if m not in sat_bare] if sat_bare else []
     profile = parse_answers(raw_answers, catalog, runs(green))
     weights = weights_for(profile.goals)
@@ -238,7 +244,7 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     if water_cand is not None:
         candidates.append(water_cand)
 
-    data_gaps = list(profile.assumptions) + list(ff.gaps) + [
+    data_gaps = notes + list(profile.assumptions) + list(ff.gaps) + [
         "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
         "Soil values are SoilGrids estimates; a soil test would be more accurate",
     ]

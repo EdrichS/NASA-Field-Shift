@@ -8,6 +8,10 @@ httpx==0.28.1
 psycopg[binary]==3.3.9
 earthengine-api==1.7.52
 matplotlib==3.11.2
+pyjwt[crypto]==2.15.1  # Auth0 access tokens (RS256 + JWKS)
+cryptography==50.0.2
+pywebpush==2.5.0  # browser push alerts (VAPID)
+py-vapid==1.9.6
 
 # Dev
 pytest==9.2.0

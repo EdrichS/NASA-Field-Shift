@@ -6,7 +6,7 @@ PY     := $(VENV)/bin/python
 API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
-.PHONY: setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
+.PHONY: bundle-demo vapid pages tunnel setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
 	ecocrop validate-data load-crops test-email contracts showcase
 
 # FAO EcoCrop database, via the OpenCLIM/ecocrop repo, pinned to a fixed commit
@@ -87,3 +87,23 @@ contracts:
 # For the demo recording: make showcase XAI_MODEL=grok-4.7
 showcase:
 	$(if $(XAI_MODEL),XAI_MODEL=$(XAI_MODEL) )$(PY) scripts/precache_showcase.py
+	$(PY) scripts/bundle_demo.py
+
+# Browser-push (VAPID) keys -> .env.push (gitignored); safe to re-run
+vapid:
+	$(PY) scripts/make_vapid_keys.py
+
+# Static copy on Cloudflare Pages: the demo farms keep working after the event without a server.
+# One-time: npx wrangler@4.156.0 login   (opens Cloudflare sign-in in the browser)
+pages: bundle-demo
+	cd frontend && VITE_API_URL= npm run build
+	cd frontend && npx --yes wrangler@4.156.0 pages deploy dist --project-name sowsmart --branch main
+
+# Public demo URL for phones and judges during the event (Cloudflare Quick Tunnel, no account).
+# Prints a https://<random>.trycloudflare.com link to the dev frontend (the API goes through it).
+tunnel:
+	cloudflared tunnel --url $(WEB)
+
+# Copy the showcase analyses into frontend/public/demo/ (the built app shows them offline)
+bundle-demo:
+	$(PY) scripts/bundle_demo.py

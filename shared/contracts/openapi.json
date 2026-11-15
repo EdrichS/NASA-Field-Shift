@@ -146,7 +146,7 @@
     "/reports/followup": {
       "post": {
         "summary": "Followup",
-        "description": "Tier 2: a detailed answer with the dataset behind each claim. Only on request.",
+        "description": "Tier 2: a detailed answer with the dataset behind each claim. Only on request.\nGuests send the analysis itself; signed-in users can send a saved analysis_id, and the\nanswer is stored with it (ai_reports) and served from there next time.",
         "operationId": "followup_reports_followup_post",
         "requestBody": {
           "content": {
@@ -179,7 +179,576 @@
               }
             }
           }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Update Me",
+        "operationId": "update_me_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete Me",
+        "description": "Delete my data: profile, fields, analyses, reports, alerts and push subscriptions.",
+        "operationId": "delete_me_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/analyses/save": {
+      "post": {
+        "summary": "Save",
+        "description": "Keep an analysis (guest results are posted here after signing up and tapping Save).",
+        "operationId": "save_analyses_save_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/analyses/{analysis_id}": {
+      "get": {
+        "summary": "Saved Analysis",
+        "operationId": "saved_analysis_analyses__analysis_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Saved Analysis Analyses  Analysis Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
+      }
+    },
+    "/fields": {
+      "get": {
+        "summary": "Fields",
+        "operationId": "fields_fields_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Fields Fields Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/fields/{field_id}": {
+      "patch": {
+        "summary": "Rename",
+        "operationId": "rename_fields__field_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Field Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove",
+        "operationId": "remove_fields__field_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "field_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Field Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/check": {
+      "post": {
+        "summary": "Check",
+        "operationId": "check_alerts_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Check Alerts Check Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/alerts": {
+      "get": {
+        "summary": "Alerts",
+        "operationId": "alerts_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Alerts Alerts Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/alerts/{alert_id}/read": {
+      "post": {
+        "summary": "Read",
+        "operationId": "read_alerts__alert_id__read_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Alert Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/preferences": {
+      "put": {
+        "summary": "Preferences",
+        "operationId": "preferences_alerts_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/alerts/push-key": {
+      "get": {
+        "summary": "Push Key",
+        "description": "The public VAPID key the browser needs to subscribe (public by design).",
+        "operationId": "push_key_alerts_push_key_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": "object",
+                  "title": "Response Push Key Alerts Push Key Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/push-subscription": {
+      "post": {
+        "summary": "Subscribe",
+        "operationId": "subscribe_alerts_push_subscription_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Unsubscribe",
+        "operationId": "unsubscribe_alerts_push_subscription_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/alerts/simulate": {
+      "post": {
+        "summary": "Simulate",
+        "description": "Demo: a simulated storm near a showcase farm. Every saved field in range is alerted.",
+        "operationId": "simulate_alerts_simulate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Simulate Alerts Simulate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/health": {
@@ -611,6 +1180,18 @@
         ],
         "title": "CardOut"
       },
+      "CheckIn": {
+        "properties": {
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "description": "True for 'Check now' (skips the 6-hour cache)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "CheckIn"
+      },
       "ComponentOut": {
         "properties": {
           "score": {
@@ -742,11 +1323,143 @@
         ],
         "title": "FieldOut"
       },
+      "FieldPatch": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "FieldPatch"
+      },
+      "FieldSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "area_ha": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Ha"
+          },
+          "input_mode": {
+            "type": "string",
+            "title": "Input Mode"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "analysis_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis Id"
+          },
+          "top_strategy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Strategy"
+          },
+          "analyzed_at": {
+            "title": "Analyzed At"
+          },
+          "created_at": {
+            "title": "Created At"
+          },
+          "alert_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Alert Types"
+          },
+          "email": {
+            "type": "boolean",
+            "title": "Email"
+          },
+          "push": {
+            "type": "boolean",
+            "title": "Push"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "area_ha",
+          "input_mode",
+          "lat",
+          "lon",
+          "analysis_id",
+          "top_strategy",
+          "alert_types",
+          "email",
+          "push",
+          "unread"
+        ],
+        "title": "FieldSummary"
+      },
       "FollowupRequest": {
         "properties": {
           "analysis_payload": {
-            "$ref": "#/components/schemas/AnalyzeResponse",
-            "description": "The /analyze response (guests). Saved analyses will send analysis_id."
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalyzeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The /analyze response (guests)"
+          },
+          "analysis_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis Id",
+            "description": "A saved analysis (signed in): answers are stored with it"
           },
           "language": {
             "type": "string",
@@ -776,9 +1489,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "analysis_payload"
-        ],
         "title": "FollowupRequest"
       },
       "GeometryIn": {
@@ -817,6 +1527,88 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "MeOut": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "units": {
+            "type": "string",
+            "title": "Units"
+          },
+          "has_email": {
+            "type": "boolean",
+            "title": "Has Email",
+            "description": "True when a verified email is known (for alert emails)"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldSummary"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name",
+          "language",
+          "units",
+          "has_email",
+          "fields"
+        ],
+        "title": "MeOut"
+      },
+      "PreferencesIn": {
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "title": "Field Id"
+          },
+          "alert_types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "natural_event",
+                "fire",
+                "heavy_rain",
+                "drought",
+                "pest_risk",
+                "new_findings"
+              ]
+            },
+            "type": "array",
+            "title": "Alert Types"
+          },
+          "email": {
+            "type": "boolean",
+            "title": "Email",
+            "default": true
+          },
+          "push": {
+            "type": "boolean",
+            "title": "Push",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_id"
+        ],
+        "title": "PreferencesIn"
       },
       "PrefillResponse": {
         "properties": {
@@ -859,6 +1651,38 @@
         ],
         "title": "PrefillResponse"
       },
+      "ProfileIn": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          },
+          "units": {
+            "type": "string",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "title": "Units",
+            "default": "metric"
+          }
+        },
+        "type": "object",
+        "title": "ProfileIn"
+      },
       "ReportStatus": {
         "properties": {
           "status": {
@@ -884,6 +1708,65 @@
           "status"
         ],
         "title": "ReportStatus"
+      },
+      "SaveOut": {
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "title": "Analysis Id"
+          },
+          "field_id": {
+            "type": "string",
+            "title": "Field Id"
+          },
+          "new_findings": {
+            "type": "boolean",
+            "title": "New Findings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "field_id",
+          "new_findings"
+        ],
+        "title": "SaveOut"
+      },
+      "SaveRequest": {
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/AnalyzeRequest",
+            "description": "What was sent to /analyze"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/AnalyzeResponse",
+            "description": "What /analyze returned"
+          },
+          "field_name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Field Name",
+            "default": "My field"
+          },
+          "input_mode": {
+            "type": "string",
+            "enum": [
+              "geolocation",
+              "point",
+              "polygon",
+              "browse"
+            ],
+            "title": "Input Mode",
+            "default": "point"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request",
+          "analysis"
+        ],
+        "title": "SaveRequest"
       },
       "ShowcaseFarmOut": {
         "properties": {
@@ -967,6 +1850,19 @@
           "model"
         ],
         "title": "ShowcaseFarmOut"
+      },
+      "SimulateIn": {
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "title": "Field Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_id"
+        ],
+        "title": "SimulateIn"
       },
       "StrategyOut": {
         "properties": {
@@ -1080,6 +1976,29 @@
         ],
         "title": "StrategyOut"
       },
+      "SubscriptionIn": {
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 10,
+            "title": "Endpoint"
+          },
+          "keys": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "title": "SubscriptionIn"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -1119,6 +2038,12 @@
           "type"
         ],
         "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   }

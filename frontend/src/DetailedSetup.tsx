@@ -1,27 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { LANGUAGES } from './i18n'
+import { areaHa, baseStyle, maplibregl, pinMarker } from './mapkit'
+import type { Feature } from 'geojson'
 import type { UnitSystem } from './SignUp'
 import './DetailedSetup.css'
 
 type LatLng = { lat: number; lng: number }
-
-type Removable = { remove: () => void }
-
-type DrawMap = {
-  setView: (center: [number, number], zoom: number) => DrawMap
-  on: (event: 'click', handler: (event: { latlng: LatLng }) => void) => void
-  remove: () => void
-  invalidateSize: () => void
-}
-
-type LeafletDraw = {
-  map: (element: HTMLElement, options?: object) => DrawMap
-  tileLayer: (url: string, options?: object) => { addTo: (map: object) => void }
-  marker: (latlng: [number, number], options?: object) => Removable & { addTo: (map: object) => Removable }
-  polygon: (latlngs: [number, number][], options?: object) => Removable & { addTo: (map: object) => Removable }
-  polyline: (latlngs: [number, number][], options?: object) => Removable & { addTo: (map: object) => Removable }
-  divIcon: (options: object) => object
-}
 
 export type FieldPlot = {
   id: string
@@ -97,8 +81,6 @@ const GOALS = [
   'Survive bad years',
 ]
 
-const PIN_ICON = `<svg viewBox="0 0 24 36" width="24" height="36" aria-hidden="true"><path fill="#1c3d32" d="M12 35.2S23 21.2 23 12A11 11 0 1 0 1 12c0 9.2 11 23.2 11 23.2z"/><circle cx="12" cy="12" r="4.2" fill="#f7f6f1"/></svg>`
-
 export type DetailedDraft = {
   notice: string
   showAdvanced: boolean
@@ -156,14 +138,6 @@ export type DetailedDraft = {
   shareRegional: boolean
 }
 
-export function slopeEstimate(meters: number | null, system: UnitSystem) {
-  if (meters == null) return ''
-  const height =
-    system === 'imperial'
-      ? `${Math.round(meters * 3.28084).toLocaleString('en-US')} ft`
-      : `${Math.round(meters).toLocaleString('en-US')} m`
-  return `Elevation about ${height}. Slope is not measured from one pin yet.`
-}
 
 function blankField(point: LatLng, slope: string): FieldPlot {
   return {
@@ -186,9 +160,18 @@ function blankRotation(): RotationRow {
   return { id: crypto.randomUUID(), crop: '', planting: '', harvest: '' }
 }
 
-export function createDetailedDraft(units: UnitSystem, pin: LatLng, elevationM: number | null): DetailedDraft {
-  const field = blankField(pin, slopeEstimate(elevationM, units))
+/** slopeText: the NASA SRTM slope card from /prefill ("The land is gently sloping (about 2°)").
+ *  polygon: the boundary drawn on the locate step, if any. */
+export function createDetailedDraft(units: UnitSystem, pin: LatLng, slopeText: string, polygon: LatLng[] = []): DetailedDraft {
+  const field = blankField(pin, slopeText)
   field.confirmed = true
+  if (polygon.length >= 3) {
+    field.polygon = polygon
+    field.boundaryClosed = true
+    field.drawMode = true
+    field.areaHa = polygonAreaHa(polygon)
+    field.size = formatArea(field.areaHa, units === 'imperial' ? 'acres' : 'hectares')
+  }
   return {
     notice: '',
     showAdvanced: false,
@@ -249,18 +232,8 @@ export function createDetailedDraft(units: UnitSystem, pin: LatLng, elevationM: 
 
 function polygonAreaHa(ring: LatLng[]) {
   if (ring.length < 3) return 0
-  const radius = 6378137
-  const lat0 = (ring[0].lat * Math.PI) / 180
-  const points = ring.map((point) => ({
-    x: radius * ((point.lng * Math.PI) / 180) * Math.cos(lat0),
-    y: radius * ((point.lat * Math.PI) / 180),
-  }))
-  let sum = 0
-  for (let index = 0; index < points.length; index += 1) {
-    const next = points[(index + 1) % points.length]
-    sum += points[index].x * next.y - next.x * points[index].y
-  }
-  return Math.abs(sum) / 2 / 10000
+  const coords = ring.map((p) => [p.lng, p.lat])
+  return areaHa({ type: 'Polygon', coordinates: [[...coords, coords[0]]] })
 }
 
 function formatArea(hectares: number, unit: 'hectares' | 'acres') {
@@ -301,14 +274,14 @@ function sectionReady(id: SectionId, draft: DetailedDraft) {
 
 export default function DetailedSetup({
   draft,
-  elevationM,
+  slopeText,
   onDraft,
   onBack,
   onReset,
   onFinish,
 }: {
   draft: DetailedDraft
-  elevationM: number | null
+  slopeText: string
   onDraft: (draft: DetailedDraft) => void
   onBack: () => void
   onReset: () => void
@@ -341,12 +314,7 @@ export default function DetailedSetup({
   }
 
   function setSystem(system: UnitSystem) {
-    edit({
-      system,
-      fields: draft.fields.map((field) =>
-        field.slopeEdited ? field : { ...field, slope: slopeEstimate(elevationM, system) },
-      ),
-    })
+    edit({ system })
   }
 
   return (
@@ -411,7 +379,7 @@ export default function DetailedSetup({
                       edit={edit}
                       updateField={updateField}
                       onAdd={() => {
-                        const field = blankField(active.point, slopeEstimate(elevationM, draft.system))
+                        const field = blankField(active.point, slopeText)
                         edit({ fields: [...draft.fields, field], activeField: field.id })
                       }}
                     />
@@ -702,8 +670,9 @@ function FieldMap({
   onVertex: (point: LatLng) => void
 }) {
   const node = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<DrawMap | null>(null)
-  const layers = useRef<{ marker?: Removable; shape?: Removable }>({})
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const markerRef = useRef<maplibregl.Marker | null>(null)
+  const [loaded, setLoaded] = useState(false)
   const fieldRef = useRef(field)
   const onPointRef = useRef(onPoint)
   const onVertexRef = useRef(onVertex)
@@ -715,44 +684,52 @@ function FieldMap({
   })
 
   useEffect(() => {
-    const L = window.L as unknown as LeafletDraw | undefined
-    if (!node.current || !L) return
+    if (!node.current) return
     const start = fieldRef.current.point
-    const map = L.map(node.current, { zoomControl: true, maxZoom: 18 }).setView([start.lat, start.lng], 14)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
+    const map = new maplibregl.Map({
+      container: node.current,
+      style: baseStyle('imagery'),
+      center: [start.lng, start.lat],
+      zoom: 15,
       maxZoom: 18,
-    }).addTo(map)
+      attributionControl: { compact: true },
+    })
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+    map.on('load', () => {
+      map.addSource('plot', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+      map.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': '#1c3d32', 'fill-opacity': 0.28 } })
+      map.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': '#f7f6f1', 'line-width': 3 } })
+      setLoaded(true)
+    })
     map.on('click', (event) => {
       const current = fieldRef.current
-      if (current.drawMode && !current.boundaryClosed) onVertexRef.current(event.latlng)
-      else if (!current.drawMode) onPointRef.current(event.latlng)
+      const point = { lat: event.lngLat.lat, lng: event.lngLat.lng }
+      if (current.drawMode && !current.boundaryClosed) onVertexRef.current(point)
+      else if (!current.drawMode) onPointRef.current(point)
     })
     mapRef.current = map
-    const timer = window.setTimeout(() => map.invalidateSize(), 80)
     return () => {
-      window.clearTimeout(timer)
       map.remove()
       mapRef.current = null
+      markerRef.current = null
+      setLoaded(false)
     }
   }, [field.id])
 
   useEffect(() => {
-    const L = window.L as unknown as LeafletDraw | undefined
     const map = mapRef.current
-    if (!L || !map) return
-    layers.current.marker?.remove()
-    layers.current.shape?.remove()
-    const icon = L.divIcon({ className: 'sow-pin', html: PIN_ICON, iconSize: [24, 36], iconAnchor: [12, 34] })
-    layers.current.marker = L.marker([field.point.lat, field.point.lng], { icon, keyboard: false }).addTo(map)
-    if (field.polygon.length >= 2) {
-      const ring = field.polygon.map((point) => [point.lat, point.lng] as [number, number])
-      layers.current.shape =
-        field.boundaryClosed && field.polygon.length >= 3
-          ? L.polygon(ring, { color: '#1c3d32', weight: 2, fillColor: '#1c3d32', fillOpacity: 0.28 }).addTo(map)
-          : L.polyline(ring, { color: '#f7f6f1', weight: 3 }).addTo(map)
+    if (!map || !loaded) return
+    markerRef.current?.remove()
+    markerRef.current = pinMarker(field.point).addTo(map)
+    const ring = field.polygon.map((p) => [p.lng, p.lat])
+    const features: Feature[] = []
+    if (field.boundaryClosed && ring.length >= 3) {
+      features.push({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[...ring, ring[0]]] } })
+    } else if (ring.length >= 2) {
+      features.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ring } })
     }
-  }, [field.boundaryClosed, field.id, field.point, field.polygon])
+    ;(map.getSource('plot') as maplibregl.GeoJSONSource | undefined)?.setData({ type: 'FeatureCollection', features })
+  }, [loaded, field.boundaryClosed, field.id, field.point, field.polygon])
 
   return (
     <div className="detailed-map-frame">

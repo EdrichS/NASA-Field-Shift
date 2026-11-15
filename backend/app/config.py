@@ -11,11 +11,14 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+# Browser-push keys made by `make vapid` (gitignored, kept apart so .env is never rewritten).
+PUSH_ENV_FILE = ENV_FILE.with_name(".env.push")
 
 
 class Settings(BaseSettings):
     # env_ignore_empty: a blank line like "XAI_BASE_URL=" keeps the default below.
-    model_config = SettingsConfigDict(env_file=ENV_FILE, env_ignore_empty=True, extra="ignore")
+    model_config = SettingsConfigDict(env_file=(ENV_FILE, PUSH_ENV_FILE), env_ignore_empty=True,
+                                      extra="ignore")
 
     # NASA
     earthdata_username: str = ""
