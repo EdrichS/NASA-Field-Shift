@@ -16,14 +16,17 @@ const GIBS_BLUE_MARBLE =
 
 export default function App() {
   const [screen, setScreen] = useState<'landing' | 'signup' | 'map'>('landing')
+  const [place, setPlace] = useState<[number, number] | null>(null)
 
   if (screen === 'signup') {
     return (
       <SignUp
         onBack={() => setScreen('landing')}
         onLogin={() => setScreen('landing')}
-        onContinue={() => {
-          // Step 2 of sign-up is next. Nothing is sent to the backend from this screen.
+        onCreate={(account) => {
+          // The account stays in the browser. Auth0 and saving are later steps.
+          setPlace([account.longitude, account.latitude])
+          setScreen('map')
         }}
       />
     )
@@ -36,15 +39,18 @@ export default function App() {
           // Auth0 sign-in is step 3.4. The button is ready; it does not log anyone in yet.
         }}
         onSignUp={() => setScreen('signup')}
-        onGuest={() => setScreen('map')}
+        onGuest={() => {
+          setPlace(null)
+          setScreen('map')
+        }}
       />
     )
   }
 
-  return <MapScreen />
+  return <MapScreen center={place} />
 }
 
-function MapScreen() {
+function MapScreen({ center }: { center: [number, number] | null }) {
   const container = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -64,12 +70,13 @@ function MapScreen() {
         },
         layers: [{ id: 'gibs-blue-marble', type: 'raster', source: 'gibs' }],
       },
-      center: [0, 20],
-      zoom: 1.5,
+      center: center ?? [0, 20],
+      zoom: center ? 8 : 1.5,
     })
     map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    if (center) new maplibregl.Marker({ color: '#1c3d32' }).setLngLat(center).addTo(map)
     return () => map.remove()
-  }, [])
+  }, [center])
 
   return <div ref={container} className="map" data-testid="map" />
 }

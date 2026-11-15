@@ -1,44 +1,86 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import './SignUp.css'
 
 export type UnitSystem = 'imperial' | 'metric'
 
-export type SignUpStepOne = {
+export type SignUpAccount = {
   username: string
+  email: string
   password: string
   units: UnitSystem
+  latitude: number
+  longitude: number
 }
 
 type SignUpProps = {
   onBack: () => void
   onLogin: () => void
-  onContinue: (values: SignUpStepOne) => void
+  onCreate: (account: SignUpAccount) => void
 }
 
 type FieldErrors = {
   username?: string
+  email?: string
   password?: string
   units?: string
 }
 
-const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/
+type Pin = { lat: number; lng: number }
 
-export default function SignUp({ onBack, onLogin, onContinue }: SignUpProps) {
+type LeafletMarker = { setLatLng: (latlng: [number, number]) => void }
+
+type LeafletMap = {
+  setView: (center: [number, number], zoom: number) => LeafletMap
+  on: (event: 'click', handler: (event: { latlng: Pin }) => void) => void
+  remove: () => void
+  invalidateSize: () => void
+}
+
+type LeafletLib = {
+  map: (element: HTMLElement, options?: object) => LeafletMap
+  tileLayer: (url: string, options?: object) => { addTo: (map: LeafletMap) => void }
+  marker: (latlng: [number, number], options?: object) => LeafletMarker & { addTo: (map: LeafletMap) => LeafletMarker }
+  divIcon: (options: object) => object
+}
+
+declare global {
+  interface Window {
+    L?: LeafletLib
+  }
+}
+
+const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PIN_ICON = `<svg viewBox="0 0 24 36" width="24" height="36" aria-hidden="true"><path fill="#1c3d32" d="M12 35.2S23 21.2 23 12A11 11 0 1 0 1 12c0 9.2 11 23.2 11 23.2z"/><circle cx="12" cy="12" r="4.2" fill="#f7f6f1"/></svg>`
+
+export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   const formId = useId()
+  const mapNode = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<LeafletMap | null>(null)
+  const markerRef = useRef<LeafletMarker | null>(null)
+  const pinRef = useRef<Pin | null>(null)
+  const [step, setStep] = useState<1 | 2>(1)
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [units, setUnits] = useState<'' | UnitSystem>('')
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitted, setSubmitted] = useState(false)
+  const [pin, setPin] = useState<Pin | null>(null)
+  const [pinError, setPinError] = useState<string>()
+  const [locating, setLocating] = useState(false)
 
-  function validate(next: { username: string; password: string; units: string }): FieldErrors {
+  function validate(next: { username: string; email: string; password: string; units: string }): FieldErrors {
     const nextErrors: FieldErrors = {}
     const name = next.username.trim()
+    const address = next.email.trim()
     if (!name) nextErrors.username = 'Choose a username.'
     else if (!USERNAME_PATTERN.test(name)) {
       nextErrors.username = 'Use 3–24 letters, numbers, or underscores.'
     }
+    if (!address) nextErrors.email = 'Enter your email.'
+    else if (!EMAIL_PATTERN.test(address)) nextErrors.email = 'Enter a valid email address.'
     if (!next.password) nextErrors.password = 'Enter a password.'
     else if (next.password.length < 8) nextErrors.password = 'Use at least 8 characters.'
     if (next.units !== 'imperial' && next.units !== 'metric') {
@@ -47,13 +89,20 @@ export default function SignUp({ onBack, onLogin, onContinue }: SignUpProps) {
     return nextErrors
   }
 
-  function update(partial: { username?: string; password?: string; units?: '' | UnitSystem }) {
+  function update(partial: {
+    username?: string
+    email?: string
+    password?: string
+    units?: '' | UnitSystem
+  }) {
     const next = {
       username: partial.username ?? username,
+      email: partial.email ?? email,
       password: partial.password ?? password,
       units: partial.units ?? units,
     }
     if (partial.username !== undefined) setUsername(partial.username)
+    if (partial.email !== undefined) setEmail(partial.email)
     if (partial.password !== undefined) setPassword(partial.password)
     if (partial.units !== undefined) setUnits(partial.units)
     if (submitted) setErrors(validate(next))
@@ -61,27 +110,124 @@ export default function SignUp({ onBack, onLogin, onContinue }: SignUpProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const nextErrors = validate({ username, password, units })
+    const nextErrors = validate({ username, email, password, units })
     setSubmitted(true)
     setErrors(nextErrors)
-    const firstInvalid = (['username', 'password', 'units'] as const).find((field) => nextErrors[field])
+    const firstInvalid = (['username', 'email', 'password', 'units'] as const).find((field) => nextErrors[field])
     if (firstInvalid) {
       document.getElementById(`${formId}-${firstInvalid}`)?.focus()
       return
     }
-    onContinue({
+    setStep(2)
+  }
+
+  useEffect(() => {
+    if (step !== 2 || !mapNode.current || !window.L) return
+    const L = window.L
+    const start = pinRef.current
+    const map = L.map(mapNode.current, { zoomControl: true }).setView(
+      start ? [start.lat, start.lng] : [20, 0],
+      start ? 12 : 2,
+    )
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 16,
+      },
+    ).addTo(map)
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 16 },
+    ).addTo(map)
+
+    const icon = L.divIcon({
+      className: 'sow-pin',
+      html: PIN_ICON,
+      iconSize: [24, 36],
+      iconAnchor: [12, 34],
+    })
+
+    const place = (lat: number, lng: number) => {
+      if (markerRef.current) markerRef.current.setLatLng([lat, lng])
+      else markerRef.current = L.marker([lat, lng], { icon, keyboard: false }).addTo(map)
+      const next = { lat, lng }
+      pinRef.current = next
+      setPin(next)
+      setPinError(undefined)
+    }
+
+    if (start) markerRef.current = L.marker([start.lat, start.lng], { icon, keyboard: false }).addTo(map)
+
+    map.on('click', (event) => place(event.latlng.lat, event.latlng.lng))
+    mapRef.current = map
+    const timer = window.setTimeout(() => map.invalidateSize(), 50)
+
+    return () => {
+      window.clearTimeout(timer)
+      map.remove()
+      mapRef.current = null
+      markerRef.current = null
+    }
+  }, [step])
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setPinError('Location is not available on this device. Tap the map instead.')
+      return
+    }
+    setLocating(true)
+    setPinError(undefined)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+        mapRef.current?.setView([lat, lng], 13)
+        if (markerRef.current) markerRef.current.setLatLng([lat, lng])
+        else if (mapRef.current && window.L) {
+          const icon = window.L.divIcon({
+            className: 'sow-pin',
+            html: PIN_ICON,
+            iconSize: [24, 36],
+            iconAnchor: [12, 34],
+          })
+          markerRef.current = window.L.marker([lat, lng], { icon, keyboard: false }).addTo(mapRef.current)
+        }
+        const next = { lat, lng }
+        pinRef.current = next
+        setPin(next)
+        setLocating(false)
+      },
+      () => {
+        setLocating(false)
+        setPinError('We could not read your location. Tap the map instead.')
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    )
+  }
+
+  function createAccount() {
+    if (!pin) {
+      setPinError('Drop a pin on the map, or use your location.')
+      return
+    }
+    onCreate({
       username: username.trim(),
+      email: email.trim(),
       password,
       units: units as UnitSystem,
+      latitude: pin.lat,
+      longitude: pin.lng,
     })
   }
 
   const usernameErrorId = `${formId}-username-error`
+  const emailErrorId = `${formId}-email-error`
   const passwordErrorId = `${formId}-password-error`
   const unitsErrorId = `${formId}-units-error`
 
   return (
-    <main className="signup" data-testid="signup">
+    <main className={step === 2 ? 'signup is-locate' : 'signup'} data-testid="signup">
       <div className="signup-column">
         <header className="signup-header">
           <button type="button" className="back" onClick={onBack}>
@@ -103,107 +249,175 @@ export default function SignUp({ onBack, onLogin, onContinue }: SignUpProps) {
           </p>
         </header>
 
-        <section className="signup-card" aria-labelledby={`${formId}-title`}>
-          <p className="step">Step 1 of 2</p>
-          <h1 id={`${formId}-title`}>Create your account</h1>
+        <section className={step === 2 ? 'signup-card is-locate' : 'signup-card'} aria-labelledby={`${formId}-title`}>
+          {step === 1 ? (
+            <div className="step-panel" key="account">
+              <p className="step">Step 1 of 2</p>
+              <h1 id={`${formId}-title`}>Create your account</h1>
 
-          <form className="signup-form" onSubmit={handleSubmit} noValidate>
-            <div className="field">
-              <label htmlFor={`${formId}-username`}>Username</label>
-              <input
-                id={`${formId}-username`}
-                className="control"
-                name="username"
-                type="text"
-                autoComplete="username"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="next"
-                placeholder="Choose a username"
-                value={username}
-                aria-invalid={errors.username ? true : undefined}
-                aria-describedby={errors.username ? usernameErrorId : undefined}
-                onChange={(event) => update({ username: event.target.value })}
-              />
-              {errors.username ? (
-                <p id={usernameErrorId} className="field-error" role="alert">
-                  {errors.username}
-                </p>
-              ) : null}
+              <form className="signup-form" onSubmit={handleSubmit} noValidate>
+                <div className="field">
+                  <label htmlFor={`${formId}-username`}>Username</label>
+                  <input
+                    id={`${formId}-username`}
+                    className="control"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    enterKeyHint="next"
+                    placeholder="Choose a username"
+                    value={username}
+                    aria-invalid={errors.username ? true : undefined}
+                    aria-describedby={errors.username ? usernameErrorId : undefined}
+                    onChange={(event) => update({ username: event.target.value })}
+                  />
+                  {errors.username ? (
+                    <p id={usernameErrorId} className="field-error" role="alert">
+                      {errors.username}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="field">
+                  <label htmlFor={`${formId}-email`}>Email</label>
+                  <input
+                    id={`${formId}-email`}
+                    className="control"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    inputMode="email"
+                    enterKeyHint="next"
+                    placeholder="Enter your email"
+                    value={email}
+                    aria-invalid={errors.email ? true : undefined}
+                    aria-describedby={errors.email ? emailErrorId : undefined}
+                    onChange={(event) => update({ email: event.target.value })}
+                  />
+                  {errors.email ? (
+                    <p id={emailErrorId} className="field-error" role="alert">
+                      {errors.email}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="field">
+                  <label htmlFor={`${formId}-password`}>Password</label>
+                  <div className="password-wrap">
+                    <input
+                      id={`${formId}-password`}
+                      className="control"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      enterKeyHint="next"
+                      placeholder="Create a password"
+                      value={password}
+                      aria-invalid={errors.password ? true : undefined}
+                      aria-describedby={errors.password ? passwordErrorId : undefined}
+                      onChange={(event) => update({ password: event.target.value })}
+                    />
+                    <button
+                      type="button"
+                      className="peek"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
+                      onClick={() => setShowPassword((visible) => !visible)}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </div>
+                  {errors.password ? (
+                    <p id={passwordErrorId} className="field-error" role="alert">
+                      {errors.password}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="field">
+                  <label htmlFor={`${formId}-units`}>Preferred Measurement System</label>
+                  <select
+                    id={`${formId}-units`}
+                    className={units ? 'control unit-select' : 'control unit-select is-placeholder'}
+                    name="units"
+                    value={units}
+                    aria-invalid={errors.units ? true : undefined}
+                    aria-describedby={errors.units ? unitsErrorId : undefined}
+                    onChange={(event) => update({ units: event.target.value as '' | UnitSystem })}
+                  >
+                    <option value="" disabled>
+                      Choose a system
+                    </option>
+                    <option value="imperial">Imperial (inches, °F, fl oz)</option>
+                    <option value="metric">Metric (cm, °C, mL)</option>
+                  </select>
+                  {errors.units ? (
+                    <p id={unitsErrorId} className="field-error" role="alert">
+                      {errors.units}
+                    </p>
+                  ) : null}
+                </div>
+
+                <button type="submit" className="continue">
+                  Next
+                </button>
+              </form>
+
+              <p className="login-prompt">
+                Already have an account?{' '}
+                <button type="button" className="login-link" onClick={onLogin}>
+                  Log in
+                </button>
+              </p>
             </div>
+          ) : (
+            <div className="step-panel locate-panel" key="location">
+              <div className="locate-head">
+                <button type="button" className="card-back" onClick={() => setStep(1)} aria-label="Back to account details">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path
+                      d="M10 3L5 8l5 5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h1 id={`${formId}-title`} className="where">
+                  Where are you?
+                </h1>
+              </div>
 
-            <div className="field">
-              <label htmlFor={`${formId}-password`}>Password</label>
-              <div className="password-wrap">
-                <input
-                  id={`${formId}-password`}
-                  className="control"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  enterKeyHint="next"
-                  placeholder="Create a password"
-                  value={password}
-                  aria-invalid={errors.password ? true : undefined}
-                  aria-describedby={errors.password ? passwordErrorId : undefined}
-                  onChange={(event) => update({ password: event.target.value })}
-                />
-                <button
-                  type="button"
-                  className="peek"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((visible) => !visible)}
-                >
-                  {showPassword ? <EyeOff /> : <Eye />}
+              <div className="map-frame">
+                <div ref={mapNode} className="locate-map" role="application" aria-label="Map. Tap to drop a pin." />
+                <button type="button" className="locate-me" onClick={useMyLocation} disabled={locating}>
+                  {locating ? 'Finding…' : 'Use My Location'}
                 </button>
               </div>
-              {errors.password ? (
-                <p id={passwordErrorId} className="field-error" role="alert">
-                  {errors.password}
+              {pinError ? (
+                <p className="field-error map-error" role="alert">
+                  {pinError}
                 </p>
               ) : null}
             </div>
-
-            <div className="field">
-              <label htmlFor={`${formId}-units`}>Preferred Measurement System</label>
-              <select
-                id={`${formId}-units`}
-                className={units ? 'control unit-select' : 'control unit-select is-placeholder'}
-                name="units"
-                value={units}
-                aria-invalid={errors.units ? true : undefined}
-                aria-describedby={errors.units ? unitsErrorId : undefined}
-                onChange={(event) => update({ units: event.target.value as '' | UnitSystem })}
-              >
-                <option value="" disabled>
-                  Choose a system
-                </option>
-                <option value="imperial">Imperial (inches, °F, fl oz)</option>
-                <option value="metric">Metric (cm, °C, mL)</option>
-              </select>
-              {errors.units ? (
-                <p id={unitsErrorId} className="field-error" role="alert">
-                  {errors.units}
-                </p>
-              ) : null}
-            </div>
-
-            <button type="submit" className="continue">
-              Continue
-            </button>
-          </form>
-
-          <p className="login-prompt">
-            Already have an account?{' '}
-            <button type="button" className="login-link" onClick={onLogin}>
-              Log in
-            </button>
-          </p>
+          )}
         </section>
+
+        {step === 2 ? (
+          <button type="button" className="continue create-account" onClick={createAccount}>
+            Create Account
+          </button>
+        ) : null}
       </div>
     </main>
   )

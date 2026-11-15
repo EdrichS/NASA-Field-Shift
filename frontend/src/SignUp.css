@@ -82,7 +82,7 @@
 .signup-card {
   padding: 1.45rem 1.25rem 1.2rem;
   border: 1px solid rgba(28, 61, 50, 0.1);
-  border-radius: 24px;
+  border-radius: 28px;
   background: #fffcf8;
   box-shadow:
     0 16px 40px rgba(28, 61, 50, 0.08),
@@ -304,6 +304,173 @@
   }
 }
 
+.signup.is-locate {
+  justify-content: stretch;
+}
+
+.signup.is-locate .signup-column {
+  flex: 1;
+  min-height: 0;
+  width: min(100%, 26rem);
+}
+
+.signup-card.is-locate {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.95rem 0.95rem 0.95rem;
+}
+
+.step-panel {
+  animation: signup-in 220ms ease;
+}
+
+.locate-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.locate-head {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.where {
+  margin: 0 2.4rem;
+  text-align: center;
+  font-size: clamp(1.55rem, 6vw, 1.85rem);
+}
+
+.card-back {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(28, 61, 50, 0.12);
+  border-radius: 999px;
+  background: #f7f6f1;
+  color: #1c3d32;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.card-back svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.card-back:focus-visible {
+  outline: 2px solid #1c3d32;
+  outline-offset: 3px;
+}
+
+.map-frame {
+  position: relative;
+  flex: 1;
+  min-height: 16rem;
+  overflow: hidden;
+  border: 1px solid rgba(28, 61, 50, 0.1);
+  border-radius: 20px;
+  background: #e7efe4;
+}
+
+.locate-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  font-family: Outfit, system-ui, sans-serif;
+}
+
+.locate-me {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 500;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(28, 61, 50, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 252, 248, 0.94);
+  color: #1c3d32;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(28, 61, 50, 0.12);
+  cursor: pointer;
+}
+
+.locate-me:disabled {
+  cursor: progress;
+}
+
+.locate-me:focus-visible {
+  outline: 2px solid #1c3d32;
+  outline-offset: 2px;
+}
+
+.map-error {
+  margin-top: 0.65rem;
+}
+
+.create-account {
+  flex: none;
+}
+
+.sow-pin {
+  background: none;
+  border: none;
+}
+
+.signup .leaflet-container,
+.signup .leaflet-pane,
+.signup .leaflet-tile,
+.signup .leaflet-marker-icon,
+.signup .leaflet-marker-shadow,
+.signup .leaflet-control {
+  box-sizing: content-box;
+}
+
+.signup .leaflet-container {
+  box-sizing: border-box;
+  background: #e7efe4;
+}
+
+.signup .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 252, 248, 0.86);
+}
+
+@keyframes signup-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .locate-me:hover,
+  .card-back:hover {
+    color: #142e26;
+    background: #fff;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .continue {
     transition: none;
@@ -312,5 +479,9 @@
   .continue:hover,
   .continue:active {
     transform: none;
+  }
+
+  .step-panel {
+    animation: none;
   }
 }
