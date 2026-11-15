@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import Dashboard from './Dashboard'
 import Landing from './Landing'
-import SignUp from './SignUp'
+import SignUp, { type SignUpAccount } from './SignUp'
+import type { LanguageCode } from './i18n'
 
 // MapLibre looks for its worker next to its own module, which breaks once Vite pre-bundles it.
 // Point it at the (self-contained) worker file explicitly; works in dev and in the build.
@@ -15,19 +17,36 @@ const GIBS_BLUE_MARBLE =
   'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg'
 
 export default function App() {
-  const [screen, setScreen] = useState<'landing' | 'signup' | 'map'>('landing')
+  const [screen, setScreen] = useState<'landing' | 'signup' | 'dashboard' | 'map'>('landing')
   const [place, setPlace] = useState<[number, number] | null>(null)
+  const [account, setAccount] = useState<SignUpAccount | null>(null)
+  const [language, setLanguage] = useState<LanguageCode>('en')
 
   if (screen === 'signup') {
     return (
       <SignUp
         onBack={() => setScreen('landing')}
         onLogin={() => setScreen('landing')}
-        onCreate={(account) => {
-          // The account stays in the browser. Auth0 and saving are later steps.
-          setPlace([account.longitude, account.latitude])
-          setScreen('map')
+        onCreate={(next) => {
+          // The account stays in the browser. Auth0, saving, and the farm plan come later.
+          setAccount(next)
+          setLanguage(next.language)
+          setPlace([next.longitude, next.latitude])
+          setScreen('dashboard')
         }}
+      />
+    )
+  }
+
+  if (screen === 'dashboard' && account) {
+    return (
+      <Dashboard
+        language={language}
+        username={account.username}
+        latitude={account.latitude}
+        longitude={account.longitude}
+        path={account.questions}
+        onLanguage={setLanguage}
       />
     )
   }

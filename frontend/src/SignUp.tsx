@@ -1,9 +1,29 @@
-import { useEffect, useId, useRef, useState, type FormEvent, type RefObject } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type RefObject } from 'react'
+import DetailedSetup, { createDetailedDraft, slopeEstimate, type DetailedDraft } from './DetailedSetup'
+import LanguageDisclaimer from './LanguageDisclaimer'
+import { isLanguage, translate, type LanguageCode } from './i18n'
 import './SignUp.css'
 
 export type UnitSystem = 'imperial' | 'metric'
 
 export type LandAnswer = 'yes' | 'no' | 'unsure'
+
+export type QuestionPath = 'quick' | 'detailed' | 'explore'
+
+export type QuickCrop = {
+  crop: string
+  planting: string
+  harvest: string
+}
+
+export type QuickAnswers = {
+  notFarming: boolean
+  crops: QuickCrop[]
+  water: string
+  equipment: string
+  goal: string
+  avoided: string[]
+}
 
 export type SignUpAccount = {
   username: string
@@ -13,6 +33,10 @@ export type SignUpAccount = {
   latitude: number
   longitude: number
   confirmation: LandAnswer
+  questions: QuestionPath
+  language: LanguageCode
+  quick?: QuickAnswers
+  detailed?: DetailedDraft
 }
 
 type SignUpProps = {
@@ -29,6 +53,25 @@ type FieldErrors = {
 }
 
 type Pin = { lat: number; lng: number }
+
+type CropRow = QuickCrop & { id: string }
+
+type QuickDraft = {
+  notFarming: boolean
+  crops: CropRow[]
+  water: string
+  equipment: string
+  goal: string
+  avoided: string[]
+  avoidedSkipped: boolean
+}
+
+type QuickErrors = {
+  crops?: string
+  water?: string
+  equipment?: string
+  goal?: string
+}
 
 type LandDetails = {
   terrain: string
@@ -62,14 +105,74 @@ const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PIN_ICON = `<svg viewBox="0 0 24 36" width="24" height="36" aria-hidden="true"><path fill="#1c3d32" d="M12 35.2S23 21.2 23 12A11 11 0 1 0 1 12c0 9.2 11 23.2 11 23.2z"/><circle cx="12" cy="12" r="4.2" fill="#f7f6f1"/></svg>`
 
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+const WATER_OPTIONS = [
+  { value: 'irrigated', label: 'Irrigated' },
+  { value: 'rainfed', label: 'Rain-fed' },
+  { value: 'mixed', label: 'Some of each' },
+  { value: 'unknown', label: "I don't know" },
+]
+
+const EQUIPMENT_OPTIONS = [
+  { value: 'hand', label: 'Hand tools' },
+  { value: 'animal', label: 'Animal-drawn' },
+  { value: 'small-tractor', label: 'Small tractor' },
+  { value: 'full', label: 'Full machinery' },
+]
+
+const GOAL_OPTIONS = [
+  { value: 'water', label: 'Save water' },
+  { value: 'soil', label: 'Build soil' },
+  { value: 'earn', label: 'Earn more' },
+  { value: 'feed', label: 'Feed the household' },
+  { value: 'survive', label: 'Survive bad years' },
+]
+
+function blankCrop(): CropRow {
+  return { id: crypto.randomUUID(), crop: '', planting: '', harvest: '' }
+}
+
+function emptyQuick(): QuickDraft {
+  return {
+    notFarming: false,
+    crops: [blankCrop()],
+    water: '',
+    equipment: '',
+    goal: '',
+    avoided: [],
+    avoidedSkipped: false,
+  }
+}
+
 export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   const formId = useId()
   const mapNode = useRef<HTMLDivElement>(null)
   const mapRef = useRef<LeafletMap | null>(null)
   const markerRef = useRef<LeafletMarker | null>(null)
   const pinRef = useRef<Pin | null>(null)
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1)
+  const [reportLanguage, setReportLanguage] = useState<LanguageCode>('en')
+  const [languageAccepted, setLanguageAccepted] = useState(false)
   const [answer, setAnswer] = useState<LandAnswer | null>(null)
+  const [landEdits, setLandEdits] = useState<LandDetails | null>(null)
+  const [landUpdated, setLandUpdated] = useState(false)
+  const [questionPath, setQuestionPath] = useState<QuestionPath | null>(null)
+  const [quickDraft, setQuickDraft] = useState<QuickDraft>(emptyQuick)
+  const [detailedDraft, setDetailedDraft] = useState<DetailedDraft | null>(null)
   const [elevation, setElevation] = useState<{ lat: number; lng: number; meters: number } | null>(null)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -228,8 +331,11 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
     )
   }
 
+  const elevationM =
+    pin && elevation && elevation.lat === pin.lat && elevation.lng === pin.lng ? elevation.meters : null
+
   useEffect(() => {
-    if (step !== 3 || !pin) return
+    if (!pin || (step !== 3 && step !== 6) || elevationM != null) return
     const controller = new AbortController()
     const { lat, lng } = pin
     fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`, {
@@ -238,14 +344,24 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error('elevation'))))
       .then((data: { elevation?: number[] }) => {
         const value = data.elevation?.[0]
-        if (typeof value === 'number') setElevation({ lat, lng, meters: value })
+        if (typeof value !== 'number') return
+        setElevation({ lat, lng, meters: value })
+        setDetailedDraft((current) => {
+          if (!current) return current
+          let changed = false
+          const fields = current.fields.map((field) => {
+            if (field.slopeEdited) return field
+            const slope = slopeEstimate(value, current.system)
+            if (slope === field.slope) return field
+            changed = true
+            return { ...field, slope }
+          })
+          return changed ? { ...current, fields } : current
+        })
       })
       .catch(() => undefined)
     return () => controller.abort()
-  }, [step, pin])
-
-  const elevationM =
-    pin && elevation && elevation.lat === pin.lat && elevation.lng === pin.lng ? elevation.meters : null
+  }, [step, pin, elevationM])
 
   function createAccount() {
     if (!pin) {
@@ -257,15 +373,78 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
 
   function finishSetup() {
     if (!pin || !answer) return
-    onCreate({
+    setStep(4)
+  }
+
+  function accountBase() {
+    return {
       username: username.trim(),
       email: email.trim(),
       password,
       units: units as UnitSystem,
-      latitude: pin.lat,
-      longitude: pin.lng,
-      confirmation: answer,
+      latitude: pin!.lat,
+      longitude: pin!.lng,
+      confirmation: answer!,
+    }
+  }
+
+  function continueQuestions() {
+    if (!pin || !answer || !questionPath) return
+    if (questionPath === 'quick') {
+      setStep(5)
+      return
+    }
+    if (questionPath === 'detailed') {
+      const system = units === 'imperial' ? 'imperial' : 'metric'
+      setDetailedDraft((current) => current ?? createDetailedDraft(system, pin, elevationM))
+      setStep(6)
+      return
+    }
+    openLanguage()
+  }
+
+  function openLanguage(preferred?: string) {
+    const fromDetailed = detailedDraft && isLanguage(detailedDraft.language) ? detailedDraft.language : null
+    const next = preferred && isLanguage(preferred) ? preferred : fromDetailed
+    if (next) setReportLanguage(next)
+    setLanguageAccepted(false)
+    setStep(7)
+  }
+
+  function finishLanguage() {
+    if (!pin || !answer || !questionPath || !languageAccepted) return
+    const crops = quickDraft.notFarming
+      ? []
+      : quickDraft.crops.map((row) => ({
+          crop: row.crop.trim(),
+          planting: row.planting,
+          harvest: row.harvest,
+        }))
+    onCreate({
+      ...accountBase(),
+      questions: questionPath,
+      language: reportLanguage,
+      quick:
+        questionPath === 'quick'
+          ? {
+              notFarming: quickDraft.notFarming,
+              crops,
+              water: quickDraft.water,
+              equipment: quickDraft.equipment,
+              goal: quickDraft.goal,
+              avoided: quickDraft.avoided,
+            }
+          : undefined,
+      detailed:
+        questionPath === 'detailed' && detailedDraft
+          ? { ...detailedDraft, language: reportLanguage }
+          : undefined,
     })
+  }
+
+  function chooseLanguage(next: LanguageCode) {
+    setReportLanguage(next)
+    setDetailedDraft((current) => (current ? { ...current, language: next } : current))
   }
 
   const usernameErrorId = `${formId}-username-error`
@@ -274,7 +453,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   const unitsErrorId = `${formId}-units-error`
 
   return (
-    <main className={step === 1 ? 'signup' : 'signup is-locate'} data-testid="signup">
+    <main className={step === 2 || step === 3 ? 'signup is-locate' : 'signup'} data-testid="signup">
       <div className="signup-column">
         <header className="signup-header">
           <button type="button" className="back" onClick={onBack}>
@@ -288,7 +467,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
                 strokeLinejoin="round"
               />
             </svg>
-            Back
+            {step === 7 ? translate(reportLanguage, 'back') : 'Back'}
           </button>
           <p className="wordmark">
             <Sprout />
@@ -297,12 +476,24 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
         </header>
 
         <section
-          className={step === 1 ? 'signup-card' : 'signup-card is-locate'}
-          aria-labelledby={step === 3 ? 'confirm-title' : `${formId}-title`}
+          className={step === 2 || step === 3 ? 'signup-card is-locate' : 'signup-card'}
+          aria-labelledby={
+            step === 3
+              ? 'confirm-title'
+              : step === 4
+                ? 'questions-title'
+                : step === 5
+                  ? 'quick-title'
+                  : step === 6
+                    ? 'detailed-title'
+                    : step === 7
+                      ? 'lang-title'
+                      : `${formId}-title`
+          }
         >
           {step === 1 ? (
             <div className="step-panel" key="account">
-              <p className="step">Step 1 of 3</p>
+              <p className="step">Step 1 of 4</p>
               <h1 id={`${formId}-title`}>Create your account</h1>
 
               <form className="signup-form" onSubmit={handleSubmit} noValidate>
@@ -460,13 +651,66 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
                 </p>
               ) : null}
             </div>
+          ) : step === 4 ? (
+            <QuestionPath
+              selected={questionPath}
+              onSelect={setQuestionPath}
+              onBack={() => setStep(3)}
+              onContinue={continueQuestions}
+            />
+          ) : step === 5 ? (
+            <QuickFive
+              draft={quickDraft}
+              onDraft={setQuickDraft}
+              onBack={() => setStep(4)}
+              onFinish={() => openLanguage()}
+            />
+          ) : step === 6 && detailedDraft ? (
+            <DetailedSetup
+              draft={detailedDraft}
+              elevationM={elevationM}
+              onDraft={(profile) => setDetailedDraft(profile)}
+              onBack={() => setStep(4)}
+              onReset={() => {
+                if (!pin) return
+                const system = units === 'imperial' ? 'imperial' : 'metric'
+                const fresh = createDetailedDraft(system, pin, elevationM)
+                setDetailedDraft({
+                  ...fresh,
+                  notice: 'Removed from this browser. Nothing was stored on a server.',
+                })
+              }}
+              onFinish={(profile) => {
+                if (!profile.consent) return
+                openLanguage(profile.language)
+              }}
+            />
+          ) : step === 7 ? (
+            <LanguageDisclaimer
+              language={reportLanguage}
+              accepted={languageAccepted}
+              onLanguage={chooseLanguage}
+              onAccepted={setLanguageAccepted}
+              onBack={() => {
+                if (questionPath === 'quick') setStep(5)
+                else if (questionPath === 'detailed') setStep(6)
+                else setStep(4)
+              }}
+              onContinue={finishLanguage}
+            />
           ) : pin ? (
             <ConfirmLand
               pin={pin}
               units={units === 'imperial' ? 'imperial' : 'metric'}
               elevationM={elevationM}
               answer={answer}
+              committed={landEdits}
+              updated={landUpdated}
               onAnswer={setAnswer}
+              onCommit={(details) => {
+                setLandEdits(details)
+                setLandUpdated(true)
+              }}
               onBack={() => setStep(2)}
               onFinish={finishSetup}
               mapNode={mapNode}
@@ -490,7 +734,10 @@ function ConfirmLand({
   units,
   elevationM,
   answer,
+  committed,
+  updated,
   onAnswer,
+  onCommit,
   onBack,
   onFinish,
   mapNode,
@@ -500,7 +747,10 @@ function ConfirmLand({
   units: UnitSystem
   elevationM: number | null
   answer: LandAnswer | null
+  committed: LandDetails | null
+  updated: boolean
   onAnswer: (answer: LandAnswer) => void
+  onCommit: (details: LandDetails) => void
   onBack: () => void
   onFinish: () => void
   mapNode: RefObject<HTMLDivElement | null>
@@ -510,10 +760,8 @@ function ConfirmLand({
   const terrainRef = useRef<HTMLTextAreaElement>(null)
   const finishRef = useRef<HTMLButtonElement>(null)
   const preview = landPreview(pin.lat, elevationM, units)
-  const [committed, setCommitted] = useState<LandDetails | null>(null)
-  const [draft, setDraft] = useState<LandDetails>(preview)
+  const [draft, setDraft] = useState<LandDetails>(committed ?? preview)
   const [editing, setEditing] = useState(false)
-  const [updated, setUpdated] = useState(false)
   const view = committed ?? preview
   const draftReady = draft.terrain.trim() !== '' && draft.cover.trim() !== '' && draft.weather.trim() !== ''
   const canFinish = answer === 'yes' || answer === 'unsure' || (answer === 'no' && updated && !editing)
@@ -551,10 +799,9 @@ function ConfirmLand({
       weather: draft.weather.trim(),
     }
     if (!next.terrain || !next.cover || !next.weather) return
-    setCommitted(next)
+    onCommit(next)
     setDraft(next)
     setEditing(false)
-    setUpdated(true)
     window.setTimeout(() => finishRef.current?.focus(), 220)
   }
 
@@ -680,6 +927,482 @@ function ConfirmLand({
       <button ref={finishRef} type="button" className="continue" disabled={!canFinish} onClick={onFinish}>
         Finish Setup
       </button>
+    </div>
+  )
+}
+
+const QUESTION_PATHS: { id: QuestionPath; title: string; detail: string }[] = [
+  { id: 'quick', title: 'Quick 5', detail: '5 fast questions to get started right away' },
+  { id: 'detailed', title: 'Detailed', detail: 'In-depth setup for tailored planting & soil advice' },
+  { id: 'explore', title: 'Just exploring', detail: 'Skip the questions for now and browse freely' },
+]
+
+function QuestionPath({
+  selected,
+  onSelect,
+  onBack,
+  onContinue,
+}: {
+  selected: QuestionPath | null
+  onSelect: (path: QuestionPath) => void
+  onBack: () => void
+  onContinue: () => void
+}) {
+  return (
+    <div className="step-panel questions-panel" key="questions">
+      <div className="ask-head">
+        <button type="button" className="card-back" onClick={onBack} aria-label="Back to location details">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M10 3L5 8l5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <h1 id="questions-title" className="ask">
+          Which options for questions?
+        </h1>
+      </div>
+
+      <div className="path-list" role="radiogroup" aria-label="Which options for questions?">
+        {QUESTION_PATHS.map((path) => {
+          const isSelected = selected === path.id
+          return (
+            <button
+              key={path.id}
+              type="button"
+              className={isSelected ? 'path-option is-selected' : 'path-option'}
+              role="radio"
+              aria-checked={isSelected}
+              onClick={() => onSelect(path.id)}
+            >
+              <span className="path-copy">
+                <strong>{path.title}</strong>
+                <span>{path.detail}</span>
+              </span>
+              <span className="path-check" aria-hidden="true">
+                <svg viewBox="0 0 16 16">
+                  <path
+                    d="M3.5 8.2 6.5 11.2 12.5 4.8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <button type="button" className="continue" disabled={!selected} onClick={onContinue}>
+        Continue
+      </button>
+    </div>
+  )
+}
+
+function validateQuick(draft: QuickDraft): QuickErrors {
+  const errors: QuickErrors = {}
+  if (!draft.notFarming) {
+    const missing = draft.crops.length === 0 || draft.crops.some((row) => !row.crop.trim() || !row.planting || !row.harvest)
+    if (missing) errors.crops = 'Add a crop with both months, or mark that you are not farming this land yet.'
+  }
+  if (!draft.water) errors.water = 'Choose how the field is watered.'
+  if (!draft.equipment) errors.equipment = 'Choose the equipment you use.'
+  if (!draft.goal) errors.goal = 'Choose your top goal.'
+  return errors
+}
+
+function QuickFive({
+  draft,
+  onDraft,
+  onBack,
+  onFinish,
+}: {
+  draft: QuickDraft
+  onDraft: (draft: QuickDraft) => void
+  onBack: () => void
+  onFinish: (draft: QuickDraft) => void
+}) {
+  const [chipText, setChipText] = useState('')
+  const [errors, setErrors] = useState<QuickErrors>({})
+  const [submitted, setSubmitted] = useState(false)
+  const pendingFocus = useRef<string | null>(null)
+
+  useEffect(() => {
+    const id = pendingFocus.current
+    if (!id) return
+    pendingFocus.current = null
+    document.getElementById(`crop-${id}`)?.focus()
+  }, [draft.crops])
+
+  function update(next: QuickDraft) {
+    onDraft(next)
+    if (submitted) setErrors(validateQuick(next))
+  }
+
+  function setRow(id: string, partial: Partial<CropRow>) {
+    update({
+      ...draft,
+      crops: draft.crops.map((row) => (row.id === id ? { ...row, ...partial } : row)),
+    })
+  }
+
+  function addCrop() {
+    const row = blankCrop()
+    pendingFocus.current = row.id
+    update({ ...draft, crops: [...draft.crops, row] })
+  }
+
+  function removeCrop(id: string) {
+    update({ ...draft, crops: draft.crops.filter((row) => row.id !== id) })
+  }
+
+  function addChip(raw: string) {
+    const name = raw.trim().replace(/,+$/, '')
+    if (!name) {
+      setChipText('')
+      return draft
+    }
+    const exists = draft.avoided.some((item) => item.toLowerCase() === name.toLowerCase())
+    const next = {
+      ...draft,
+      avoided: exists ? draft.avoided : [...draft.avoided, name],
+      avoidedSkipped: false,
+    }
+    update(next)
+    setChipText('')
+    return next
+  }
+
+  function onChipKey(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault()
+      addChip(chipText)
+      return
+    }
+    if (event.key === 'Backspace' && chipText === '' && draft.avoided.length > 0) {
+      update({ ...draft, avoided: draft.avoided.slice(0, -1), avoidedSkipped: false })
+    }
+  }
+
+  function skipAvoided() {
+    setChipText('')
+    update({ ...draft, avoided: [], avoidedSkipped: true })
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const next = chipText.trim() ? addChip(chipText) : draft
+    const nextErrors = validateQuick(next)
+    setSubmitted(true)
+    setErrors(nextErrors)
+    if (nextErrors.crops) {
+      const row = next.crops.find((item) => !item.crop.trim() || !item.planting || !item.harvest)
+      const field = row
+        ? !row.crop.trim()
+          ? `crop-${row.id}`
+          : !row.planting
+            ? `plant-${row.id}`
+            : `harvest-${row.id}`
+        : 'quick-not-farming'
+      document.getElementById(field)?.focus()
+      return
+    }
+    if (nextErrors.water) {
+      document.getElementById('quick-water')?.focus()
+      return
+    }
+    if (nextErrors.equipment) {
+      document.getElementById('quick-equipment')?.focus()
+      return
+    }
+    if (nextErrors.goal) {
+      document.getElementById('quick-goal')?.focus()
+      return
+    }
+    onFinish(next)
+  }
+
+  return (
+    <div className="step-panel questions-panel quick-panel">
+      <div className="ask-head quick-top">
+        <button type="button" className="card-back" onClick={onBack} aria-label="Back to question options">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M10 3L5 8l5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <div className="quick-titles">
+          <h1 id="quick-title" className="ask">
+            Quick 5 Setup
+          </h1>
+          <p className="ask-sub">Tell us a bit about your land</p>
+        </div>
+      </div>
+
+      <form className="quick-form" onSubmit={submit} noValidate>
+        <fieldset className="q-block">
+          <legend className="q-label">
+            <span className="q-num">1</span>
+            What do you grow now, and in which months?
+            <span className="q-star" aria-hidden="true">
+              *
+            </span>
+          </legend>
+          <label className={draft.notFarming ? 'farm-toggle is-on' : 'farm-toggle'}>
+            <input
+              id="quick-not-farming"
+              type="checkbox"
+              checked={draft.notFarming}
+              onChange={(event) => update({ ...draft, notFarming: event.target.checked })}
+            />
+            <span>I'm not farming this land yet</span>
+          </label>
+          <div className={draft.notFarming ? 'crop-slot is-closed' : 'crop-slot'} inert={draft.notFarming}>
+            <div className="crop-slot-inner">
+              {draft.crops.map((row, index) => {
+                const cropMissing = submitted && !!errors.crops && !row.crop.trim()
+                const plantMissing = submitted && !!errors.crops && !row.planting
+                const harvestMissing = submitted && !!errors.crops && !row.harvest
+                return (
+                  <div className="crop-row" key={row.id}>
+                    {index > 0 ? (
+                      <button
+                        type="button"
+                        className="crop-remove"
+                        aria-label={`Remove crop ${index + 1}`}
+                        onClick={() => removeCrop(row.id)}
+                      >
+                        ×
+                      </button>
+                    ) : null}
+                    <div className="field">
+                      <label htmlFor={`crop-${row.id}`}>Crop</label>
+                      <input
+                        id={`crop-${row.id}`}
+                        className="control"
+                        name="crop"
+                        type="text"
+                        autoComplete="off"
+                        placeholder="e.g., Corn, Tomatoes"
+                        value={row.crop}
+                        aria-invalid={cropMissing || undefined}
+                        aria-describedby={errors.crops ? 'quick-crops-error' : undefined}
+                        onChange={(event) => setRow(row.id, { crop: event.target.value })}
+                      />
+                    </div>
+                    <div className="month-pair">
+                      <div className="field">
+                        <label htmlFor={`plant-${row.id}`}>Planting Month</label>
+                        <select
+                          id={`plant-${row.id}`}
+                          className={row.planting ? 'control unit-select' : 'control unit-select is-placeholder'}
+                          value={row.planting}
+                          aria-invalid={plantMissing || undefined}
+                          aria-describedby={errors.crops ? 'quick-crops-error' : undefined}
+                          onChange={(event) => setRow(row.id, { planting: event.target.value })}
+                        >
+                          <option value="">Month</option>
+                          {MONTHS.map((month) => (
+                            <option key={month} value={month}>
+                              {month}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="field">
+                        <label htmlFor={`harvest-${row.id}`}>Harvest Month</label>
+                        <select
+                          id={`harvest-${row.id}`}
+                          className={row.harvest ? 'control unit-select' : 'control unit-select is-placeholder'}
+                          value={row.harvest}
+                          aria-invalid={harvestMissing || undefined}
+                          aria-describedby={errors.crops ? 'quick-crops-error' : undefined}
+                          onChange={(event) => setRow(row.id, { harvest: event.target.value })}
+                        >
+                          <option value="">Month</option>
+                          {MONTHS.map((month) => (
+                            <option key={month} value={month}>
+                              {month}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              <button type="button" className="add-crop" onClick={addCrop}>
+                + Add more crops
+              </button>
+              {errors.crops ? (
+                <p id="quick-crops-error" className="field-error" role="alert">
+                  {errors.crops}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </fieldset>
+
+        <div className="q-block">
+          <label className="q-label" htmlFor="quick-water">
+            <span className="q-num">2</span>
+            Is it irrigated or rain-fed?
+            <span className="q-star" aria-hidden="true">
+              *
+            </span>
+          </label>
+          <select
+            id="quick-water"
+            className={draft.water ? 'control unit-select' : 'control unit-select is-placeholder'}
+            name="water"
+            value={draft.water}
+            aria-invalid={errors.water ? true : undefined}
+            aria-describedby={errors.water ? 'quick-water-error' : undefined}
+            onChange={(event) => update({ ...draft, water: event.target.value })}
+          >
+            <option value="">Choose one</option>
+            {WATER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors.water ? (
+            <p id="quick-water-error" className="field-error" role="alert">
+              {errors.water}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="q-block">
+          <label className="q-label" htmlFor="quick-equipment">
+            <span className="q-num">3</span>
+            What equipment do you use?
+            <span className="q-star" aria-hidden="true">
+              *
+            </span>
+          </label>
+          <select
+            id="quick-equipment"
+            className={draft.equipment ? 'control unit-select' : 'control unit-select is-placeholder'}
+            name="equipment"
+            value={draft.equipment}
+            aria-invalid={errors.equipment ? true : undefined}
+            aria-describedby={errors.equipment ? 'quick-equipment-error' : undefined}
+            onChange={(event) => update({ ...draft, equipment: event.target.value })}
+          >
+            <option value="">Choose one</option>
+            {EQUIPMENT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors.equipment ? (
+            <p id="quick-equipment-error" className="field-error" role="alert">
+              {errors.equipment}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="q-block">
+          <label className="q-label" htmlFor="quick-goal">
+            <span className="q-num">4</span>
+            Your top goal (pick one)
+            <span className="q-star" aria-hidden="true">
+              *
+            </span>
+          </label>
+          <select
+            id="quick-goal"
+            className={draft.goal ? 'control unit-select' : 'control unit-select is-placeholder'}
+            name="goal"
+            value={draft.goal}
+            aria-invalid={errors.goal ? true : undefined}
+            aria-describedby={errors.goal ? 'quick-goal-error' : undefined}
+            onChange={(event) => update({ ...draft, goal: event.target.value })}
+          >
+            <option value="">Choose one</option>
+            {GOAL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors.goal ? (
+            <p id="quick-goal-error" className="field-error" role="alert">
+              {errors.goal}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="q-block">
+          <div className="q-head">
+            <label className="q-label" htmlFor="quick-avoided">
+              <span className="q-num">5</span>
+              Crops you won't grow
+              <span className="q-optional">optional</span>
+            </label>
+            <button type="button" className="skip-link" onClick={skipAvoided}>
+              Skip
+            </button>
+          </div>
+          <div className="chip-box">
+            {draft.avoided.map((crop) => (
+              <span className="chip" key={crop}>
+                {crop}
+                <button
+                  type="button"
+                  aria-label={`Remove ${crop}`}
+                  onClick={() =>
+                    update({
+                      ...draft,
+                      avoided: draft.avoided.filter((item) => item !== crop),
+                      avoidedSkipped: false,
+                    })
+                  }
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+            <input
+              id="quick-avoided"
+              name="avoided"
+              type="text"
+              autoComplete="off"
+              enterKeyHint="done"
+              placeholder={draft.avoided.length === 0 ? 'e.g., Soybeans, Cotton (optional)' : 'Add another'}
+              value={chipText}
+              onChange={(event) => setChipText(event.target.value)}
+              onKeyDown={onChipKey}
+              onBlur={() => {
+                if (chipText.trim()) addChip(chipText)
+              }}
+            />
+          </div>
+          {draft.avoidedSkipped && draft.avoided.length === 0 ? <p className="skipped-note">Skipped for now</p> : null}
+        </div>
+
+        <button type="submit" className="continue">
+          Finish & View My Plan
+        </button>
+      </form>
     </div>
   )
 }
