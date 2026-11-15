@@ -40,4 +40,5 @@ data/pdf/
 *.md
 *.txt
 !README.md
+!REFERENCES.md
 !disclosure.txt
