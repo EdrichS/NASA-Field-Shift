@@ -232,12 +232,18 @@ def _eligible(crop: CropInfo, theme: str, avoid_families: set[str]) -> bool:
     return True
 
 
-def _slot_in(crop: CropInfo, gap: Gap, start: int) -> Slot:
-    """The crop's slot from `start`: the whole rest of the window for a cover crop (it stays
-    until the next planting) or a crop about as long as the window; else its typical length."""
+def _slot_in(crop: CropInfo, gap: Gap, start: int, ctx: FieldContext) -> Slot:
+    """The crop's slot from `start`: the whole rest of the window for a crop about as long as
+    the window, or a cover crop that rests through frost until the next planting (winter rye);
+    else its typical length (a cover crop: its longest season), leaving room for another."""
     left_days = ((gap.end_month - start) % 12 or 12) * DAYS_PER_MONTH
     typical = (crop.cycle_min_days + crop.cycle_max_days) / 2
-    if crop.is_cover or left_days <= typical + MIN_GAP_DAYS:
+    if crop.is_cover:
+        whole = Slot(crop.name, start, gap.end_month, new=True)
+        if any("frost" in ctx.flags[m - 1] for m in whole.months()):
+            return whole
+        typical = crop.cycle_max_days
+    if left_days <= typical + MIN_GAP_DAYS:
         return Slot(crop.name, start, gap.end_month, new=True)
     months = max(1, math.ceil(typical / DAYS_PER_MONTH))
     return Slot(crop.name, start, (start + months - 1) % 12 + 1, new=True)
@@ -287,7 +293,9 @@ def _best_fill(gap: Gap, start: int, theme: str, profile: FarmProfile, ctx: Fiel
             continue
         if strict and not _eligible(crop, theme, avoid_families):
             continue
-        slot = _slot_in(crop, gap, start)
+        if gap.after is not None and crop.name == gap.after.crop:
+            continue  # the same crop again right after its own harvest
+        slot = _slot_in(crop, gap, start, ctx)
         if not crop.is_cover and growing_days(crop, slot, ctx) < crop.cycle_min_days:
             continue
         if water_budget is not None and water_deficit_mm([slot], ctx, catalog) > water_budget:
@@ -330,9 +338,9 @@ def fill_gaps(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
     for gap in gaps(years, MIN_GAP_DAYS):
         if gap.after is None:
             continue  # an empty year: handled by the strategies that start from nothing
-        start = gap.start_month
-        for _ in range(2):  # at most two crops per window
-            left = Gap(gap.year, gap.after, gap.before, start, gap.end_month,
+        start, after = gap.start_month, gap.after
+        for _ in range(3):  # at most three crops per window
+            left = Gap(gap.year, after, gap.before, start, gap.end_month,
                        ((gap.end_month - start) % 12 or 12) * DAYS_PER_MONTH)
             if left.days < MIN_GAP_DAYS:
                 break
@@ -355,7 +363,7 @@ def fill_gaps(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
             remaining = ((gap.end_month - slot.harvest_month) % 12) * DAYS_PER_MONTH
             if remaining < SPLIT_MIN_DAYS:  # a short tail is land preparation time
                 break
-            start = slot.harvest_month
+            start, after = slot.harvest_month, slot
     return new_years, fills, bare
 
 
@@ -424,6 +432,76 @@ def _swap(old: Slot, crop: CropInfo) -> Slot:
         return Slot(crop.name, old.plant_month, old.harvest_month, new=True)
     months = max(1, math.ceil(typical / DAYS_PER_MONTH))
     return Slot(crop.name, old.plant_month, (old.plant_month + months - 1) % 12 + 1, new=True)
+
+
+EXPLORE_OPTIONS = 3
+
+
+def explore(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo],
+            min_suit: float = SUITABLE_MIN) -> list[Candidate]:
+    """No current rotation: the best main crops for this land (locally grown, best planting
+    month), each followed by a short legume or cover crop when one fits, and the rest of the
+    year filled like any bare window. Different plant families first, so the options differ."""
+    scored = []
+    for crop in _pool(profile, catalog):
+        if crop.is_cover:
+            continue
+        best = None
+        for start in range(1, 13):
+            months = [(start + k - 1) % 12 + 1 for k in range(crop.cycle_months + 1)]
+            suit = suitability(crop, months, ctx, profile.water)
+            if suit.score < min_suit:
+                continue
+            value = (suit.score * goal_factor(crop, profile)
+                     * stress_factor(crop, months, ctx, profile.water)
+                     * _machinery_factor(crop, profile) * familiarity(crop.name, profile.local))
+            if best is None or value > best[0]:
+                best = (value, months, suit)
+        if best is not None:
+            scored.append((round(best[0], 4), crop.name, crop, best[1], best[2]))
+    scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    picked, families = [], set()
+    for item in scored:  # one per family first
+        if item[2].family not in families:
+            picked.append(item)
+            families.add(item[2].family)
+        if len(picked) == EXPLORE_OPTIONS:
+            break
+    for item in scored:
+        if len(picked) == EXPLORE_OPTIONS:
+            break
+        if item not in picked:
+            picked.append(item)
+    out = []
+    for i, (_, _, crop, months, suit) in enumerate(picked, start=1):
+        main = Slot(crop.name, months[0], months[-1], new=True)
+        follow = _follow_up(profile, ctx, catalog, crop, months[-1])
+        # the rest of the year: filled like any other bare window, or left bare with the reason
+        years, fills, bare = fill_gaps(profile, [[main] + ([follow] if follow else [])], ctx,
+                                       catalog, "soil")
+        out.append(Candidate(f"explore_{i}", years, crop, None, None, suit,
+                             note=follow.crop if follow else "", fills=fills, bare=bare))
+    return out
+
+
+def _follow_up(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo],
+               main: CropInfo, harvest_month: int) -> Slot | None:
+    """A short legume or cover crop right after the main harvest, for its own season length
+    (fill_gaps then fills what is left of the year, or says why it stays bare)."""
+    best = None
+    for crop in _pool(profile, catalog):
+        short_legume = crop.is_legume and crop.cycle_max_days <= SHORT_LEGUME_MAX_DAYS
+        if crop.name == main.name or not (crop.is_cover or short_legume):
+            continue
+        months = [(harvest_month + k - 1) % 12 + 1 for k in range(crop.cycle_months + 1)]
+        suit = suitability(crop, months, ctx, profile.water)
+        if suit.score < SUITABLE_MIN:
+            continue
+        value = (suit.score * (1 + 0.3 * crop.is_legume) * goal_factor(crop, profile)
+                 * familiarity(crop.name, profile.local))
+        if best is None or (round(value, 4), crop.name) > best[0]:
+            best = ((round(value, 4), crop.name), Slot(crop.name, months[0], months[-1], new=True))
+    return best[1] if best else None
 
 
 def _replace(years: list[list[Slot]], old: Slot, crop: CropInfo) -> list[list[Slot]]:

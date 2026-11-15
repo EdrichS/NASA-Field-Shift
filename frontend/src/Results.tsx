@@ -298,13 +298,16 @@ function Overview({
 
       <section className="r-sec" aria-labelledby="cal-h">
         <h2 id="cal-h" className="r-h2">Your year, month by month</h2>
-        <YearStrip rows={rows} stress={analysis.stress_calendar} colors={strategyColors(analysis.strategies)} caption="12-month calendar: what you grow now and each option" />
+        <YearStrip rows={rows} stress={analysis.stress_calendar} colors={strategyColors(analysis.strategies)} caption={current ? '12-month calendar: what you grow now and each option' : '12-month calendar: each starting option'} />
         {isMultiYear(analysis.strategies) ? <p className="helper">Rotations over two years show year 1 on top and year 2 below.</p> : null}
         {content ? <p>{content.bare_and_risky_seasons}</p> : null}
       </section>
 
       <section className="r-sec" aria-labelledby="rank-h">
-        <h2 id="rank-h" className="r-h2">Your options, best match first</h2>
+        <h2 id="rank-h" className="r-h2">{current ? 'Your options, best match first' : 'Starting options for this land, best match first'}</h2>
+        {!current ? (
+          <p className="helper">You didn't list crops you grow now, so these are crops that suit this land, not changes to a current rotation. Add your crops to compare with what you grow.</p>
+        ) : null}
         <p className="helper">
           {goals.length ? `Ranked for your goals: ${goals.join(', ')}. ` : ''}
           Scores come from SowSmart's scoring engine, weighted by your goals. The AI only explains them in plain words.
@@ -497,7 +500,7 @@ function OptionPage({
           rows={rows}
           stress={stress}
           colors={colors}
-          caption={isCurrent ? '12-month calendar: what you grow now' : '12-month calendar: what you grow now and this option'}
+          caption={isCurrent ? '12-month calendar: what you grow now' : current ? '12-month calendar: what you grow now and this option' : '12-month calendar: this option'}
         />
         {s.rotation.length > 1 || (!isCurrent && current && current.rotation.length > 1) ? (
           <p className="helper">Rotations over two years show year 1 on top and year 2 below.</p>

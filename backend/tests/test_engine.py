@@ -142,8 +142,11 @@ def test_bare_window_gets_filled():
     answers = {"current_crops": [{"crop": "maize", "plant_month": 6, "harvest_month": 10}],
                "water": "rainfed", "equipment": "hand_tools", "top_goal": "build_soil"}
     fill = next(s for s in run_engine(ff, answers, CATALOG).strategies if s.key == "fill_bare")
-    new = [slot for year in fill.rotation for slot in year if slot["new"]][0]
-    assert new["plant_month"] == 10 and new["harvest_month"] == 6  # the Oct-Jun gap
+    new = sorted((slot for year in fill.rotation for slot in year if slot["new"]),
+                 key=lambda s: (s["plant_month"] - 10) % 12)
+    # the Oct-Jun gap, from the maize harvest to the next planting (warm: room for two crops)
+    assert new[0]["plant_month"] == 10 and new[-1]["harvest_month"] == 6
+    assert all(m["bare"] < 0.5 for m in fill.calendar)
 
 
 def test_monoculture_gets_a_new_plant_family():
@@ -205,12 +208,12 @@ def test_unknown_answers_become_information_gaps():
     assert any("No goal" in a for a in profile.assumptions)
 
 
-def test_just_exploring_estimates_crops_from_satellite_greenness():
+def test_just_exploring_assumes_no_crops_and_shows_starting_options():
     ndvi = [0.3, 0.3, 0.3, 0.3, 0.7, 0.8, 0.8, 0.8, 0.7, 0.3, 0.3, 0.3]
     ff = fake_field(WARM, WET, ndvi=ndvi)
     result = run_engine(ff, {"mode": "exploring"}, CATALOG)
-    assert result.profile["rotation_source"] == "satellite"
-    assert result.strategies  # still produces a comparison
+    assert result.profile["rotation_source"] == "none"
+    assert result.strategies and all(s.key.startswith("explore_") for s in result.strategies)
 
 
 # --- building blocks ---------------------------------------------------------------
@@ -271,12 +274,11 @@ def test_wont_grow_accepts_plurals_and_is_never_suggested():
         assert not new & {"mungbean", "string bean", "okra"}, s.key
 
 
-def test_wont_grow_also_applies_to_crops_guessed_from_satellite():
-    guessed = run_engine(PH, {}, CATALOG, country="Philippines").strategies
-    first = next(s for s in guessed if s.key == "current").rotation[0][0]["crop"]
-    current = next(s for s in run_engine(PH, {"wont_grow": [first]}, CATALOG,
-                                         country="Philippines").strategies if s.key == "current")
-    assert first not in {slot["crop"] for year in current.rotation for slot in year}
+def test_wont_grow_also_applies_to_starting_options():
+    options = run_engine(PH, {}, CATALOG, country="Philippines").strategies
+    first = options[0].rotation[0][0]["crop"]  # the best starting option's main crop
+    again = run_engine(PH, {"wont_grow": [first]}, CATALOG, country="Philippines").strategies
+    assert first not in {slot["crop"] for s in again for year in s.rotation for slot in year}
 
 
 def test_rainfed_crop_with_less_rain_than_its_absolute_minimum_is_unsuitable():
@@ -360,14 +362,16 @@ def test_missing_ecocrop_ranges_are_flagged_not_silent():
 
 
 def test_crops_in_dry_months_with_unknown_irrigation_mean_some_irrigation():
-    guessed = run_engine(PH, {}, CATALOG, country="Philippines")
-    assert any("assumed some irrigation" in g for g in guessed.gaps)
-    assert len(guessed.strategies) >= 4
-    told = run_engine(PH, {"water": "rainfed"}, CATALOG, country="Philippines")
+    no_water = {k: v for k, v in PH_ANSWERS.items() if k != "water"}  # rice Jan-Apr: dry months
+    inferred = run_engine(PH, no_water, CATALOG, country="Philippines")
+    assert inferred.profile["water"] == "mixed"
+    assert any("assumed some irrigation" in g for g in inferred.gaps)
+    assert len(inferred.strategies) >= 4
+    told = run_engine(PH, {**no_water, "water": "rainfed"}, CATALOG, country="Philippines")
     assert not any("assumed some irrigation" in g for g in told.gaps)
 
 
-def test_unknown_country_guesses_a_staple_and_does_not_call_it_the_most_grown():
-    gaps = run_engine(PH, {}, CATALOG).gaps
-    assumed = next(g for g in gaps if g.startswith("You didn't list your crops"))
-    assert "alfalfa" not in assumed and "most widely grown" not in assumed
+def test_unknown_country_starting_options_never_claim_a_crop_is_widely_grown():
+    result = run_engine(PH, {}, CATALOG)  # no country: no FAOSTAT claim can be made
+    assert result.strategies and not any("widely grown" in s.why for s in result.strategies)
+    assert not any(s.rotation[0][0]["crop"] == "alfalfa" for s in result.strategies)

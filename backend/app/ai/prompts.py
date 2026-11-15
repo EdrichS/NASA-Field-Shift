@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas import LANGUAGES
 
-PROMPT_VERSION = "2026-11-15.1"
+PROMPT_VERSION = "2026-11-15.2"
 TIER1_MAX_OUTPUT_TOKENS = 2500
 TIER2_MAX_OUTPUT_TOKENS = 2000
 MAX_EVIDENCE = 40
@@ -37,7 +37,8 @@ class _Strict(BaseModel):
 
 
 class StrategyText(_Strict):
-    key: Literal["current", "fill_bare", "break_pest", "save_water", "add_income"]
+    key: Literal["current", "fill_bare", "break_pest", "save_water", "add_income", "explore_1",
+                 "explore_2", "explore_3"]
     name: str = Field(max_length=60, description="The strategy's name, in the report language")
     headline: str = Field(max_length=160, description="One plain line: what changes")
     why: str = Field(max_length=600, description="Why the engine suggested it")
@@ -249,6 +250,11 @@ def compact_input(analysis: dict[str, Any]) -> dict[str, Any]:
         "strategies": [_strategy(s, current) for s in strategies],
         "fruit_trees_for_field_edges": [
             {"crop": f["crop"], "where": f["where"]} for f in analysis.get("fruit_ideas", [])],
+        **({} if current else {"note": "The farmer gave no current crops. These strategies are "
+                                        "starting options for this land, not changes to a "
+                                        "current rotation: never mention a current rotation or "
+                                        "use the word 'current'. For bare months, say when the "
+                                        "field looks bare from space."}),
         "information_gaps": analysis.get("gaps", []),
         "datasets": _short_names(_datasets(analysis)),
         "disclaimer": analysis.get("disclaimer", ""),

@@ -58,14 +58,9 @@ def parse_answers(raw: dict[str, Any] | None, catalog: dict[str, CropInfo],
             slots.append(Slot(str(item.get("crop")), plant, harvest))
         else:
             slots.append(Slot(crop.name, plant, harvest))
+    # No crops given (or "just exploring"): nothing is assumed. The engine then shows starting
+    # options for the land instead of a comparison with a current rotation.
     rotation_source = "farmer" if slots else "none"
-    if not slots and raw.get("not_farming") is not True and satellite_green_runs:
-        for run in satellite_green_runs:
-            if len(run) >= 2:
-                slots.append(Slot("unknown crop", run[0], run[-1] % 12 + 1))
-        if slots:
-            rotation_source = "satellite"
-            assumptions.append("Current crops estimated from when the field looks green")
 
     water = raw.get("water")
     if water not in WATER:

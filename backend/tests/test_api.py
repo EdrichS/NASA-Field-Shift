@@ -63,7 +63,8 @@ def test_analyze_showcase_farm_returns_five_ranked_strategies(client):
 def test_analyze_just_exploring_needs_no_answers(client):
     r = client.post("/analyze", json={"geometry": POINT, "mode": "exploring"})
     assert r.status_code == 200, r.text
-    assert len(r.json()["strategies"]) >= 4  # current + at least 3 alternatives
+    keys = [s["key"] for s in r.json()["strategies"]]
+    assert "current" not in keys and len(keys) == 3  # starting options, no comparison
     assert r.json()["reports_tier1"] == {"en": None}
 
 
