@@ -6,8 +6,8 @@ body,
 }
 
 body {
-  background: #000;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #f4f2eb;
+  font-family: Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Size with height, not position: maplibre-gl.css sets .maplibregl-map { position: relative }
