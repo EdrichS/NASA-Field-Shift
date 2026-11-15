@@ -37,6 +37,6 @@ data/pdf/
 .vscode/
 .idea/
 
-CLAUDE.md
-tabkeeping.md
+*.md
 *.txt
+!README.md
