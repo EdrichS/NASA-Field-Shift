@@ -330,7 +330,7 @@ export default function PrintReport({
             </div>
           ) : null}
           <div className="p-cover-side">
-            <p className="cap p-cap-ink">All options, best match first</p>
+            <p className="cap p-cap-ink">{current ? 'All options, best match first' : 'Starting options for this land, best match first'}</p>
             <ol className="p-ranked">
               {ranked.map((s) => (
                 <li key={s.key}>
@@ -391,7 +391,7 @@ export default function PrintReport({
         <h2>2. Your year, month by month</h2>
         {content ? <p>{content.bare_and_risky_seasons}</p> : null}
         <div className="p-strip">
-          <YearStrip rows={rows} stress={analysis.stress_calendar} colors={colors} caption="12-month calendar: what you grow now and each option" />
+          <YearStrip rows={rows} stress={analysis.stress_calendar} colors={colors} caption={current ? '12-month calendar: what you grow now and each option' : '12-month calendar: each starting option'} />
           {analysis.strategies.some((s) => s.rotation.length > 1) ? <p className="p-small">Rotations over two years show year 1 on top and year 2 below.</p> : null}
         </div>
         <h3>How the options compare</h3>
@@ -440,7 +440,7 @@ export default function PrintReport({
 
       {/* 3. One page per option */}
       {ranked.map((s) => (
-        <OptionPage key={s.key} s={s} current={current} name={names[s.key] ?? s.name} t={textFor(s.key)} band={s.key === 'current' ? undefined : bandFor(s)} colors={colors} stress={analysis.stress_calendar} last={options.length} shared={sharedGaps} />
+        <OptionPage key={s.key} s={s} current={current} name={names[s.key] ?? s.name} t={textFor(s.key)} band={s.key === 'current' ? undefined : bandFor(s)} colors={colors} stress={analysis.stress_calendar} last={ranked.length} shared={sharedGaps} />
       ))}
 
       {/* 4. Fruit, questions and glossary */}
@@ -536,7 +536,7 @@ function OptionPage({
       <p className="cap">3. Your options, one page each</p>
       <header className="p-option-head" style={band ? { borderTopColor: band } : undefined}>
         <div>
-          <p className="cap">{isNow ? 'What you grow now' : `Option ${s.rank} of ${last + 1}${s.rank === 1 ? ' · best match for your goals' : ''}`}</p>
+          <p className="cap">{isNow ? 'What you grow now' : `Option ${s.rank} of ${last}${s.rank === 1 ? ' · best match for your goals' : ''}`}</p>
           <h2>{isNow ? (t?.name ?? s.name) : name}</h2>
           <p className="p-sub">{t?.headline ?? s.title}</p>
         </div>

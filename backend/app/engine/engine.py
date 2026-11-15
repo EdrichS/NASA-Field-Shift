@@ -18,10 +18,10 @@ from app.engine.candidates import (
     Fill,
     add_income,
     break_pest,
+    explore,
     fill_bare,
     is_cash_crop,
     save_water,
-    suitability,
 )
 from app.engine.catalog import CropInfo, default_catalog
 from app.engine.evidence import Evidence
@@ -288,12 +288,50 @@ def _names(crops: list[str]) -> str:
     return crops[0] if len(crops) == 1 else ", ".join(crops[:-1]) + " and " + crops[-1]
 
 
+# Starting options (no current rotation): strengths and weaknesses on their own terms.
+STRENGTH_TEXT = {
+    "water": "Needs little water beyond rain here",
+    "soil": "Builds soil",
+    "erosion": "Keeps the soil covered most of the year",
+    "pest_cycle": "Mixes plant families, so pests don't build up",
+    "climate_risk": "Fits this field's heat, frost and rain pattern",
+    "income": "Gives harvests to sell or eat",
+    "labor": "Fits your equipment and labor",
+}
+WEAKNESS_TEXT = {
+    "water": "Needs a lot of water beyond rain here",
+    "soil": "Adds little to the soil",
+    "erosion": "Leaves the soil bare for long stretches",
+    "pest_cycle": "One plant family only: pests can build up over the years",
+    "climate_risk": "Meets heat, frost or very wet months while it grows",
+    "income": "Few harvests to sell or eat",
+    "labor": "Needs more work than your equipment makes easy",
+}
+
+
+def _explore_why(cand: Candidate, profile: FarmProfile) -> tuple[str, list[str]]:
+    crop = cand.crop
+    if crop is None or cand.suit is None:
+        return "", []
+    months = list(cand.suit.months)
+    plant, harvest = MONTH_NAMES[months[0] - 1], MONTH_NAMES[months[-1] - 1]
+    local = (f" It is one of the crops widely grown in {_country_text(profile.country)}."
+             if profile.local and crop.name in profile.local else "")
+    why = (f"{crop.name.capitalize()} suits this field's climate and soil when planted in "
+           f"{plant} (harvest around {harvest}).{local}")
+    changes = [f"Plant {crop.name} in {plant}"]
+    if cand.note:
+        why += f" {cand.note.capitalize()} can follow it to cover and feed the soil."
+        changes.append(f"Then grow {cand.note} right after the harvest")
+    return why, changes + _fill_changes(cand.fills) + _bare_changes(cand.bare)
+
+
 def _risks_and_questions(cand: Candidate, ctx: FieldContext, catalog: dict[str, CropInfo],
                          profile: FarmProfile) -> tuple[list[str], list[str]]:
     """Risks and questions for the strategy's main crop and every crop it adds, one line per
     kind of risk ("Okra and sweet potato need well-drained soil ...")."""
     placed = []
-    if cand.crop is not None and cand.replaced:
+    if cand.crop is not None and (cand.replaced or cand.key.startswith("explore_")):
         placed.append((cand.crop, cand.suit.months if cand.suit else (), None))
     placed += [(f.crop, tuple(f.slot.months()), f.gap) for f in cand.fills]
     heavy = "clay" in (ctx.texture or "")
@@ -371,39 +409,6 @@ def _confidence(cand: Candidate | None, profile: FarmProfile, ff: FieldFeatures,
 RELAXED_MIN = 0.01  # when no locally grown crop fits well: the best local one, never a stranger
 
 
-def _assume_crops(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo]) -> None:
-    """No crops given: the satellite shows when the field is green; assume the most widely grown
-    crop in the country that fits each green run (never an "unknown crop")."""
-    local = profile.local or {}
-    names = [n for n, _ in sorted(local.items(), key=lambda kv: -kv[1]) if n in catalog]
-    names = names or sorted(n for n, c in catalog.items() if not c.is_cover)
-    used: list[str] = []
-    slots = []
-    for slot in profile.slots:
-        if slot.crop != "unknown crop":
-            slots.append(slot)
-            continue
-        fits = [catalog[n] for n in names
-                if not catalog[n].is_cover and catalog[n].cycle_min_days <= slot.days + 15]
-        scored = [(suitability(c, slot.months(), ctx, profile.water).score, c.name) for c in fits]
-        good = [name for score, name in scored if score >= SUITABLE_MIN]
-        pick = good[0] if good else (max(scored)[1] if scored else names[0])
-        slots.append(Slot(pick, slot.plant_month, slot.harvest_month))
-        used.append(pick)
-    profile.slots = slots
-    if used:
-        picked = list(dict.fromkeys(used))
-        crops = " and ".join(picked)
-        where = f"in {_country_text(profile.country)} " if profile.country and local else ""
-        many = len(picked) > 1
-        profile.assumptions = [a for a in profile.assumptions
-                               if not a.startswith("Current crops estimated")]
-        profile.assumptions.append(
-            f"You didn't list your crops, so we assumed {crops}: the most widely grown "
-            f"{'crops' if many else 'crop'} {where}that {'fit' if many else 'fits'} the months "
-            "your field looks green. Tell us your crops for better advice.")
-
-
 def _unique_windows(years: list[list[Slot]]) -> list[tuple[int, int, int]]:
     """The current rotation's bare windows (start, end, days), each once across years."""
     return list(dict.fromkeys((g.start_month, g.end_month, g.days)
@@ -441,31 +446,34 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     if ref_crop and profile.values and country:
         profile.value_ref = profile.values[ref_crop].value_usd_ha
         market = Market(_country_text(country), profile.values, ref_crop)
-    if profile.rotation_source == "satellite":
-        _assume_crops(profile, ctx, catalog)
     weights = weights_for(profile.goals)
 
     current_years = group_years(profile.slots)
-    current_comps = score_rotation(current_years, ctx, catalog, profile.water,
-                                   profile.equipment, profile.sellable, market)
+    exploring = not profile.slots  # no crops given: options for the land, no comparison
+    current_comps = {} if exploring else score_rotation(
+        current_years, ctx, catalog, profile.water, profile.equipment, profile.sellable, market)
     windows = _unique_windows(current_years)
 
     candidates: list[Candidate] = []
-    for build in (fill_bare, break_pest):
+    if exploring:
+        candidates = explore(profile, ctx, catalog)
+        if not candidates and profile.local:
+            candidates = explore(profile, ctx, catalog, min_suit=RELAXED_MIN)
+    for build in () if exploring else (fill_bare, break_pest):
         cand = build(profile, current_years, ctx, catalog)
         if cand is None and profile.local:
             cand = build(profile, current_years, ctx, catalog, min_suit=RELAXED_MIN)
         if cand is not None:
             candidates.append(cand)
     avoid = [c.years for c in candidates] + [current_years]
-    water_cand = save_water(profile, current_years, ctx, catalog, avoid)
-    if water_cand is None and profile.local:
+    water_cand = None if exploring else save_water(profile, current_years, ctx, catalog, avoid)
+    if water_cand is None and profile.local and not exploring:
         water_cand = save_water(profile, current_years, ctx, catalog, avoid,
                                 min_suit=RELAXED_MIN)
     if water_cand is not None:
         candidates.append(water_cand)
-    income_cand = add_income(profile, current_years, ctx, catalog,
-                             [c.years for c in candidates] + [current_years])
+    income_cand = None if exploring else add_income(
+        profile, current_years, ctx, catalog, [c.years for c in candidates] + [current_years])
     if income_cand is not None:
         candidates.append(income_cand)
     weak = [c for c in candidates if c.suit is not None and c.suit.score < SUITABLE_MIN]
@@ -482,7 +490,10 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
         data_gaps.append(f"Few crops grown in {place} suit this field well; "
                          f"{c.crop.name if c.crop else 'this option'} is the best local fit "
                          "but scored low. Check it with a local expert.")
-    if len(candidates) < 4:
+    if exploring:
+        data_gaps.insert(0, "You didn't list crops you grow now, so these are starting options for "
+                            "this land, not changes to a current rotation")
+    elif len(candidates) < 4:
         missing = {"fill_bare", "break_pest", "save_water", "add_income"} - \
             {c.key for c in candidates}
         if "add_income" in missing:
@@ -500,7 +511,7 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
         data_gaps.append("Crop values are national averages (FAOSTAT yields and farm-gate "
                          "prices) before costs; your own yields and prices will differ")
 
-    strategies = [Strategy(
+    strategies = [] if exploring else [Strategy(
         key="current",
         name=NAMES["current"] if profile.rotation_source != "satellite"
         else "Current pattern (estimated from satellite)",
@@ -516,24 +527,30 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     for cand in candidates:
         comps = score_rotation(cand.years, ctx, catalog, profile.water, profile.equipment,
                                profile.sellable, market)
-        why, changes = _why(cand, current_comps, comps, catalog, profile, windows)
         risks, questions = _risks_and_questions(cand, ctx, catalog, profile)
-        new_inc, old_inc = comps["income"].metrics, current_comps["income"].metrics
-        more = [new_inc.get(k, 0) - old_inc.get(k, 0) for k in ("harvests_per_year",
-                                                                 "gross_usd_ha")]
-        income_up, income_down = any(d > 0 for d in more), all(d <= 0 for d in more) and \
-            any(d < 0 for d in more)  # a cover crop isn't a harvest
-        benefits = [(_soil_benefit(comps, current_comps) if c == "soil" else BENEFIT_TEXT[c])
-                    + f" (+{comps[c].score - current_comps[c].score:.0f})"
-                    for c in COMPONENTS if comps[c].score - current_comps[c].score >= 5
-                    and (c != "income" or income_up)]
-        risks += [TRADEOFF_TEXT[c] + f" ({comps[c].score - current_comps[c].score:.0f})"
-                  for c in COMPONENTS if comps[c].score - current_comps[c].score <= -5
-                  and (c != "income" or income_down)]
+        if exploring:
+            why, changes = _explore_why(cand, profile)
+            benefits = [STRENGTH_TEXT[c] for c in COMPONENTS if comps[c].score >= 70]
+            risks += [WEAKNESS_TEXT[c] for c in COMPONENTS if comps[c].score <= 40]
+        else:
+            why, changes = _why(cand, current_comps, comps, catalog, profile, windows)
+            new_inc, old_inc = comps["income"].metrics, current_comps["income"].metrics
+            more = [new_inc.get(k, 0) - old_inc.get(k, 0) for k in ("harvests_per_year",
+                                                                     "gross_usd_ha")]
+            income_up, income_down = any(d > 0 for d in more), all(d <= 0 for d in more) and \
+                any(d < 0 for d in more)  # a cover crop isn't a harvest
+            benefits = [(_soil_benefit(comps, current_comps) if c == "soil" else BENEFIT_TEXT[c])
+                        + f" (+{comps[c].score - current_comps[c].score:.0f})"
+                        for c in COMPONENTS if comps[c].score - current_comps[c].score >= 5
+                        and (c != "income" or income_up)]
+            risks += [TRADEOFF_TEXT[c] + f" ({comps[c].score - current_comps[c].score:.0f})"
+                      for c in COMPONENTS if comps[c].score - current_comps[c].score <= -5
+                      and (c != "income" or income_down)]
         risks = risks[:MAX_RISKS]
         title = _title(cand.years)
         strategies.append(Strategy(
-            key=cand.key, name=NAMES[cand.key], title=title,
+            key=cand.key, name=NAMES.get(cand.key) or f"Start with {cand.crop.name}",
+            title=title,
             rotation=[[asdict(s) for s in y] for y in cand.years],
             calendar=_calendar(cand.years, ctx.flags),
             components={k: asdict(v) for k, v in comps.items()},
@@ -547,7 +564,8 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
         strat.rank = rank
 
     covers = [cover_by_month(y) for y in current_years]
-    calendar_bare = [i + 1 for i in range(12) if sum(c[i] for c in covers) / len(covers) < 0.5]
+    calendar_bare = [] if exploring else [
+        i + 1 for i in range(12) if covers and sum(c[i] for c in covers) / len(covers) < 0.5]
     return EngineResult(
         field={"geom_hash": ff.geom_hash, "lat": ff.lat, "lon": ff.lon,
                "end_month": ff.end_month},
