@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.schemas import LANGUAGES
 
 PROMPT_VERSION = "2026-11-15.2"
-TIER1_MAX_OUTPUT_TOKENS = 2500
+TIER1_MAX_OUTPUT_TOKENS = 4000
 TIER2_MAX_OUTPUT_TOKENS = 2000
 MAX_EVIDENCE = 40
 GLOSSARY = ("evapotranspiration", "NDVI", "soil moisture anomaly", "frost risk")

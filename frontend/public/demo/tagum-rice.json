@@ -1,7 +1,7 @@
 {
  "farm_id": "tagum-rice",
- "generated_at": "2026-11-15T10:43:01+00:00",
- "model": null,
+ "generated_at": "2026-11-15T14:43:29+00:00",
+ "model": "grok-4.20-0309-non-reasoning",
  "request_key": "9c48165861d95257aea8ea6dec4d083ccb99dc8d8e5ddb58fa7162039b78f2e2",
  "analysis": {
   "analysis_id": null,
@@ -2087,7 +2087,7 @@
     "total": 87.6,
     "rank": 1,
     "confidence": "high",
-    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 2 time(s)). Sweet potato is from the Convolvulaceae family, so they lose their host for a season. The bare months get sesbania (Fabaceae), so the same family rarely follows itself.",
+    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 2 times). Sweet potato is from the Convolvulaceae family, so they lose their host for a season. The bare months get sesbania (Fabaceae), so the same family rarely follows itself.",
     "changes": [
      "Grow sweet potato instead of rice once in the rotation",
      "Add sesbania from mid-Sep to mid-Jan (also fits: okra, peanut, sunn hemp)",
@@ -3932,7 +3932,7 @@
      },
      "erosion": {
       "score": 66.2,
-      "summary": "8 mostly bare month(s) on 2° slope",
+      "summary": "4 mostly bare month(s) on 2° slope",
       "evidence": [
        {
         "claim": "Average slope",
@@ -3945,7 +3945,7 @@
        },
        {
         "claim": "Mostly bare months",
-        "value": "Jan, Apr, May, Jun, Sep, Oct, Nov, Dec",
+        "value": "May, Oct, Nov, Dec",
         "unit": "months",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -3955,11 +3955,7 @@
       ],
       "metrics": {
        "bare_months": [
-        "Jan",
-        "Apr",
         "May",
-        "Jun",
-        "Sep",
         "Oct",
         "Nov",
         "Dec"
@@ -4234,23 +4230,403 @@
   ],
   "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
   "reports_tier1": {
-   "en": null,
-   "tl": null
+   "en": {
+    "tier": 1,
+    "language": "en",
+    "language_level": "farmer",
+    "question": "",
+    "ai_generated": true,
+    "content": {
+     "title": "Your Crop Rotation Report",
+     "summary": "Your current rice-rice rotation scores 69 out of 100. The top choice is to break the pest cycle by adding sweet potato and sesbania. This gives you more income, covers the soil all year, and cuts pest risks. The add-income and save-water options also score well and bring much higher earnings than now. All new rotations need more hand work. You could talk these over with a local expert before you try them.",
+     "what_satellites_see": "From space this spot looks like 74% cropland and 25% trees. Your field usually looks bare or newly planted from November to January. The soil where roots drink is driest in September and wettest in February. Heat of 35 °C or more is common in April and May. There has been no frost in the last 30 years.",
+     "bare_and_risky_seasons": "Your current rotation leaves the field bare in January, April, May, June, September, October, November and December. The hot and dry months are April and May. These bare months raise the chance of soil washing away on your gentle slope.",
+     "strategies": [
+      {
+       "key": "current",
+       "name": "Your current rotation",
+       "headline": "Rice from January to April followed by rice from June to September",
+       "why": "This is the baseline of what you grow now. It scored the same way as the other options.",
+       "benefits": [],
+       "risks": [],
+       "information_gaps": [],
+       "expert_questions": [],
+       "rank": 5,
+       "engine_name": "Your current rotation"
+      },
+      {
+       "key": "break_pest",
+       "name": "Break the pest cycle",
+       "headline": "Rice from January to April, then sesbania until June, sweet potato until September, then sesbania until January",
+       "why": "Growing rice from the grass family back to back lets its pests and diseases build up. Sweet potato comes from a different plant family so it breaks that cycle. Adding sesbania, from the bean family, covers the soil in the bare months and adds nitrogen.",
+       "benefits": [
+        "The soil stays covered all year instead of half the year",
+        "Half the crop time is now in the bean family which adds nitrogen",
+        "Deeper roots on average than now",
+        "No bare months on your slope so less soil washes away",
+        "Three plant families instead of one and no back-to-back same family",
+        "About 1469 USD more income per hectare a year before costs"
+       ],
+       "risks": [
+        "Sweet potato needs well-drained soil; clay soil can stay wet after heavy rain",
+        "Heat of 35 °C+ is common while sesbania grows",
+        "Tight timing: sesbania needs 60+ days and the gap is about 60 days",
+        "More exposure to heat, frost, dry spells or flooding",
+        "More hand work"
+       ],
+       "information_gaps": [
+        "We cannot confirm that sesbania seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Can the field drain well enough for sweet potato, or should it go on raised beds?",
+        "Which sesbania varieties handle heat above 35 °C here?",
+        "Is there a buyer or local market for sweet potato?",
+        "Where can I get good sweet potato and sesbania seed and the right inoculant for the legumes?",
+        "Is there an early-maturing sesbania variety under 50 days?"
+       ],
+       "rank": 1,
+       "engine_name": "Break the pest cycle"
+      },
+      {
+       "key": "add_income",
+       "name": "Add a cash crop",
+       "headline": "Rice from January to April, string bean until June, rice until September, then string bean until January",
+       "why": "Your field sits bare for long stretches. String bean fits those windows, comes from the bean family, and sells for more than rice at national average prices.",
+       "benefits": [
+        "The soil stays covered all year instead of half the year",
+        "Half the crop time is now in the bean family which adds nitrogen",
+        "No bare months on your slope so less soil washes away",
+        "Two plant families instead of one and no back-to-back same family",
+        "Four harvests a year instead of two",
+        "About 10570 USD more income per hectare a year before costs"
+       ],
+       "risks": [
+        "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+        "More hand work"
+       ],
+       "information_gaps": [
+        "We cannot confirm that sesbania seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Is there a buyer or local market for string bean?",
+        "Where can I get good string bean seed and the right inoculant for the legumes?"
+       ],
+       "rank": 2,
+       "engine_name": "Add a cash crop"
+      },
+      {
+       "key": "save_water",
+       "name": "Save water",
+       "headline": "Peanut from January to April, okra until June, rice until September, then okra until January",
+       "why": "Rice needs the most water in your rotation. Peanut needs much less water and has medium drought tolerance. Okra fits the bare months and also needs less water than rice.",
+       "benefits": [
+        "About 88 mm less irrigation a year than now",
+        "The soil stays covered all year instead of half the year",
+        "A quarter of crop time is now in the bean family which adds nitrogen",
+        "Deeper roots on average than now",
+        "No bare months on your slope so less soil washes away",
+        "Three plant families instead of one and no back-to-back same family"
+       ],
+       "risks": [
+        "Peanut and okra need well-drained soil; after paddy rice on clay soil the field may stay wet",
+        "Heat of 35 °C+ is common while peanut and okra grow",
+        "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+        "More exposure to heat, frost, dry spells or flooding",
+        "More hand work"
+       ],
+       "information_gaps": [
+        "We cannot confirm that sesbania seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Can the field drain well enough for peanut and okra, or should they go on raised beds?",
+        "Which peanut and okra varieties handle heat above 35 °C here?",
+        "Is there a buyer or local market for peanut and okra?",
+        "Where can I get good peanut and okra seed and the right inoculant for the legumes?"
+       ],
+       "rank": 3,
+       "engine_name": "Save water"
+      },
+      {
+       "key": "fill_bare",
+       "name": "Fill the bare gap",
+       "headline": "Rice from January to April, sesbania until June, rice until September, then sesbania until January",
+       "why": "Your field sits bare for long stretches. Sesbania is a quick legume that can fit those windows, cover the soil, add nitrogen, and break pest cycles.",
+       "benefits": [
+        "The soil stays covered all year instead of half the year",
+        "Half the crop time is now in the bean family which adds nitrogen",
+        "Deeper roots on average than now",
+        "No bare months on your slope so less soil washes away",
+        "Two plant families instead of one and no back-to-back same family"
+       ],
+       "risks": [
+        "Heat of 35 °C+ is common while sesbania grows",
+        "Tight timing: sesbania needs 60+ days and the gap is about 60 days",
+        "More exposure to heat, frost, dry spells or flooding",
+        "More hand work"
+       ],
+       "information_gaps": [
+        "We cannot confirm that sesbania seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Which sesbania varieties handle heat above 35 °C here?",
+        "Where can I get good sesbania seed and the right inoculant for the legumes?",
+        "Is there an early-maturing sesbania variety under 50 days?"
+       ],
+       "rank": 4,
+       "engine_name": "Fill the bare gap"
+      }
+     ],
+     "idea_to_discuss": "Consider planting banana, pineapple, cacao or coconut on the bunds, raised beds or the field's edge. These trees need well-drained soil and could give extra long-term income or food while protecting the edges of your field.",
+     "glossary": [
+      {
+       "term": "evapotranspiration",
+       "meaning": "The water that leaves the soil and plants and goes into the air."
+      },
+      {
+       "term": "NDVI",
+       "meaning": "A number from satellite images that shows how green and healthy the plants look from space."
+      },
+      {
+       "term": "soil moisture anomaly",
+       "meaning": "How much wetter or drier the soil is than usual for that time of year."
+      },
+      {
+       "term": "frost risk",
+       "meaning": "The chance that temperatures drop to 0 °C or below and harm the crop."
+      }
+     ],
+     "datasets_line": "This report uses ESA WorldCover land cover, NASA MODIS vegetation greenness, NASA SMAP soil moisture, NASA POWER weather, NASA SRTM elevation, ISRIC SoilGrids soil maps, NASA/GFZ GRACE water storage, FAO crop water needs, FAO irrigation manual and FAO EcoCrop crop ranges.",
+     "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
+     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
+    },
+    "checks": {
+     "numbers_ok": true,
+     "retried": false,
+     "unknown_numbers": [],
+     "removed_items": 0
+    },
+    "meta": {
+     "model": "grok-4.20-0309-non-reasoning",
+     "calls": 1,
+     "prompt_version": "2026-11-15.2",
+     "input_tokens": 5053,
+     "cached_tokens": 128,
+     "output_tokens": 2069,
+     "reasoning_tokens": 0,
+     "seconds": 10.59,
+     "cost_usd": 0.011354
+    },
+    "cached": false
+   },
+   "tl": {
+    "tier": 1,
+    "language": "tl",
+    "language_level": "farmer",
+    "question": "",
+    "ai_generated": true,
+    "content": {
+     "title": "Ulat para sa Inyong Sakahan",
+     "summary": "Ang inyong kasalukuyang rotasyon ay nakakuha ng 69.1 puntos. Ang pinakamahusay na mungkahi ay ang break_pest na may 87.6 puntos. Ito ay nagbibigay ng mas mataas na kita, mas mabuting lupa, at mas kaunting panganib sa peste. Maaari mong isaalang-alang ang add_income o save_water na may mahusay ding puntos. Ang lahat ng mungkahi ay nag-aalis ng mga buwan na walang tanim at nagdaragdag ng halaman mula sa ibang pamilya.",
+     "what_satellites_see": "Mula sa kalawakan, ang lugar na ito ay 74 porsiyento na taniman at 25 porsiyento na puno. Karaniwang walang tanim o bagong tanim ang inyong bukid mula Nobyembre hanggang Enero. Ang lupa ay pinakamatuyo sa Setyembre at pinakamabasa sa Pebrero. Ang ulan ay umaabot sa 2454 mm bawat taon, na may init na 35 degree o higit pa sa Abril at Mayo.",
+     "bare_and_risky_seasons": "Sa inyong kasalukuyang rotasyon, ang bukid ay walang tanim sa Enero, Abril, Mayo, Hunyo, Setyembre, Oktubre, Nobyembre, at Disyembre. Ang buwan na may matinding init ay Abril at Mayo.",
+     "strategies": [
+      {
+       "key": "current",
+       "name": "Inyong kasalukuyang rotasyon",
+       "headline": "Bigas mula Enero hanggang Abril at bigas mula Hunyo hanggang Setyembre",
+       "why": "Ito ang inyong ginagawa ngayon. Ito ang batayan para ihambing ang iba pang mga mungkahi.",
+       "benefits": [],
+       "risks": [],
+       "information_gaps": [],
+       "expert_questions": [],
+       "rank": 5,
+       "engine_name": "Your current rotation"
+      },
+      {
+       "key": "break_pest",
+       "name": "Putulin ang siklo ng peste",
+       "headline": "Bigas mula Enero hanggang Abril, sesbania mula Abril hanggang Hunyo, kamote mula Hunyo hanggang Setyembre, at sesbania mula Setyembre hanggang Enero",
+       "why": "Ang paulit-ulit na pagtatanim ng pamilya ng damo na kasama ang bigas ay nagpapahintulot sa peste at sakit na manatili. Ang kamote ay mula sa ibang pamilya kaya mawawala ang tirahan ng peste. Ang sesbania mula sa pamilya ng munggo ay nagpoprotekta sa lupa sa mga buwang walang tanim.",
+       "benefits": [
+        "Mas mabuti ang lupa dahil mas matagal itong natatakpan, nagdaragdag ng nitrogen mula sa munggo, at may mas malalim na ugat",
+        "Mas kaunting hubad na lupa na nalalantad sa ulan",
+        "Pinuputol nito ang siklo ng peste at sakit sa pamamagitan ng ibang uri ng halaman",
+        "Mas maraming maibebenta o makakain",
+        "Humigit-kumulang 33 mm na mas kaunting patubig bawat taon kumpara sa ngayon",
+        "Humigit-kumulang 1469 USD na mas mataas na kita bawat ektarya bawat taon kumpara sa ngayon"
+       ],
+       "risks": [
+        "Ang kamote ay nangangailangan ng lupa na mabilis matuyo; ang luwad na lupa ay maaaring manatiling basa pagkatapos ng malakas na ulan",
+        "Ang init na 35 degree o higit pa ay karaniwan habang lumalaki ang sesbania",
+        "Mahigpit ang oras dahil kailangan ng sesbania ng 60 araw o higit pa at ang puwang ay humigit-kumulang 60 araw",
+        "Mas maraming pagkakataon sa init, lamig, tagtuyot, o baha",
+        "Mas maraming gawaing kamay"
+       ],
+       "information_gaps": [
+        "Hindi binibilang ng datos ng FAO ang mga panakip na tanim kaya hindi sigurado kung may binhi ng sesbania na ibinebenta malapit sa inyo",
+        "Ang halaga ng mga pananim ay batay sa pambansang average bago ang gastos; maaaring iba ang inyong ani at presyo"
+       ],
+       "expert_questions": [
+        "Mabilis bang matuyo ang bukid para sa kamote o kailangan ito ng mataas na lupa?",
+        "Aling uri ng sesbania ang matatag sa init na higit sa 35 degree dito?",
+        "May mamimili ba o lokal na pamilihan para sa kamote?",
+        "Saan makakakuha ng magandang binhi ng kamote at sesbania at tamang inoculant para sa munggo?",
+        "May maagang uri ba ng sesbania na mas mababa sa 50 araw?"
+       ],
+       "rank": 1,
+       "engine_name": "Break the pest cycle"
+      },
+      {
+       "key": "add_income",
+       "name": "Magdagdag ng pananim na pangkalakal",
+       "headline": "Bigas mula Enero hanggang Abril, sitaw mula Abril hanggang Hunyo, bigas mula Hunyo hanggang Setyembre, at sitaw mula Setyembre hanggang Enero",
+       "why": "Ang inyong bukid ay walang tanim sa kalagitnaan ng Setyembre hanggang kalagitnaan ng Enero at kalagitnaan ng Abril hanggang kalagitnaan ng Hunyo. Ang sitaw ay isang gulay na akma sa mga panahong iyon. Ito ay maaaring magbigay ng mas mataas na kita.",
+       "benefits": [
+        "Mas mabuti ang lupa dahil mas matagal itong natatakpan at nagdaragdag ng nitrogen mula sa munggo",
+        "Mas kaunting hubad na lupa na nalalantad sa ulan",
+        "Pinuputol nito ang siklo ng peste at sakit sa pamamagitan ng ibang uri ng halaman",
+        "Mas maraming maibebenta o makakain",
+        "Humigit-kumulang 10570 USD na mas mataas na kita bawat ektarya bawat taon kumpara sa ngayon"
+       ],
+       "risks": [
+        "Ang presyo ng prutas at gulay ay mas nagbabago kaysa sa butil; planuhin muna kung saan ibebenta bago magtanim",
+        "Mas maraming gawaing kamay"
+       ],
+       "information_gaps": [
+        "Hindi binibilang ng datos ng FAO ang mga panakip na tanim kaya hindi sigurado kung may binhi ng sesbania na ibinebenta malapit sa inyo",
+        "Ang halaga ng mga pananim ay batay sa pambansang average bago ang gastos; maaaring iba ang inyong ani at presyo"
+       ],
+       "expert_questions": [
+        "May mamimili ba o lokal na pamilihan para sa sitaw?",
+        "Saan makakakuha ng magandang binhi ng sitaw at tamang inoculant para sa munggo?"
+       ],
+       "rank": 2,
+       "engine_name": "Add a cash crop"
+      },
+      {
+       "key": "save_water",
+       "name": "Makipagtipid sa tubig",
+       "headline": "Mani mula Enero hanggang Abril, okra mula Abril hanggang Hunyo, bigas mula Hunyo hanggang Setyembre, at okra mula Setyembre hanggang Enero",
+       "why": "Ang bigas ay ang pinaka-uhaw na tanim sa inyong rotasyon. Ang mani ay nangangailangan ng humigit-kumulang 88 mm na mas kaunting patubig bawat taon at medyo matatag sa tagtuyot. Ang okra ay akma sa mga buwang walang tanim.",
+       "benefits": [
+        "Nangangailangan ng mas kaunting tubig bukod sa ulan",
+        "Mas mabuti ang lupa dahil mas matagal itong natatakpan, nagdaragdag ng nitrogen mula sa munggo, at may mas malalim na ugat",
+        "Mas kaunting hubad na lupa na nalalantad sa ulan",
+        "Pinuputol nito ang siklo ng peste at sakit sa pamamagitan ng ibang uri ng halaman",
+        "Mas maraming maibebenta o makakain",
+        "Humigit-kumulang 88 mm na mas kaunting patubig bawat taon kumpara sa ngayon"
+       ],
+       "risks": [
+        "Ang mani at okra ay nangangailangan ng lupa na mabilis matuyo; pagkatapos ng palayan sa luwad na lupa ay maaaring manatiling basa ang bukid",
+        "Ang init na 35 degree o higit pa ay karaniwan habang lumalaki ang mani at okra",
+        "Ang presyo ng prutas at gulay ay mas nagbabago kaysa sa butil; planuhin muna kung saan ibebenta bago magtanim",
+        "Mas maraming pagkakataon sa init, lamig, tagtuyot, o baha",
+        "Mas maraming gawaing kamay"
+       ],
+       "information_gaps": [
+        "Hindi binibilang ng datos ng FAO ang mga panakip na tanim kaya hindi sigurado kung may binhi ng sesbania na ibinebenta malapit sa inyo",
+        "Ang halaga ng mga pananim ay batay sa pambansang average bago ang gastos; maaaring iba ang inyong ani at presyo"
+       ],
+       "expert_questions": [
+        "Mabilis bang matuyo ang bukid para sa mani at okra o kailangan ito ng mataas na lupa?",
+        "Aling uri ng mani at okra ang matatag sa init na higit sa 35 degree dito?",
+        "May mamimili ba o lokal na pamilihan para sa mani at okra?",
+        "Saan makakakuha ng magandang binhi ng mani at okra at tamang inoculant para sa munggo?"
+       ],
+       "rank": 3,
+       "engine_name": "Save water"
+      },
+      {
+       "key": "fill_bare",
+       "name": "Punuan ang walang tanim",
+       "headline": "Bigas mula Enero hanggang Abril, sesbania mula Abril hanggang Hunyo, bigas mula Hunyo hanggang Setyembre, at sesbania mula Setyembre hanggang Enero",
+       "why": "Ang inyong bukid ay walang tanim sa kalagitnaan ng Setyembre hanggang kalagitnaan ng Enero at kalagitnaan ng Abril hanggang kalagitnaan ng Hunyo. Ang sesbania ay mabilis lumaki at ito ay munggo na ginagamit bilang pataba sa lupa.",
+       "benefits": [
+        "Mas mabuti ang lupa dahil mas matagal itong natatakpan at nagdaragdag ng nitrogen mula sa munggo",
+        "Mas kaunting hubad na lupa na nalalantad sa ulan",
+        "Pinuputol nito ang siklo ng peste at sakit sa pamamagitan ng ibang uri ng halaman",
+        "Humigit-kumulang 0.5 na mas mataas na bahagi ng taon na natatakpan ang lupa kumpara sa ngayon"
+       ],
+       "risks": [
+        "Ang init na 35 degree o higit pa ay karaniwan habang lumalaki ang sesbania",
+        "Mahigpit ang oras dahil kailangan ng sesbania ng 60 araw o higit pa at ang puwang ay humigit-kumulang 60 araw",
+        "Mas maraming pagkakataon sa init, lamig, tagtuyot, o baha",
+        "Mas maraming gawaing kamay"
+       ],
+       "information_gaps": [
+        "Hindi binibilang ng datos ng FAO ang mga panakip na tanim kaya hindi sigurado kung may binhi ng sesbania na ibinebenta malapit sa inyo",
+        "Ang halaga ng mga pananim ay batay sa pambansang average bago ang gastos; maaaring iba ang inyong ani at presyo"
+       ],
+       "expert_questions": [
+        "Aling uri ng sesbania ang matatag sa init na higit sa 35 degree dito?",
+        "Saan makakakuha ng magandang binhi ng sesbania at tamang inoculant para sa munggo?",
+        "May maagang uri ba ng sesbania na mas mababa sa 50 araw?"
+       ],
+       "rank": 4,
+       "engine_name": "Fill the bare gap"
+      }
+     ],
+     "idea_to_discuss": "Maaari mong pag-usapan sa isang lokal na dalubhasa ang pagtatanim ng saging sa gilid ng bukid o sa mataas na lupa upang makatulong sa pangmatagalang kita at proteksyon ng lupa.",
+     "glossary": [
+      {
+       "term": "evapotranspiration",
+       "meaning": "Ito ay ang dami ng tubig na nawawala sa lupa dahil sa init at sa paghinga ng mga halaman."
+      },
+      {
+       "term": "NDVI",
+       "meaning": "Ito ay isang paraan para makita mula sa kalawakan kung gaano kalusog at lunti ang mga halaman sa isang lugar."
+      },
+      {
+       "term": "soil moisture anomaly",
+       "meaning": "Ito ay nagpapakita kung ang lupa ay mas basa o mas tuyo kaysa sa karaniwan sa isang buwan."
+      },
+      {
+       "term": "frost risk",
+       "meaning": "Ito ay ang posibilidad na magkaroon ng lamig na maaaring makasira sa mga halaman."
+      }
+     ],
+     "datasets_line": "Ang ulat na ito ay gumagamit ng datos mula sa ESA WorldCover, NASA MODIS, NASA SMAP, NASA POWER, NASA SRTM, ISRIC SoilGrids, NASA/GFZ GRACE, FAO crop water needs, FAO irrigation manual, at FAO EcoCrop.",
+     "disclaimer": "Sinusuportahan ng SowSmart ang inyong sariling pagpapasya at lokal na kaalaman sa agrikultura; hindi nito pinapalitan ang mga iyon. Suriin muna sa isang lokal na dalubhasa ang anumang pagbabago bago kayo magtanim.",
+     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
+    },
+    "checks": {
+     "numbers_ok": true,
+     "retried": false,
+     "unknown_numbers": [],
+     "removed_items": 0
+    },
+    "meta": {
+     "model": "grok-4.20-0309-non-reasoning",
+     "calls": 1,
+     "prompt_version": "2026-11-15.2",
+     "input_tokens": 5088,
+     "cached_tokens": 128,
+     "output_tokens": 3273,
+     "reasoning_tokens": 0,
+     "seconds": 20.31,
+     "cost_usd": 0.014408
+    },
+    "cached": false
+   }
   },
   "report_status": {
    "en": {
-    "status": "skipped",
+    "status": "ok",
     "message": ""
    },
    "tl": {
-    "status": "skipped",
+    "status": "ok",
     "message": ""
    }
   },
   "timings_ms": {
-   "data": 0,
-   "engine": 65,
-   "reports": 0
+   "data": 212,
+   "engine": 188,
+   "reports": 20359
   }
  }
 }

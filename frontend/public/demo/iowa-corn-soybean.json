@@ -1,7 +1,7 @@
 {
  "farm_id": "iowa-corn-soybean",
- "generated_at": "2026-11-15T10:43:01+00:00",
- "model": null,
+ "generated_at": "2026-11-15T14:43:40+00:00",
+ "model": "grok-4.20-0309-non-reasoning",
  "request_key": "b7fb33ba73aee730b837e5658243a36c139ee349b36a6e68c922c39bb626a8d6",
  "analysis": {
   "analysis_id": null,
@@ -1495,7 +1495,7 @@
    ],
    "wont_grow": [],
    "rotation_source": "farmer",
-   "country": "United States"
+   "country": "United States of America"
   },
   "weights": {
    "water": 0.1,
@@ -1797,12 +1797,18 @@
    {
     "key": "save_water",
     "name": "Save water",
-    "title": "canola (May–Oct) + cereal rye (Oct–May) + soybean (May–Oct) + cereal rye (Oct–May)",
+    "title": "mungbean (May–Aug) + pak choi (Aug–Oct) + cereal rye (Oct–May) + soybean (May–Oct) + cereal rye (Oct–May)",
     "rotation": [
      [
       {
-       "crop": "canola",
+       "crop": "mungbean",
        "plant_month": 5,
+       "harvest_month": 8,
+       "new": true
+      },
+      {
+       "crop": "pak choi",
+       "plant_month": 8,
        "harvest_month": 10,
        "new": true
       },
@@ -1922,7 +1928,7 @@
       "name": "May",
       "crops": [
        {
-        "crop": "canola",
+        "crop": "mungbean",
         "share": 0.5,
         "year": 1,
         "new": true
@@ -1956,7 +1962,7 @@
       "name": "Jun",
       "crops": [
        {
-        "crop": "canola",
+        "crop": "mungbean",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -1976,7 +1982,7 @@
       "name": "Jul",
       "crops": [
        {
-        "crop": "canola",
+        "crop": "mungbean",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -1998,8 +2004,14 @@
       "name": "Aug",
       "crops": [
        {
-        "crop": "canola",
-        "share": 1.0,
+        "crop": "mungbean",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "pak choi",
+        "share": 0.5,
         "year": 1,
         "new": true
        },
@@ -2020,7 +2032,7 @@
       "name": "Sep",
       "crops": [
        {
-        "crop": "canola",
+        "crop": "pak choi",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -2040,7 +2052,7 @@
       "name": "Oct",
       "crops": [
        {
-        "crop": "canola",
+        "crop": "pak choi",
         "share": 0.5,
         "year": 1,
         "new": true
@@ -2138,10 +2150,19 @@
         "confidence": "low"
        },
        {
-        "claim": "canola water need",
+        "claim": "mungbean water need",
         "value": "low",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Rapeseed Canola) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "pak choi water need",
+        "value": "low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Spinach) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Cabbage (analog)) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2170,8 +2191,8 @@
       }
      },
      "soil": {
-      "score": 78.2,
-      "summary": "Soil covered 100% of the year; legumes 21% of crop time",
+      "score": 82.4,
+      "summary": "Soil covered 100% of the year; legumes 33% of crop time",
       "evidence": [
        {
         "claim": "Share of the year the soil is covered by a crop",
@@ -2179,6 +2200,15 @@
         "unit": "fraction",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "mungbean is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        },
@@ -2192,10 +2222,19 @@
         "confidence": "medium"
        },
        {
-        "claim": "canola root depth",
-        "value": 1.25,
+        "claim": "mungbean root depth",
+        "value": 0.8,
         "unit": "m",
-        "dataset": "FAO-56 Table 22 (Rapeseed Canola) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "pak choi root depth",
+        "value": 0.4,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 analog (Spinach) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Cabbage (analog)) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2221,8 +2260,8 @@
       ],
       "metrics": {
        "cover": 1.0,
-       "legume_share": 0.21,
-       "root_depth_m": 1.18,
+       "legume_share": 0.33,
+       "root_depth_m": 0.93,
        "cover_crop": true
       }
      },
@@ -2259,7 +2298,7 @@
       "evidence": [
        {
         "claim": "Plant families in the rotation, in order",
-        "value": "Brassicaceae → Poaceae → Fabaceae → Poaceae",
+        "value": "Fabaceae → Brassicaceae → Poaceae → Fabaceae → Poaceae",
         "unit": "families",
         "dataset": "Crop traits (FAO EcoCrop / team)",
         "native_resolution": "crop-level",
@@ -2276,18 +2315,9 @@
       }
      },
      "climate_risk": {
-      "score": 77.5,
-      "summary": "6 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 91.4,
+      "summary": "5 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
-       {
-        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
-        "value": 5,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
        {
         "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
         "value": 14,
@@ -2307,19 +2337,19 @@
         "confidence": "low"
        },
        {
-        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
-        "value": 27,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
+        "claim": "mungbean heat / drought / waterlogging tolerance",
+        "value": "high / high / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
        },
        {
-        "claim": "canola heat / drought / waterlogging tolerance",
-        "value": "low / high / low",
+        "claim": "pak choi heat / drought / waterlogging tolerance",
+        "value": "low / low / low",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Rapeseed Canola) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Spinach) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Cabbage (analog)) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2345,22 +2375,21 @@
       ],
       "metrics": {
        "overlaps": [
-        "canola: heat in Jul",
-        "canola: heat in Aug",
-        "soybean: frost in May",
+        "mungbean: heat in Jul",
+        "mungbean: heat in Aug",
+        "pak choi: heat in Aug",
         "soybean: heat in Jul",
-        "soybean: heat in Aug",
-        "soybean: frost in Oct"
+        "soybean: heat in Aug"
        ]
       }
      },
      "income": {
-      "score": 43.5,
-      "summary": "About 1306 USD/ha a year before costs (1.0 harvests)",
+      "score": 100.0,
+      "summary": "About 18347 USD/ha a year before costs (1.5 harvests)",
       "evidence": [
        {
         "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
-        "value": 1306,
+        "value": 18347,
         "unit": "USD/ha/year",
         "dataset": "FAOSTAT crop production + producer prices",
         "native_resolution": "national",
@@ -2368,8 +2397,8 @@
         "confidence": "low"
        },
        {
-        "claim": "canola in the United States: about 2.0 t/ha at 545 USD/t",
-        "value": 1089,
+        "claim": "mungbean in the United States of America: about 2.3 t/ha at 888 USD/t",
+        "value": 2073,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
         "native_resolution": "national",
@@ -2377,7 +2406,16 @@
         "confidence": "low"
        },
        {
-        "claim": "cereal rye in the United States: about 2.2 t/ha at 261 USD/t",
+        "claim": "pak choi in the United States of America: about 45.9 t/ha at 721 USD/t",
+        "value": 33097,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       },
+       {
+        "claim": "cereal rye in the United States of America: about 2.2 t/ha at 261 USD/t",
         "value": 576,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -2386,7 +2424,7 @@
         "confidence": "low"
        },
        {
-        "claim": "soybean in the United States: about 3.4 t/ha at 451 USD/t",
+        "claim": "soybean in the United States of America: about 3.4 t/ha at 451 USD/t",
         "value": 1524,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -2396,691 +2434,28 @@
        }
       ],
       "metrics": {
-       "harvests_per_year": 1.0,
-       "gross_usd_ha": 1306
+       "harvests_per_year": 1.5,
+       "gross_usd_ha": 18347
       }
      },
      "labor": {
-      "score": 85.6,
-      "summary": "Hand work 3 points/year (full machinery)",
+      "score": 78.4,
+      "summary": "Hand work 4 points/year (full machinery)",
       "evidence": [
        {
-        "claim": "canola hand labor need",
-        "value": "medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Rapeseed Canola) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "low"
-       },
-       {
-        "claim": "cereal rye hand labor need",
-        "value": "low",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "low"
-       },
-       {
-        "claim": "soybean hand labor need",
-        "value": "medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "low"
-       }
-      ],
-      "metrics": {}
-     }
-    },
-    "total": 83.7,
-    "rank": 1,
-    "confidence": "high",
-    "why": "Maize is the thirstiest crop in your rotation. Canola needs about 45 mm less water per year beyond rainfall here and has high drought tolerance. The bare months get cereal rye (medium water need).",
-    "changes": [
-     "Grow canola instead of maize",
-     "Add cereal rye from mid-Oct to mid-May",
-     "Add cereal rye from mid-Oct to mid-May after soybean"
-    ],
-    "benefits": [
-     "Builds soil: the soil is covered more months; a cover crop protects and feeds the soil (+16)",
-     "Less bare soil exposed to rain (+37)",
-     "Breaks pest and disease cycles with a different plant family (+20)"
-    ],
-    "risks": [
-     "Canola needs well-drained soil; clay loam soil can stay wet after heavy rain",
-     "Heat of 35 °C+ is common while canola grows",
-     "Less to sell or eat (-13)"
-    ],
-    "gaps": [
-     "No fruit or vegetable grown in the United States fits this field's bare months, so there is no cash-crop option",
-     "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
-     "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
-    ],
-    "expert_questions": [
-     "Can the field drain well enough for canola, or should it go on raised beds?",
-     "Which canola varieties handle heat above 35 °C here?",
-     "Is there a buyer or local market for canola?",
-     "Where can I get good canola and cereal rye seed?"
-    ]
-   },
-   {
-    "key": "break_pest",
-    "name": "Break the pest cycle",
-    "title": "sunflower (May–Oct) + cereal rye (Oct–May) + soybean (May–Oct) + cereal rye (Oct–May)",
-    "rotation": [
-     [
-      {
-       "crop": "sunflower",
-       "plant_month": 5,
-       "harvest_month": 10,
-       "new": true
-      },
-      {
-       "crop": "cereal rye",
-       "plant_month": 10,
-       "harvest_month": 5,
-       "new": true
-      }
-     ],
-     [
-      {
-       "crop": "soybean",
-       "plant_month": 5,
-       "harvest_month": 10,
-       "new": false
-      },
-      {
-       "crop": "cereal rye",
-       "plant_month": 10,
-       "harvest_month": 5,
-       "new": true
-      }
-     ]
-    ],
-    "calendar": [
-     {
-      "month": 1,
-      "name": "Jan",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 2,
-      "name": "Feb",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 3,
-      "name": "Mar",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 4,
-      "name": "Apr",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 5,
-      "name": "May",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 0.5,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 0.5,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 0.5,
-        "year": 2,
-        "new": false
-       },
-       {
-        "crop": "cereal rye",
-        "share": 0.5,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 6,
-      "name": "Jun",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 1.0,
-        "year": 2,
-        "new": false
-       }
-      ],
-      "bare": 0.0,
-      "stress": []
-     },
-     {
-      "month": 7,
-      "name": "Jul",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 1.0,
-        "year": 2,
-        "new": false
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "heat"
-      ]
-     },
-     {
-      "month": 8,
-      "name": "Aug",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 1.0,
-        "year": 2,
-        "new": false
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "heat"
-      ]
-     },
-     {
-      "month": 9,
-      "name": "Sep",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 1.0,
-        "year": 2,
-        "new": false
-       }
-      ],
-      "bare": 0.0,
-      "stress": []
-     },
-     {
-      "month": 10,
-      "name": "Oct",
-      "crops": [
-       {
-        "crop": "sunflower",
-        "share": 0.5,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 0.5,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "soybean",
-        "share": 0.5,
-        "year": 2,
-        "new": false
-       },
-       {
-        "crop": "cereal rye",
-        "share": 0.5,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 11,
-      "name": "Nov",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     },
-     {
-      "month": 12,
-      "name": "Dec",
-      "crops": [
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 1,
-        "new": true
-       },
-       {
-        "crop": "cereal rye",
-        "share": 1.0,
-        "year": 2,
-        "new": true
-       }
-      ],
-      "bare": 0.0,
-      "stress": [
-       "frost"
-      ]
-     }
-    ],
-    "components": {
-     "water": {
-      "score": 74.7,
-      "summary": "About 303 mm/year of water stress beyond rainfall",
-      "evidence": [
-       {
-        "claim": "Yearly rainfall (30-year normal)",
-        "value": 840,
-        "unit": "mm/year",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
-        "value": 303,
-        "unit": "mm/year",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "sunflower water need",
+        "claim": "mungbean hand labor need",
         "value": "high",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
-        "confidence": "medium"
+        "confidence": "low"
        },
        {
-        "claim": "cereal rye water need",
+        "claim": "pak choi hand labor need",
         "value": "medium",
         "unit": "",
-        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "soybean water need",
-        "value": "medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       }
-      ],
-      "metrics": {
-       "deficit_mm": 303
-      }
-     },
-     "soil": {
-      "score": 77.8,
-      "summary": "Soil covered 100% of the year; legumes 21% of crop time",
-      "evidence": [
-       {
-        "claim": "Share of the year the soil is covered by a crop",
-        "value": 1.0,
-        "unit": "fraction",
-        "dataset": "Farmer's crop calendar + strategy",
-        "native_resolution": "field",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "soybean is a legume (adds nitrogen)",
-        "value": true,
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "sunflower root depth",
-        "value": 1.15,
-        "unit": "m",
-        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "cereal rye root depth",
-        "value": 1.25,
-        "unit": "m",
-        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "soybean root depth",
-        "value": 0.95,
-        "unit": "m",
-        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       }
-      ],
-      "metrics": {
-       "cover": 1.0,
-       "legume_share": 0.21,
-       "root_depth_m": 1.15,
-       "cover_crop": true
-      }
-     },
-     "erosion": {
-      "score": 100.0,
-      "summary": "0 mostly bare month(s) on 4° slope",
-      "evidence": [
-       {
-        "claim": "Average slope",
-        "value": 3.99,
-        "unit": "degrees",
-        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
-        "native_resolution": "30 m",
-        "period": "static",
-        "confidence": "high"
-       },
-       {
-        "claim": "Mostly bare months",
-        "value": "none",
-        "unit": "months",
-        "dataset": "Farmer's crop calendar + strategy",
-        "native_resolution": "field",
-        "period": "",
-        "confidence": "medium"
-       }
-      ],
-      "metrics": {
-       "bare_months": []
-      }
-     },
-     "pest_cycle": {
-      "score": 90.0,
-      "summary": "3 plant families; same family back-to-back 0 time(s)",
-      "evidence": [
-       {
-        "claim": "Plant families in the rotation, in order",
-        "value": "Asteraceae → Poaceae → Fabaceae → Poaceae",
-        "unit": "families",
-        "dataset": "Crop traits (FAO EcoCrop / team)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       }
-      ],
-      "metrics": {
-       "families": [
-        "Asteraceae",
-        "Fabaceae",
-        "Poaceae"
-       ]
-      }
-     },
-     "climate_risk": {
-      "score": 82.5,
-      "summary": "6 crop-month(s) overlap heat, frost, dry or very wet months",
-      "evidence": [
-       {
-        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
-        "value": 5,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
-        "value": 14,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
-        "value": 12,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
-        "value": 27,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "sunflower heat / drought / waterlogging tolerance",
-        "value": "medium / medium / low",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "cereal rye heat / drought / waterlogging tolerance",
-        "value": "low / medium / medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       },
-       {
-        "claim": "soybean heat / drought / waterlogging tolerance",
-        "value": "medium / medium / medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",
-        "native_resolution": "crop-level",
-        "period": "",
-        "confidence": "medium"
-       }
-      ],
-      "metrics": {
-       "overlaps": [
-        "sunflower: heat in Jul",
-        "sunflower: heat in Aug",
-        "soybean: frost in May",
-        "soybean: heat in Jul",
-        "soybean: heat in Aug",
-        "soybean: frost in Oct"
-       ]
-      }
-     },
-     "income": {
-      "score": 42.4,
-      "summary": "About 1262 USD/ha a year before costs (1.0 harvests)",
-      "evidence": [
-       {
-        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
-        "value": 1262,
-        "unit": "USD/ha/year",
-        "dataset": "FAOSTAT crop production + producer prices",
-        "native_resolution": "national",
-        "period": "",
-        "confidence": "low"
-       },
-       {
-        "claim": "sunflower in the United States: about 2.0 t/ha at 509 USD/t",
-        "value": 999,
-        "unit": "USD/ha",
-        "dataset": "FAOSTAT crop production + producer prices",
-        "native_resolution": "national",
-        "period": "2022-2024",
-        "confidence": "low"
-       },
-       {
-        "claim": "cereal rye in the United States: about 2.2 t/ha at 261 USD/t",
-        "value": 576,
-        "unit": "USD/ha",
-        "dataset": "FAOSTAT crop production + producer prices",
-        "native_resolution": "national",
-        "period": "2022-2024",
-        "confidence": "low"
-       },
-       {
-        "claim": "soybean in the United States: about 3.4 t/ha at 451 USD/t",
-        "value": 1524,
-        "unit": "USD/ha",
-        "dataset": "FAOSTAT crop production + producer prices",
-        "native_resolution": "national",
-        "period": "2022-2024",
-        "confidence": "low"
-       }
-      ],
-      "metrics": {
-       "harvests_per_year": 1.0,
-       "gross_usd_ha": 1262
-      }
-     },
-     "labor": {
-      "score": 85.6,
-      "summary": "Hand work 3 points/year (full machinery)",
-      "evidence": [
-       {
-        "claim": "sunflower hand labor need",
-        "value": "medium",
-        "unit": "",
-        "dataset": "FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Spinach) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Cabbage (analog)) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "low"
@@ -3107,37 +2482,39 @@
       "metrics": {}
      }
     },
-    "total": 82.8,
-    "rank": 2,
+    "total": 89.0,
+    "rank": 1,
     "confidence": "high",
-    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 1 time(s)). Sunflower is from the Asteraceae family, so they lose their host for a season. The bare months get cereal rye (Poaceae): the only crops that fit there.",
+    "why": "Maize is the thirstiest crop in your rotation. Mungbean needs about 45 mm less water per year beyond rainfall here and has high drought tolerance. The bare months get pak choi (low water need), cereal rye (medium water need).",
     "changes": [
-     "Grow sunflower instead of maize once in the rotation",
+     "Grow mungbean instead of maize",
+     "Add pak choi from mid-Aug to mid-Oct",
      "Add cereal rye from mid-Oct to mid-May",
      "Add cereal rye from mid-Oct to mid-May after soybean"
     ],
     "benefits": [
-     "Builds soil: the soil is covered more months; a cover crop protects and feeds the soil (+16)",
+     "Builds soil: the soil is covered more months; a cover crop protects and feeds the soil (+20)",
      "Less bare soil exposed to rain (+37)",
      "Breaks pest and disease cycles with a different plant family (+20)",
-     "Less exposure to heat, frost, dry spells or flooding (+8)"
+     "More to sell or eat (+44)"
     ],
     "risks": [
-     "Sunflower needs well-drained soil; clay loam soil can stay wet after heavy rain",
-     "Heat of 35 °C+ is common while sunflower grows",
-     "Needs more water beyond rainfall (-8)",
-     "Less to sell or eat (-14)"
+     "Mungbean and pak choi need well-drained soil; clay loam soil can stay wet after heavy rain",
+     "Heat of 35 °C+ is common while pak choi grows",
+     "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+     "More hand work (-12)"
     ],
     "gaps": [
-     "No fruit or vegetable grown in the United States fits this field's bare months, so there is no cash-crop option",
+     "No fruit or vegetable grown in the United States of America fits this field's bare months, so there is no cash-crop option",
+     "No suitable crop found for: Break the pest cycle",
      "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
      "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
     ],
     "expert_questions": [
-     "Can the field drain well enough for sunflower, or should it go on raised beds?",
-     "Which sunflower varieties handle heat above 35 °C here?",
-     "Is there a buyer or local market for sunflower?",
-     "Where can I get good sunflower and cereal rye seed?"
+     "Can the field drain well enough for mungbean and pak choi, or should they go on raised beds?",
+     "Which pak choi varieties handle heat above 35 °C here?",
+     "Is there a buyer or local market for mungbean and pak choi?",
+     "Where can I get good mungbean, pak choi and cereal rye seed and the right inoculant (rhizobia) for the legumes?"
     ]
    },
    {
@@ -3621,18 +2998,9 @@
       }
      },
      "climate_risk": {
-      "score": 75.0,
-      "summary": "8 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 90.0,
+      "summary": "4 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
-       {
-        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
-        "value": 5,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
        {
         "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
         "value": 14,
@@ -3645,15 +3013,6 @@
        {
         "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
         "value": 12,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
-        "value": 27,
         "unit": "years of 30",
         "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
         "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
@@ -3690,14 +3049,10 @@
       ],
       "metrics": {
        "overlaps": [
-        "maize: frost in May",
         "maize: heat in Jul",
         "maize: heat in Aug",
-        "maize: frost in Oct",
-        "soybean: frost in May",
         "soybean: heat in Jul",
-        "soybean: heat in Aug",
-        "soybean: frost in Oct"
+        "soybean: heat in Aug"
        ]
       }
      },
@@ -3715,7 +3070,7 @@
         "confidence": "low"
        },
        {
-        "claim": "maize in the United States: about 11.1 t/ha at 205 USD/t",
+        "claim": "maize in the United States of America: about 11.1 t/ha at 205 USD/t",
         "value": 2272,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -3724,7 +3079,7 @@
         "confidence": "low"
        },
        {
-        "claim": "cereal rye in the United States: about 2.2 t/ha at 261 USD/t",
+        "claim": "cereal rye in the United States of America: about 2.2 t/ha at 261 USD/t",
         "value": 576,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -3733,7 +3088,7 @@
         "confidence": "low"
        },
        {
-        "claim": "soybean in the United States: about 3.4 t/ha at 451 USD/t",
+        "claim": "soybean in the United States of America: about 3.4 t/ha at 451 USD/t",
         "value": 1524,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -3782,8 +3137,8 @@
       "metrics": {}
      }
     },
-    "total": 79.1,
-    "rank": 3,
+    "total": 80.6,
+    "rank": 2,
     "confidence": "medium",
     "why": "Your field sits bare from mid-Oct to mid-May (about 210 days). Cereal rye needs as little as 110 days (FAO EcoCrop) and is a cover crop that protects the soil.",
     "changes": [
@@ -3798,7 +3153,8 @@
      "Less variety of plant families (-10)"
     ],
     "gaps": [
-     "No fruit or vegetable grown in the United States fits this field's bare months, so there is no cash-crop option",
+     "No fruit or vegetable grown in the United States of America fits this field's bare months, so there is no cash-crop option",
+     "No suitable crop found for: Break the pest cycle",
      "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
      "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
     ],
@@ -4108,7 +3464,7 @@
      },
      "erosion": {
       "score": 63.0,
-      "summary": "8 mostly bare month(s) on 4° slope",
+      "summary": "6 mostly bare month(s) on 4° slope",
       "evidence": [
        {
         "claim": "Average slope",
@@ -4121,7 +3477,7 @@
        },
        {
         "claim": "Mostly bare months",
-        "value": "Jan, Feb, Mar, Apr, May, Oct, Nov, Dec",
+        "value": "Jan, Feb, Mar, Apr, Nov, Dec",
         "unit": "months",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -4135,8 +3491,6 @@
         "Feb",
         "Mar",
         "Apr",
-        "May",
-        "Oct",
         "Nov",
         "Dec"
        ]
@@ -4164,18 +3518,9 @@
       }
      },
      "climate_risk": {
-      "score": 75.0,
-      "summary": "8 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 90.0,
+      "summary": "4 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
-       {
-        "claim": "May dropped to 0 °C or below in 5 of the last 30 years",
-        "value": 5,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
        {
         "claim": "Jul reached 35 °C or more in 14 of the last 30 years",
         "value": 14,
@@ -4188,15 +3533,6 @@
        {
         "claim": "Aug reached 35 °C or more in 12 of the last 30 years",
         "value": 12,
-        "unit": "years of 30",
-        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
-        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
-        "period": "1996-2025",
-        "confidence": "low"
-       },
-       {
-        "claim": "Oct dropped to 0 °C or below in 27 of the last 30 years",
-        "value": 27,
         "unit": "years of 30",
         "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
         "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
@@ -4224,14 +3560,10 @@
       ],
       "metrics": {
        "overlaps": [
-        "maize: frost in May",
         "maize: heat in Jul",
         "maize: heat in Aug",
-        "maize: frost in Oct",
-        "soybean: frost in May",
         "soybean: heat in Jul",
-        "soybean: heat in Aug",
-        "soybean: frost in Oct"
+        "soybean: heat in Aug"
        ]
       }
      },
@@ -4249,7 +3581,7 @@
         "confidence": "low"
        },
        {
-        "claim": "maize in the United States: about 11.1 t/ha at 205 USD/t",
+        "claim": "maize in the United States of America: about 11.1 t/ha at 205 USD/t",
         "value": 2272,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -4258,7 +3590,7 @@
         "confidence": "low"
        },
        {
-        "claim": "soybean in the United States: about 3.4 t/ha at 451 USD/t",
+        "claim": "soybean in the United States of America: about 3.4 t/ha at 451 USD/t",
         "value": 1524,
         "unit": "USD/ha",
         "dataset": "FAOSTAT crop production + producer prices",
@@ -4298,8 +3630,8 @@
       "metrics": {}
      }
     },
-    "total": 67.9,
-    "rank": 4,
+    "total": 69.4,
+    "rank": 3,
     "confidence": "high",
     "why": "The baseline: what you grow now, scored the same way as the alternatives.",
     "changes": [],
@@ -4312,7 +3644,8 @@
   "gaps": [
    "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
    "Soil values are SoilGrids estimates; a soil test would be more accurate",
-   "No fruit or vegetable grown in the United States fits this field's bare months, so there is no cash-crop option",
+   "No fruit or vegetable grown in the United States of America fits this field's bare months, so there is no cash-crop option",
+   "No suitable crop found for: Break the pest cycle",
    "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
    "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
   ],
@@ -4320,18 +3653,140 @@
   "fruit_ideas": [],
   "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
   "reports_tier1": {
-   "en": null
+   "en": {
+    "tier": 1,
+    "language": "en",
+    "language_level": "farmer",
+    "question": "",
+    "ai_generated": true,
+    "content": {
+     "title": "Your Crop Rotation Report",
+     "summary": "The save water rotation scored highest with a total of 89.0. It swaps maize for mungbean, adds pak choi and cereal rye cover, and keeps soybean. This covers your soil all year and needs about 45 mm less irrigation a year than now. Your current rotation scored 69.4. Filling the bare gap with cereal rye scored 80.6 and also covers soil fully but uses about 29 mm more water a year than now. These ideas support your own judgment and local expertise.",
+     "what_satellites_see": "From space this spot looks like 100% cropland. Your field usually looks bare or newly planted from October to April. The soil where roots drink is driest in September and wettest in May.",
+     "bare_and_risky_seasons": "Your current rotation leaves the field bare from January to May and October to December. These are the same months when frost is likely. July and August often bring heat of 35 °C or more and the soil is driest in September.",
+     "strategies": [
+      {
+       "key": "current",
+       "name": "Your current rotation",
+       "headline": "Maize from May to October followed by soybean from May to October",
+       "why": "This is the baseline of what you grow now, scored the same way as the other options.",
+       "benefits": [],
+       "risks": [],
+       "information_gaps": [],
+       "expert_questions": [],
+       "rank": 3,
+       "engine_name": "Your current rotation"
+      },
+      {
+       "key": "save_water",
+       "name": "Save water",
+       "headline": "Mungbean from May to August, pak choi from August to October, cereal rye cover from October to May, then soybean from May to October with cereal rye cover again",
+       "why": "Maize uses the most water in your current setup. Mungbean needs much less water and handles dry spells well. Adding pak choi and cereal rye covers the bare months with crops that need little or medium water.",
+       "benefits": [
+        "Builds soil because the ground stays covered all year and the cover crop protects and feeds the soil",
+        "Much less bare soil left open to rain",
+        "Breaks pest and disease cycles by adding a new plant family from the mustard group for pak choi",
+        "Gives you more to sell or eat with 0.5 extra harvests a year"
+       ],
+       "risks": [
+        "Mungbean and pak choi need well-drained soil; clay loam soil can stay wet after heavy rain",
+        "Heat of 35 °C or more is common while pak choi grows",
+        "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+        "More hand work"
+       ],
+       "information_gaps": [
+        "No fruit or vegetable grown in the United States of America fits this field's bare months, so there is no cash-crop option",
+        "No suitable crop found for: Break the pest cycle",
+        "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Can the field drain well enough for mungbean and pak choi, or should they go on raised beds?",
+        "Which pak choi varieties handle heat above 35 °C here?",
+        "Is there a buyer or local market for mungbean and pak choi?",
+        "Where can I get good mungbean, pak choi and cereal rye seed and the right inoculant for the legumes?"
+       ],
+       "rank": 1,
+       "engine_name": "Save water"
+      },
+      {
+       "key": "fill_bare",
+       "name": "Fill the bare gap",
+       "headline": "Maize from May to October with cereal rye cover from October to May, then soybean from May to October with cereal rye cover again",
+       "why": "Your field sits bare from mid-October to mid-May, about 210 days. Cereal rye can grow in as little as 110 days and works as a cover crop that protects the soil.",
+       "benefits": [
+        "Builds soil because the ground stays covered all year and the cover crop protects and feeds the soil",
+        "Much less bare soil left open to rain"
+       ],
+       "risks": [
+        "Less variety of plant families"
+       ],
+       "information_gaps": [
+        "No fruit or vegetable grown in the United States of America fits this field's bare months, so there is no cash-crop option",
+        "No suitable crop found for: Break the pest cycle",
+        "FAO harvest statistics don't count cover crops, so we can't confirm that cereal rye seed is sold near you",
+        "Crop values are national averages before costs; your own yields and prices will differ"
+       ],
+       "expert_questions": [
+        "Where can I get good cereal rye seed?"
+       ],
+       "rank": 2,
+       "engine_name": "Fill the bare gap"
+      }
+     ],
+     "idea_to_discuss": "Talk with a local expert about adding trees or shrubs along the field edges to help control erosion on the gentle slope and provide extra long-term income or shade.",
+     "glossary": [
+      {
+       "term": "evapotranspiration",
+       "meaning": "The water that leaves the field through plant leaves and from the soil surface."
+      },
+      {
+       "term": "NDVI",
+       "meaning": "A satellite measure that shows how green and healthy the plants look from space."
+      },
+      {
+       "term": "soil moisture anomaly",
+       "meaning": "How much wetter or drier the soil is than the usual amount for that time of year."
+      },
+      {
+       "term": "frost risk",
+       "meaning": "Chance that temperatures drop to 0 °C or below and can harm plants."
+      }
+     ],
+     "datasets_line": "This report uses ESA WorldCover land cover, NASA MODIS vegetation greenness, NASA SMAP soil moisture, NASA POWER weather, NASA SRTM elevation, ISRIC SoilGrids soil maps, NASA/GFZ GRACE water storage, FAO crop water needs, FAO EcoCrop crop ranges and FAO irrigation manual.",
+     "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
+     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
+    },
+    "checks": {
+     "numbers_ok": true,
+     "retried": false,
+     "unknown_numbers": [],
+     "removed_items": 0
+    },
+    "meta": {
+     "model": "grok-4.20-0309-non-reasoning",
+     "calls": 1,
+     "prompt_version": "2026-11-15.2",
+     "input_tokens": 3434,
+     "cached_tokens": 128,
+     "output_tokens": 1323,
+     "reasoning_tokens": 0,
+     "seconds": 9.16,
+     "cost_usd": 0.007466
+    },
+    "cached": false
+   }
   },
   "report_status": {
    "en": {
-    "status": "skipped",
+    "status": "ok",
     "message": ""
    }
   },
   "timings_ms": {
-   "data": 0,
-   "engine": 7,
-   "reports": 0
+   "data": 19,
+   "engine": 22,
+   "reports": 9171
   }
  }
 }
