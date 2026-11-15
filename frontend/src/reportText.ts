@@ -20,6 +20,13 @@ export function stripScore(text: string) {
   return text.replace(/\s*\([+-]\d+(\.\d+)?\)\s*$/, '')
 }
 
+/** Options are numbered 1..N by rank among the alternatives: the current rotation also has a rank
+ *  but is not an option, so "Option 3 of 3" never skips a number. */
+export function optionNumbers(strategies: Strategy[]): Record<string, number> {
+  const options = strategies.filter((s) => s.key !== 'current').sort((a, b) => a.rank - b.rank)
+  return Object.fromEntries(options.map((s, i) => [s.key, i + 1]))
+}
+
 export function expertQuestions(ranked: Strategy[], textFor: (s: Strategy) => StrategyText | undefined) {
   const out: string[] = []
   for (const s of ranked) {

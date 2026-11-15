@@ -2,16 +2,21 @@
 
 Allowed: any number found in the input (as a value or inside a string), its usual roundings, the
 percent form of shares (0.35 -> 35), and a few small counts (0-5 strategies, 12 months).
-Decimal commas and thousands separators are both accepted ("74,8", "2,721").
+Decimal commas and thousands separators are both accepted ("74,8", "2,721"), but a whole
+thousands group is never a decimal ("50,000" is 50000, not 50.0), and "50 000" is one number.
 """
 
 from __future__ import annotations
 
+import math
 import re
 from typing import Any
 
 FREE = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 12.0}
-_IN_REPORT = re.compile(r"(?<![\w.,])\d+(?:[.,]\d+)*")  # skips digits inside words (MOD13Q1)
+_SPACES = " \u00a0\u202f"  # "50 000" with a space, no-break or narrow no-break space
+_IN_REPORT = re.compile(  # skips digits inside words (MOD13Q1)
+    rf"(?<![\w.,])(?:\d{{1,3}}(?:[{_SPACES}]\d{{3}})+(?![\w.,])|\d+(?:[.,]\d+)*)")
+_GROUPED = re.compile(r"\d{1,3}(?:[.,]\d{3})+")
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -24,13 +29,19 @@ def _variants(x: float) -> set[float]:
 
 def _readings(token: str) -> set[float]:
     """Every way the token could be read: 2,721 -> 2721 or 2.721; 74,8 -> 74.8 or 748."""
+    token = re.sub(f"[{_SPACES}]", "", token)
     out = set()
     for candidate in (token.replace(",", ""), token.replace(".", "").replace(",", "."),
                       token.replace(",", ".")):
         try:
-            out.add(round(float(candidate), 4))
+            value = float(candidate)
         except ValueError:
-            pass
+            continue
+        if math.isfinite(value):  # a 400-digit "number" is no reading at all
+            out.add(round(value, 4))
+    if _GROUPED.fullmatch(token):  # 50,000 / 1.234.567: never a round decimal like 50.0
+        whole = float(re.sub(r"[.,]", "", token))
+        out = {v for v in out if v == whole or v != int(v)}
     return out
 
 

@@ -178,7 +178,8 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
     slope_factor = max(0.3, min(3.0, slope / 3))
     weighted_bare = sum(b * (0.5 + ctx.rain[i] / 10) for i, b in enumerate(bare))
     erosion_score = _clamp(100 - 6 * slope_factor * weighted_bare)
-    bare_months = [MONTH_NAMES[i] for i, b in enumerate(bare) if b >= 0.5]
+    # planting and harvest months are half covered: not "mostly bare"
+    bare_months = [MONTH_NAMES[i] for i, b in enumerate(bare) if b > 0.5]
     erosion_ev = [Evidence("Average slope", slope, "degrees", "NASA SRTM v3 (SRTMGL1_003)",
                            "30 m", "static", "high"),
                   Evidence("Mostly bare months", ", ".join(bare_months) or "none", "months",
@@ -286,6 +287,7 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
 
 
 COLD_NIGHT_SHARE = 0.6  # typical cold night: 60% of the way from monthly mean to coldest hour
+FROST_TENDER_KILL_C = 0.0  # no EcoCrop killing temperature (maize, soybean, rice): frost-tender
 
 
 def cold_night_c(month_mean_c: float, month_coldest_c: float | None) -> float:
@@ -298,13 +300,15 @@ def survives_frost(crop: CropInfo, month_mean_c: float,
                    month_coldest_c: float | None = None) -> bool:
     """Frost-hardy crops survive cold months dormant if a typical cold night stays above their
     FAO EcoCrop killing temperature (rest period). E.g. Iowa January: cold night about -16.6 C,
-    so winter rye (-18) survives and oats (-15) winter-kill, as they do in practice."""
+    so winter rye (-18) survives and oats (-15) winter-kill, as they do in practice. Crops with
+    no killing temperature count as frost-tender: killed once a typical cold night reaches 0 C
+    (Iowa May, cold night about 7.8 C: maize survives; January: it doesn't)."""
     night = cold_night_c(month_mean_c, month_coldest_c)
     rest = crop.eco.get("killing_temp_rest_c")
     if rest is not None:
         return night >= rest
     growth = crop.eco.get("killing_temp_c")
-    return growth is not None and night >= growth
+    return night >= (growth if growth is not None else FROST_TENDER_KILL_C)
 
 
 def weights_for(goals: list[str]) -> dict[str, float]:

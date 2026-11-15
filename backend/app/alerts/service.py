@@ -254,15 +254,25 @@ def run_check(sub: str | None, *, force: bool = False) -> dict[str, Any]:
         refresh_events(timedelta(0) if force else CHECK_EVERY)
     except Exception as exc:
         log.info("EONET unavailable: %s", type(exc).__name__)
-    new += match_events()
+    try:
+        new += match_events()
+    except Exception as exc:
+        log.warning("event matching failed: %s", type(exc).__name__)
     for f in _fields(sub):
-        new += check_field(f)
+        try:
+            new += check_field(f)
+        except Exception as exc:  # one field (deleted mid-run, a source down) skips only itself
+            log.warning("alert check failed for a field: %s", type(exc).__name__)
     now = datetime.now(UTC)
+    mine = len(new)
     if sub is not None:
         with _conn() as conn:
             conn.execute("UPDATE users SET last_alert_check = %s WHERE id = %s", (now, sub))
+            if new:  # match_events alerts every user in an event's path; report only the caller's
+                mine = conn.execute("SELECT count(*) AS n FROM alerts WHERE id = ANY(%s::uuid[])"
+                                    " AND user_id = %s", (new, sub)).fetchone()["n"]
     deliver(new)
-    return {"checked": True, "new": len(new), "last_check": now.isoformat()}
+    return {"checked": True, "new": mine, "last_check": now.isoformat()}
 
 
 # --- simulation (demo) -----------------------------------------------------------------------

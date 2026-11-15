@@ -8,7 +8,7 @@ import { useState } from 'react'
 import type { Geometry } from 'geojson'
 import type { AnalyzeResponse, Evidence, FruitIdea, Strategy, Tier1Content } from './api'
 import { bufferCircle, centerOf } from './mapkit'
-import { BASE_GLOSSARY, COMPONENT_LABELS, STRESS_LABELS, expertQuestions, languageName, strategyColors, stripScore } from './reportText'
+import { BASE_GLOSSARY, COMPONENT_LABELS, STRESS_LABELS, expertQuestions, languageName, optionNumbers, strategyColors, stripScore } from './reportText'
 import YearStrip, { rowFromStrategy } from './YearStrip'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -224,7 +224,7 @@ function sourceNames(evidence: Evidence[]): string[] {
   return [...out]
 }
 
-const label = (s: Strategy) => (s.key === 'current' ? 'Now' : String(s.rank))
+const label = (s: Strategy, numbers: Record<string, number>) => (s.key === 'current' ? 'Now' : String(numbers[s.key]))
 const signed = (x: number) => `${x > 0 ? '+' : ''}${Math.round(x * 10) / 10}`
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -257,13 +257,14 @@ export default function PrintReport({
   const textFor = (key: string) => content?.strategies.find((t) => t.key === key)
   const current = ranked.find((s) => s.key === 'current')
   const options = ranked.filter((s) => s.key !== 'current')
+  const numbers = optionNumbers(analysis.strategies)
   const best = ranked[0]
   const colors = strategyColors(analysis.strategies)
   const bandFor = (s: Strategy) => {
     const crop = s.rotation.flat().find((c) => c.new)?.crop
     return crop ? colors[crop] : undefined
   }
-  const rows = [...(current ? [rowFromStrategy(current, 'Now')] : []), ...options.map((s) => rowFromStrategy(s, label(s)))]
+  const rows = [...(current ? [rowFromStrategy(current, 'Now')] : []), ...options.map((s) => rowFromStrategy(s, label(s, numbers)))]
   const [now] = useState(() => new Date())
   const c = centerOf({ type: 'Point', coordinates: [analysis.field.lon, analysis.field.lat] })
   const componentKeys = Object.keys(ranked[0]?.components ?? {})
@@ -336,7 +337,7 @@ export default function PrintReport({
                 <li key={s.key}>
                   <span className="p-chip" style={{ background: s.key === 'current' ? 'var(--line)' : bandFor(s) }} aria-hidden="true" />
                   <span className="p-ranked-name">
-                    <strong>{label(s)}</strong> {names[s.key] ?? s.name}
+                    <strong>{label(s, numbers)}</strong> {names[s.key] ?? s.name}
                   </span>
                   <span className="p-score">{s.total}</span>
                 </li>
@@ -409,7 +410,7 @@ export default function PrintReport({
             {ranked.map((s) => (
               <tr key={s.key} className={s.key === 'current' ? 'is-now' : undefined}>
                 <th>
-                  <strong>{label(s)}</strong> {names[s.key] ?? s.name}
+                  <strong>{label(s, numbers)}</strong> {names[s.key] ?? s.name}
                 </th>
                 {componentKeys.map((k) => (
                   <td key={k} style={{ background: scoreTone(s.components[k].score) }}>
@@ -440,7 +441,7 @@ export default function PrintReport({
 
       {/* 3. One page per option */}
       {ranked.map((s) => (
-        <OptionPage key={s.key} s={s} current={current} name={names[s.key] ?? s.name} t={textFor(s.key)} band={s.key === 'current' ? undefined : bandFor(s)} colors={colors} stress={analysis.stress_calendar} last={options.length} shared={sharedGaps} />
+        <OptionPage key={s.key} s={s} current={current} name={names[s.key] ?? s.name} t={textFor(s.key)} band={s.key === 'current' ? undefined : bandFor(s)} colors={colors} stress={analysis.stress_calendar} number={numbers[s.key]} last={options.length} shared={sharedGaps} />
       ))}
 
       {/* 4. Fruit, questions and glossary */}
@@ -511,6 +512,7 @@ function OptionPage({
   band,
   colors,
   stress,
+  number,
   last,
   shared,
 }: {
@@ -521,6 +523,8 @@ function OptionPage({
   band?: string
   colors: Record<string, string>
   stress: AnalyzeResponse['stress_calendar']
+  /** The option's number among the alternatives (undefined for the current rotation). */
+  number?: number
   last: number
   shared: Set<string>
 }) {
@@ -536,7 +540,7 @@ function OptionPage({
       <p className="cap">3. Your options, one page each</p>
       <header className="p-option-head" style={band ? { borderTopColor: band } : undefined}>
         <div>
-          <p className="cap">{isNow ? 'What you grow now' : `Option ${s.rank} of ${last + 1}${s.rank === 1 ? ' · best match for your goals' : ''}`}</p>
+          <p className="cap">{isNow ? 'What you grow now' : `Option ${number} of ${last}${s.rank === 1 ? ' · best match for your goals' : ''}`}</p>
           <h2>{isNow ? (t?.name ?? s.name) : name}</h2>
           <p className="p-sub">{t?.headline ?? s.title}</p>
         </div>

@@ -50,7 +50,7 @@ def parse_answers(raw: dict[str, Any] | None, catalog: dict[str, CropInfo],
     for item in raw.get("current_crops") or []:
         crop = resolve(str(item.get("crop", "")), catalog)
         plant, harvest = _month(item.get("plant_month")), _month(item.get("harvest_month"))
-        if plant is None or harvest is None or plant == harvest:
+        if plant is None or harvest is None:  # same month both = a 12-month crop (cassava)
             assumptions.append(f"Months for '{item.get('crop')}' were missing; crop left out")
             continue
         if crop is None:

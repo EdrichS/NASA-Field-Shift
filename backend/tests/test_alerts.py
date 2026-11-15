@@ -125,6 +125,24 @@ def bearer(sub):
     return {"Authorization": f"Bearer token-{sub}"}
 
 
+def test_one_failing_field_does_not_stop_the_others_or_delivery(monkeypatch):
+    fields = [{"id": "f1"}, {"id": "f2"}, {"id": "f3"}]
+    delivered = []
+
+    def check(field):
+        if field["id"] == "f2":
+            raise RuntimeError("field deleted mid-run")
+        return [f"alert-{field['id']}"]
+
+    monkeypatch.setattr(service, "refresh_events", lambda age: None)
+    monkeypatch.setattr(service, "match_events", lambda: ["storm"])
+    monkeypatch.setattr(service, "_fields", lambda sub: fields)
+    monkeypatch.setattr(service, "check_field", check)
+    monkeypatch.setattr(service, "deliver", delivered.extend)
+    assert service.run_check(None)["new"] == 3
+    assert delivered == ["storm", "alert-f1", "alert-f3"]
+
+
 def test_alert_routes_need_login(client):
     assert client.get("/alerts").status_code == 401
     assert client.post("/alerts/check", json={}).status_code == 401

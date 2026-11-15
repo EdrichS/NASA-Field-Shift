@@ -58,6 +58,12 @@ function requestOf(setup: SetupResult): AnalyzeRequest {
   return { geometry: setup.geometry, mode: setup.mode, answers: setup.answers, report_languages: setup.reportLanguages }
 }
 
+/** The backend keeps field names to 60 characters (display names to 40), so an older long
+ *  name can't make a save fail. */
+function fieldNameOf(name: string) {
+  return name.trim().slice(0, 60) || 'My field'
+}
+
 function inputMode(request: AnalyzeRequest) {
   return request.geometry.type === 'Polygon' ? 'polygon' : 'point'
 }
@@ -121,7 +127,7 @@ function Screens() {
         const token = await session.token()
         if (token) {
           try {
-            const saved = await saveAnalysis(token, pending.request, pending.analysis, pending.fieldName, inputMode(pending.request))
+            const saved = await saveAnalysis(token, pending.request, pending.analysis, fieldNameOf(pending.fieldName), inputMode(pending.request))
             setNotice(`Saved "${pending.fieldName}" to your account.`)
             setSavedId(saved.analysis_id)
           } catch (e) {
@@ -176,7 +182,9 @@ function Screens() {
     setError(undefined)
     setSavedId(null)
     const request = requestOf(setup)
-    const typedName = setup.detailed?.fields[0]?.name?.trim()
+    const detailed = setup.detailed
+    const field = detailed?.fields.find((f) => f.id === detailed.activeField) ?? detailed?.fields[0]
+    const typedName = field?.name.trim().slice(0, 60)
     const fieldName = typedName || `Field ${(me?.fields.length ?? 0) + 1}`
     try {
       const analysis = await analyze(request)
@@ -193,7 +201,8 @@ function Screens() {
       if (token) {
         // Signed in: results are kept automatically (CLAUDE.md section 5).
         try {
-          await updateMe(token, { display_name: setup.displayName || me?.display_name || null, language: setup.reportLanguages[0], units: setup.units })
+          const displayName = (setup.displayName || me?.display_name || '').trim().slice(0, 40)
+          await updateMe(token, { display_name: displayName || null, language: setup.reportLanguages[0], units: setup.units })
           const saved = await saveAnalysis(token, request, analysis, fieldName, inputMode(request))
           setSavedId(saved.analysis_id)
           setScreen({ name: 'results', analysis: { ...analysis, analysis_id: saved.analysis_id }, request, fieldName, fieldId: saved.field_id })
@@ -208,7 +217,8 @@ function Screens() {
     }
   }
 
-  async function save(analysis: AnalyzeResponse, request: AnalyzeRequest, fieldName: string) {
+  async function save(analysis: AnalyzeResponse, request: AnalyzeRequest, name: string) {
+    const fieldName = fieldNameOf(name)
     const token = await session.token()
     if (!token) {
       try {

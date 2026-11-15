@@ -12,9 +12,10 @@ from app.data.crops import TRAITS_CSV
 from app.data.earthengine import FieldSatelliteData
 from app.engine import catalog as C
 from app.engine.answers import parse_answers
+from app.engine.candidates import suitability
 from app.engine.engine import DISCLAIMER, run_engine
 from app.engine.rotation import Slot, bare_by_month, gap_months, gaps, group_years
-from app.engine.scoring import cold_night_c, survives_frost, weights_for
+from app.engine.scoring import FieldContext, cold_night_c, survives_frost, weights_for
 from app.features import harmonize as H
 from app.features.prefill import prefill_cards
 from app.features.stress import stress_calendar
@@ -251,3 +252,122 @@ def test_rotation_arithmetic():
 def test_crop_aliases(name, expected):
     crop = C.resolve(name, CATALOG)
     assert (crop.name if crop else None) == expected
+
+
+@pytest.mark.parametrize("name,expected", [
+    ("Sweet potatoes", "sweet potato"), ("Mung beans", "mungbean"), ("Tomatoes", "tomato"),
+    ("Groundnuts", "peanut"), ("Cowpeas", "cowpea"), ("soya  beans", "soybean"),
+    ("Cabbages", "cabbage"), ("Oats", "oats"), ("Chilli", "chili pepper")])
+def test_crop_names_as_farmers_type_them(name, expected):
+    crop = C.resolve(name, CATALOG)
+    assert (crop.name if crop else None) == expected
+
+
+def test_wont_grow_accepts_plurals_and_is_never_suggested():
+    answers = {**PH_ANSWERS, "wont_grow": ["Mung beans", "String beans", "Okras"]}
+    assert parse_answers(answers, CATALOG).wont_grow == {"mungbean", "string bean", "okra"}
+    for s in run_engine(PH, answers, CATALOG).strategies:
+        new = {slot["crop"] for year in s.rotation for slot in year if slot["new"]}
+        assert not new & {"mungbean", "string bean", "okra"}, s.key
+
+
+def test_wont_grow_also_applies_to_crops_guessed_from_satellite():
+    guessed = run_engine(PH, {}, CATALOG, country="Philippines").strategies
+    first = next(s for s in guessed if s.key == "current").rotation[0][0]["crop"]
+    current = next(s for s in run_engine(PH, {"wont_grow": [first]}, CATALOG,
+                                         country="Philippines").strategies if s.key == "current")
+    assert first not in {slot["crop"] for year in current.rotation for slot in year}
+
+
+def test_rainfed_crop_with_less_rain_than_its_absolute_minimum_is_unsuitable():
+    ff = fake_field(WARM, [0.5] * 12)  # ~180 mm a year
+    ctx = FieldContext.build(ff, stress_calendar(ff))
+    rice = CATALOG["rice"]  # EcoCrop: at least 1000 mm
+    assert suitability(rice, [6, 7, 8, 9], ctx, "rainfed").score == 0
+    assert suitability(rice, [6, 7, 8, 9], ctx, "irrigated").score >= 0.6
+
+
+def test_rainfed_crop_is_not_placed_in_the_dry_season():
+    sahel = [0.0, 0.0, 0.0, 0.0, 0.5, 2.5, 5.0, 6.0, 3.0, 0.5, 0.0, 0.0]  # ~550 mm, Jun-Sep
+    ff = fake_field(WARM, sahel)
+    ctx = FieldContext.build(ff, stress_calendar(ff))
+    mungbean = CATALOG["mungbean"]  # EcoCrop: at least 500 mm
+    assert suitability(mungbean, [7, 8, 9], ctx, "rainfed").score > 0
+    assert suitability(mungbean, [12, 1, 2, 3], ctx, "rainfed").score == 0
+    assert suitability(mungbean, [12, 1, 2, 3], ctx, "irrigated").score > 0
+
+
+def test_crops_without_a_killing_temperature_are_frost_tender_not_always_dead():
+    maize = CATALOG["maize"]
+    assert maize.eco.get("killing_temp_c") is None
+    assert survives_frost(maize, 16.2, 2.2)  # Iowa May: cold night ~7.8 C
+    assert not survives_frost(maize, -6.6, -23.2)  # Iowa January
+
+
+@pytest.mark.parametrize("crops", [
+    [{"crop": "cassava", "plant_month": 5, "harvest_month": 4}],
+    [{"crop": "maize", "plant_month": 6, "harvest_month": 9}],
+    PH_ANSWERS["current_crops"]])
+def test_new_crops_are_never_placed_much_longer_than_they_grow(crops):
+    for s in run_engine(PH, {**PH_ANSWERS, "current_crops": crops}, CATALOG).strategies:
+        for year in s.rotation:
+            for slot in year:
+                crop = CATALOG[slot["crop"]]
+                if slot["new"] and not crop.is_cover:
+                    days = Slot(slot["crop"], slot["plant_month"], slot["harvest_month"]).days
+                    assert days <= crop.cycle_max_days + 45, (s.key, slot)
+
+
+def test_break_pest_needs_a_repeated_family_and_alternates_a_single_crop():
+    two_families = [{"crop": "maize", "plant_month": 6, "harvest_month": 9},
+                    {"crop": "soybean", "plant_month": 6, "harvest_month": 9}]
+    keys = {s.key for s in run_engine(PH, {**PH_ANSWERS, "current_crops": two_families},
+                                      CATALOG).strategies}
+    assert "break_pest" not in keys
+    one = [{"crop": "cassava", "plant_month": 5, "harvest_month": 4}]
+    pest = next(s for s in run_engine(PH, {**PH_ANSWERS, "current_crops": one},
+                                      CATALOG).strategies if s.key == "break_pest")
+    assert len(pest.rotation) == 2 and pest.rotation[0][0]["crop"] == "cassava"
+    assert pest.components["pest_cycle"]["score"] > next(
+        s for s in run_engine(PH, {**PH_ANSWERS, "current_crops": one}, CATALOG).strategies
+        if s.key == "current").components["pest_cycle"]["score"]
+
+
+def test_half_covered_planting_and_harvest_months_are_not_mostly_bare():
+    current = next(s for s in run_engine(PH, PH_ANSWERS, CATALOG).strategies
+                   if s.key == "current")
+    assert current.components["erosion"]["metrics"]["bare_months"] == ["May", "Oct", "Nov", "Dec"]
+
+
+def test_a_twelve_month_crop_is_kept():
+    profile = parse_answers(
+        {"current_crops": [{"crop": "cassava", "plant_month": 5, "harvest_month": 5}]}, CATALOG)
+    assert [s.days for s in profile.slots] == [360]
+    assert not any("missing" in a for a in profile.assumptions)
+
+
+def test_a_country_where_none_of_our_crops_is_grown_widely_still_gets_options():
+    result = run_engine(PH, PH_ANSWERS, CATALOG, country="Bahamas")
+    assert len(result.strategies) > 1
+    assert any("None of the crops SowSmart knows" in g for g in result.gaps)
+    assert not any("couldn't tell which country" in g for g in result.gaps)
+
+
+def test_missing_ecocrop_ranges_are_flagged_not_silent():
+    bare = C.load_from_files(TRAITS_CSV, FX / "no_such_ecocrop.csv")
+    assert not C.has_ranges(bare) and C.has_ranges(CATALOG)
+    assert any("EcoCrop" in g for g in run_engine(PH, PH_ANSWERS, bare).gaps)
+
+
+def test_crops_in_dry_months_with_unknown_irrigation_mean_some_irrigation():
+    guessed = run_engine(PH, {}, CATALOG, country="Philippines")
+    assert any("assumed some irrigation" in g for g in guessed.gaps)
+    assert len(guessed.strategies) >= 4
+    told = run_engine(PH, {"water": "rainfed"}, CATALOG, country="Philippines")
+    assert not any("assumed some irrigation" in g for g in told.gaps)
+
+
+def test_unknown_country_guesses_a_staple_and_does_not_call_it_the_most_grown():
+    gaps = run_engine(PH, {}, CATALOG).gaps
+    assumed = next(g for g in gaps if g.startswith("You didn't list your crops"))
+    assert "alfalfa" not in assumed and "most widely grown" not in assumed

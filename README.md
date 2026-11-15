@@ -66,7 +66,6 @@ backend/    FastAPI app: data fetching, features, engine, AI reports, alerts, ac
 frontend/   React app (mobile-first)
 data/       crop traits, pest rules, country crop table, demo farms
 scripts/    demo-farm precompute, storm simulation (admin), data builders, checks
-docs/       project page draft, judging review, deck source and screenshots
 ```
 
 ## Run it locally
@@ -76,6 +75,7 @@ Needs Python 3.13, Node, a Google Earth Engine project and the keys listed in `.
 ```bash
 make setup          # Python venv + frontend packages
 make migrate        # database tables (TigerData)
+make load-crops     # crop climate ranges (FAO EcoCrop) and traits into the database
 make dev-backend    # API on http://localhost:8000
 make dev-frontend   # app on http://localhost:5173
 make check          # lint, tests, data checks, frontend build
@@ -92,7 +92,6 @@ make check          # lint, tests, data checks, frontend build
 | `make vapid` | Create web-push keys |
 | `make check-db` | Live database tests |
 
-Demo instructions and how to keep the demo in sync after changes: [HOWTODEMO.md](HOWTODEMO.md).
 
 ## AI disclosure
 

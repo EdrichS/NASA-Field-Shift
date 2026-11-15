@@ -5,7 +5,7 @@ import { emptyAnswers, fromDetailed, fromQuick } from './answers'
 import DetailedSetup, { createDetailedDraft, type DetailedDraft } from './DetailedSetup'
 import LanguageDisclaimer from './LanguageDisclaimer'
 import LocateMap from './LocateMap'
-import { centerOf } from './mapkit'
+import { MAX_FIELD_HA, areaHa, centerOf, pointGeometry } from './mapkit'
 import SatelliteCards, { type CardAnswers } from './SatelliteCards'
 import YearStrip, { rowFromBareMonths, rowFromCrops, stressFromCards, type StripRow } from './YearStrip'
 import { isLanguage, translate, type LanguageCode } from './i18n'
@@ -158,6 +158,8 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
   const [detailedDraft, setDetailedDraft] = useState<DetailedDraft | null>(null)
   const [languages, setLanguages] = useState<LanguageCode[]>(['en'])
   const [languageAccepted, setLanguageAccepted] = useState(false)
+  /** The step-2 place the Detailed draft's field was put at. */
+  const detailedFor = useRef<Geometry | null>(null)
   const system: UnitSystem = units === 'imperial' ? 'imperial' : 'metric'
 
   useEffect(() => {
@@ -190,10 +192,31 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
     }
     if (questionPath === 'detailed') {
       const at = centerOf(geometry)
-      const ring = geometry.type === 'Polygon'
-        ? (geometry as Polygon).coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }))
-        : []
-      setDetailedDraft((current) => current ?? { ...createDetailedDraft(system, at, slopeText, ring), displayName })
+      const ring = ringOf(geometry)
+      const moved = detailedFor.current !== geometry
+      detailedFor.current = geometry
+      setDetailedDraft((current) => {
+        if (!current) return { ...createDetailedDraft(system, at, slopeText, ring), displayName }
+        if (!moved) return current
+        // A new place on the map moves the active field there; every other answer stays.
+        const placed = createDetailedDraft(current.areaUnit === 'acres' ? 'imperial' : 'metric', at, slopeText, ring).fields[0]
+        return {
+          ...current,
+          fields: current.fields.map((f) =>
+            f.id !== current.activeField
+              ? f
+              : {
+                  ...placed,
+                  id: f.id,
+                  name: f.name,
+                  size: f.sizeEdited ? f.size : placed.size,
+                  sizeEdited: f.sizeEdited,
+                  slope: f.slopeEdited ? f.slope : placed.slope,
+                  slopeEdited: f.slopeEdited,
+                },
+          ),
+        }
+      })
       setStep(6)
       return
     }
@@ -225,7 +248,7 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
           ? fromDetailed(detailedDraft, cardAnswers)
           : emptyAnswers(cardAnswers)
     onFinish({
-      geometry,
+      geometry: questionPath === 'detailed' && detailedDraft ? detailedGeometry(detailedDraft, geometry) : geometry,
       mode: questionPath === 'explore' ? 'exploring' : questionPath,
       answers,
       reportLanguages: languages,
@@ -437,7 +460,7 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
               onDraft={(profile) => setDetailedDraft(profile)}
               onBack={() => setStep(4)}
               onReset={() => {
-                const fresh = createDetailedDraft(system, centerOf(geometry), slopeText)
+                const fresh = createDetailedDraft(system, centerOf(geometry), slopeText, ringOf(geometry))
                 setDetailedDraft({ ...fresh, notice: 'Removed from this browser. Nothing was stored on a server.' })
               }}
               onFinish={(profile) => {
@@ -463,10 +486,29 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
   )
 }
 
+// Only field areas and distances change with the system; rain and temperature stay in mm and °C.
 const UNIT_OPTIONS: { value: UnitSystem; label: string }[] = [
-  { value: 'metric', label: 'Metric · ha, mm, °C' },
-  { value: 'imperial', label: 'Imperial · ac, in, °F' },
+  { value: 'metric', label: 'Metric · hectares, meters' },
+  { value: 'imperial', label: 'Imperial · acres, feet' },
 ]
+
+/** The step-2 outline as map points (no closing point), or [] for a pin. */
+function ringOf(geometry: Geometry) {
+  return geometry.type === 'Polygon' ? (geometry as Polygon).coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng })) : []
+}
+
+/** Detailed mode analyzes the active field as marked on its own map: the closed boundary (the
+ *  same GeoJSON the locate step makes), otherwise its pin, otherwise the step-2 place. */
+function detailedGeometry(draft: DetailedDraft, fallback: Geometry): Geometry {
+  const field = draft.fields.find((f) => f.id === draft.activeField) ?? draft.fields[0]
+  if (!field) return fallback
+  if (field.boundaryClosed && field.polygon.length >= 3) {
+    const ring = field.polygon.map((p) => [p.lng, p.lat])
+    const polygon: Polygon = { type: 'Polygon', coordinates: [[...ring, ring[0]]] }
+    return areaHa(polygon) <= MAX_FIELD_HA ? polygon : fallback
+  }
+  return Number.isFinite(field.point.lat) && Number.isFinite(field.point.lng) ? pointGeometry(field.point) : fallback
+}
 
 const QUESTION_PATHS: { id: QuestionPath; title: string; detail: string }[] = [
   { id: 'quick', title: 'Quick 5', detail: '5 fast questions to get started right away.' },
@@ -700,6 +742,7 @@ function QuickFive({
                         name="crop"
                         type="text"
                         autoComplete="off"
+                        maxLength={60}
                         placeholder="e.g., Corn, Tomatoes"
                         value={row.crop}
                         aria-invalid={cropMissing || undefined}

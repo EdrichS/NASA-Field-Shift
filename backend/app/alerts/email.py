@@ -59,5 +59,6 @@ def send_email(to: str, subject: str, text: str, html: str | None = None,
         with server:
             server.login(s.smtp_username, password)
             server.send_message(message)
-    except smtplib.SMTPException as exc:  # never include credentials in the message
+    # SMTP errors, and the OSErrors smtplib doesn't wrap: DNS, refused, timeout, TLS certificate.
+    except OSError as exc:  # never include credentials in the message
         raise EmailError(f"sending failed: {type(exc).__name__}") from exc

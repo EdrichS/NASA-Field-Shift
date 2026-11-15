@@ -135,5 +135,6 @@ def test_window_and_trend_helpers():
 
 
 def test_polygon_centroid():
-    square = {"type": "Polygon", "coordinates": [[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]]}
-    assert centroid(square) == (1.0, 1.0)
+    square = {"type": "Polygon",
+              "coordinates": [[[0, 0], [0.02, 0], [0.02, 0.02], [0, 0.02], [0, 0]]]}
+    assert centroid(square) == (0.01, 0.01)

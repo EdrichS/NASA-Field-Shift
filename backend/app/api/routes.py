@@ -46,9 +46,8 @@ ai_call_limit = RateLimiter(limit=12, window_s=3600)  # actual Grok calls (cache
 _stored: set[tuple[str, str]] = set()  # (geom_hash, end_month) already saved by this process
 
 
-@lru_cache(maxsize=1)
 def crop_catalog() -> dict[str, CropInfo]:
-    """Crops from TigerData (or the CSV files), loaded once per process."""
+    """Crops from TigerData (or the CSV files); default_catalog keeps the first complete one."""
     return default_catalog()
 
 

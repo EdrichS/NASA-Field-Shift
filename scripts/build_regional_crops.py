@@ -43,6 +43,9 @@ ITEMS: dict[str, list[int]] = {
 }
 AREA, PRODUCTION, PRICE_USD = "5312", "5510", "5532"
 YEARS = 3
+# FAOSTAT bulk files are UTF-8; read as latin-1 they give "CÃ´te d'Ivoire" and "TÃ¼rkiye", which
+# never match the field's country, so those farms lost the local-crop filter.
+FAOSTAT_ENCODING = "utf-8-sig"
 PRICE_MAX_AGE = 6  # years
 
 
@@ -51,7 +54,7 @@ def _prices(code_to_crops: dict[int, list[str]]) -> dict[str, dict[str, dict[int
     out: dict[str, dict[str, dict[int, float]]] = defaultdict(lambda: defaultdict(dict))
     if not PRICES.exists():
         return out
-    with PRICES.open(newline="", encoding="latin-1") as f:
+    with PRICES.open(newline="", encoding=FAOSTAT_ENCODING) as f:
         for row in csv.DictReader(f):
             if row["Element Code"] != PRICE_USD or row["Months"] != "Annual value":
                 continue
@@ -72,7 +75,7 @@ def main() -> int:
     data: dict[str, dict[str, dict[str, dict[int, float]]]] = {
         e: defaultdict(lambda: defaultdict(dict)) for e in (AREA, PRODUCTION)}
     latest = 0
-    with RAW.open(newline="", encoding="latin-1") as f:
+    with RAW.open(newline="", encoding=FAOSTAT_ENCODING) as f:
         for row in csv.DictReader(f):
             element = row["Element Code"]
             if element not in data:

@@ -58,11 +58,12 @@ const EQUIPMENT: Record<string, Answers['equipment']> = {
   'full machinery': 'full_machinery',
 }
 
+// The same planting and harvest month is a 12-month crop (cassava, sugarcane), so it is kept.
 function crops(rows: { crop: string; planting: string; harvest: string }[]) {
   return rows
     .map((r) => ({ crop: r.crop.trim(), plant_month: monthNumber(r.planting), harvest_month: monthNumber(r.harvest) }))
     .filter((r): r is { crop: string; plant_month: number; harvest_month: number } =>
-      !!r.crop && r.plant_month !== null && r.harvest_month !== null && r.plant_month !== r.harvest_month)
+      !!r.crop && r.plant_month !== null && r.harvest_month !== null)
     .slice(0, 6)
 }
 
@@ -99,8 +100,10 @@ export function fromQuick(quick: QuickAnswers, cards: CardAnswers): Answers {
 }
 
 export function fromDetailed(d: DetailedDraft, cards: CardAnswers): Answers {
+  // The starting goal order is not an answer: until the farmer reorders or confirms it, no
+  // ranking is sent and the engine weighs all goals equally (like Quick 5's "Not sure").
   const ranked: Goal[] = []
-  for (const label of d.goals) {
+  for (const label of d.goalsTouched ? d.goals : []) {
     const g = goal(label)
     if (g && !ranked.includes(g)) ranked.push(g)
     if (ranked.length === 3) break

@@ -77,9 +77,18 @@ def test_analyze_just_exploring_needs_no_answers(client):
     {"geometry": POINT, "answers": {"current_crops": [
         {"crop": "rice", "plant_month": 13, "harvest_month": 4}]}},
     {"geometry": POINT, "answers": {"water": "lots"}},
+    {"geometry": POINT, "answers": {"wont_grow": ["x" * 61]}},
+    {"geometry": {"type": "Point", "coordinates": [None, 15]}},
+    {"geometry": {"type": "Polygon", "coordinates": [[[120, 15], [121, 15], "x", [120, 15]]]}},
+    {"geometry": {"type": "Polygon", "coordinates": [[[0, 0], [20, 0], [20, 20], [0, 0]]]}},
 ])
 def test_bad_requests_are_rejected_with_422(client, payload):
     assert client.post("/analyze", json=payload).status_code == 422
+
+
+def test_oversized_request_bodies_are_refused(client):
+    r = client.post("/analyze", json={"geometry": POINT, "answers": {"pad": "x" * 600_000}})
+    assert r.status_code == 413
 
 
 def test_duplicate_languages_are_merged(client):

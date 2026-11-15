@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.engine import corrections, regional
-from app.engine.answers import FarmProfile, parse_answers
+from app.engine.answers import WATER, FarmProfile, parse_answers
 from app.engine.candidates import (
     MIN_GAP_DAYS,
     SUITABLE_MIN,
@@ -23,12 +23,13 @@ from app.engine.candidates import (
     save_water,
     suitability,
 )
-from app.engine.catalog import CropInfo, default_catalog
+from app.engine.catalog import CropInfo, default_catalog, has_ranges
 from app.engine.evidence import Evidence
 from app.engine.perennials import fruit_ideas
 from app.engine.rotation import Slot, bare_by_month, cover_by_month, gaps, group_years
 from app.engine.scoring import (
     COMPONENTS,
+    TOLERANCE,
     ComponentScore,
     FieldContext,
     Market,
@@ -238,14 +239,17 @@ def _why(cand: Candidate, current: dict[str, ComponentScore], comps: dict[str, C
             why += (", so the same family rarely follows itself." if all(
                 crop_of(n, catalog).family != old.family for n in others)
                 else ": the only crops that fit there.")
-        return why, [f"Grow {crop.name} instead of {cand.replaced} once in the rotation",
-                     *changes]
+        when = "every other year" if cand.note.endswith("every year") else "once in the rotation"
+        return why, [f"Grow {crop.name} instead of {cand.replaced} {when}", *changes]
     if cand.key == "save_water" and crop and cand.replaced:
         saved = current["water"].metrics["deficit_mm"] - comps["water"].metrics["deficit_mm"]
         old = crop_of(cand.replaced, catalog)
         if saved >= 20:
             detail = (f"{crop.name.capitalize()} needs about {saved} mm less water per year "
                       f"beyond rainfall here and has {crop.drought_tolerance} drought tolerance.")
+        elif TOLERANCE[crop.drought_tolerance] <= TOLERANCE[old.drought_tolerance]:
+            detail = (f"{crop.name.capitalize()} is less thirsty by nature, though in these "
+                      "months it needs about the same water beyond rainfall here.")
         else:
             detail = (f"{crop.name.capitalize()} needs about the same water but handles dry "
                       f"spells better ({crop.drought_tolerance} vs {old.drought_tolerance} "
@@ -371,12 +375,35 @@ def _confidence(cand: Candidate | None, profile: FarmProfile, ff: FieldFeatures,
 RELAXED_MIN = 0.01  # when no locally grown crop fits well: the best local one, never a stranger
 
 
+# Country unknown: guess the crops most farms grow worldwide before anything else (not alfalfa).
+STAPLES = ["rice", "maize", "wheat", "sorghum", "soybean", "cassava", "pearl millet", "barley",
+           "common bean", "peanut", "sweet potato", "cowpea"]
+
+
+def _infer_irrigation(profile: FarmProfile, ctx: FieldContext) -> None:
+    """Irrigation unknown, but the current crops (the farmer's, or green seen from space) grow
+    mostly in dry months: something waters them, so don't plan as if the field were rain-fed."""
+    def mostly_dry(slot: Slot) -> bool:
+        months = slot.months()
+        return sum("dry" in ctx.flags[m - 1] for m in months) > len(months) / 2
+
+    if any(mostly_dry(s) for s in profile.slots):
+        profile.water = "mixed"
+        profile.assumptions = [
+            "Irrigation unknown: your field grows crops in dry months, so we assumed some "
+            "irrigation" if a == "Irrigation unknown: assumed rain-fed" else a
+            for a in profile.assumptions]
+
+
 def _assume_crops(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo]) -> None:
     """No crops given: the satellite shows when the field is green; assume the most widely grown
     crop in the country that fits each green run (never an "unknown crop")."""
     local = profile.local or {}
-    names = [n for n, _ in sorted(local.items(), key=lambda kv: -kv[1]) if n in catalog]
-    names = names or sorted(n for n, c in catalog.items() if not c.is_cover)
+    names = [n for n, _ in sorted(local.items(), key=lambda kv: -kv[1])
+             if n in catalog and n not in profile.wont_grow]
+    names = names or sorted((n for n, c in catalog.items()
+                             if not c.is_cover and n not in profile.wont_grow),
+                            key=lambda n: (STAPLES.index(n) if n in STAPLES else len(STAPLES), n))
     used: list[str] = []
     slots = []
     for slot in profile.slots:
@@ -398,10 +425,12 @@ def _assume_crops(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, Cr
         many = len(picked) > 1
         profile.assumptions = [a for a in profile.assumptions
                                if not a.startswith("Current crops estimated")]
+        kind = (f"the most widely grown {'crops' if many else 'crop'} {where}" if local
+                else f"common staple {'crops' if many else 'crop'} ")
         profile.assumptions.append(
-            f"You didn't list your crops, so we assumed {crops}: the most widely grown "
-            f"{'crops' if many else 'crop'} {where}that {'fit' if many else 'fits'} the months "
-            "your field looks green. Tell us your crops for better advice.")
+            f"You didn't list your crops, so we assumed {crops}: {kind}that "
+            f"{'fit' if many else 'fits'} the months your field looks green. Tell us your "
+            "crops for better advice.")
 
 
 def _unique_windows(years: list[list[Slot]]) -> list[tuple[int, int, int]]:
@@ -434,6 +463,9 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     profile = parse_answers(raw_answers, catalog, runs(green))
     profile.country = country
     profile.local = regional.local_crops(country)
+    none_local = profile.local == {}  # in FAOSTAT, but none of our crops is grown widely there
+    if none_local:
+        profile.local = None
     profile.values = regional.crop_values(country)
     ref_crop = regional.reference_value(profile.local, profile.values,
                                         {n for n, c in catalog.items() if not c.is_cover})
@@ -441,6 +473,8 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     if ref_crop and profile.values and country:
         profile.value_ref = profile.values[ref_crop].value_usd_ha
         market = Market(_country_text(country), profile.values, ref_crop)
+    if (raw_answers or {}).get("water") not in WATER:
+        _infer_irrigation(profile, ctx)
     if profile.rotation_source == "satellite":
         _assume_crops(profile, ctx, catalog)
     weights = weights_for(profile.goals)
@@ -474,9 +508,16 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
         "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
         "Soil values are SoilGrids estimates; a soil test would be more accurate",
     ]
-    if profile.local is None:
+    if none_local:
+        data_gaps.append(f"None of the crops SowSmart knows is grown widely in "
+                         f"{_country_text(country)}, so suggestions aren't limited to locally "
+                         "grown crops. Check seed and buyers locally.")
+    elif profile.local is None:
         data_gaps.append("We couldn't tell which country this field is in, so suggestions "
                          "aren't limited to locally grown crops")
+    if not has_ranges(catalog):
+        data_gaps.append("Crop temperature and rain limits (FAO EcoCrop) aren't loaded on this "
+                         "server, so these options aren't checked against your climate")
     for c in weak:
         place = _country_text(profile.country)
         data_gaps.append(f"Few crops grown in {place} suit this field well; "
@@ -491,7 +532,8 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
                              f"{_country_text(profile.country) or 'this region'} fits this "
                              "field's bare months, so there is no cash-crop option")
         if missing:
-            data_gaps.append("No suitable crop found for: " + ", ".join(sorted(missing)))
+            data_gaps.append("No suitable crop found for: "
+                             + ", ".join(NAMES[k] for k in sorted(missing)))
     covers = sorted({f.crop.name for c in candidates for f in c.fills if f.crop.is_cover})
     if covers and profile.local is not None:
         data_gaps.append(f"FAO harvest statistics don't count cover crops, so we can't confirm "

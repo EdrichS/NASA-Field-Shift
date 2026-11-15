@@ -26,3 +26,16 @@ def test_unconfigured_email_fails_without_network():
 
 def test_addresses_are_masked():
     assert mask("esample@school.edu") == "e***@school.edu"
+
+
+def test_an_unreachable_smtp_server_is_an_email_error(monkeypatch):
+    import smtplib
+
+    def refuse(*args, **kwargs):
+        raise ConnectionRefusedError(111, "Connection refused")
+
+    monkeypatch.setattr(smtplib, "SMTP", refuse)
+    settings = Settings(_env_file=None, smtp_host="smtp.example.com", smtp_username="u",
+                        smtp_password="p", alert_email_from="from@example.com")
+    with pytest.raises(EmailError, match="ConnectionRefusedError"):
+        send_email("farmer@example.com", "s", "t", settings=settings)

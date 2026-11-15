@@ -92,7 +92,14 @@ def suitability(crop: CropInfo, months: list[int], ctx: FieldContext, water: str
             rain = max(0.75, rain)
     ph = _fit(ctx.soil_ph, (eco.get("ph_opt_min"), eco.get("ph_opt_max")),
               (eco.get("ph_abs_min"), eco.get("ph_abs_max")), 0.8)
-    score = 0.0 if any(s == 0 for s in per_month) else round(0.5 * temp + 0.3 * rain + 0.2 * ph, 3)
+    # Rain-fed with less rain a year than the crop's absolute minimum, or mostly in dry months (the
+    # calendar's "D"): it can't grow, however warm (no mungbean through a Sahel dry season).
+    driest = eco.get("rain_abs_min_mm")
+    dry_months = sum("dry" in ctx.flags[m - 1] for m in months)
+    too_dry = water == "rainfed" and (
+        (driest is not None and ctx.annual_rain_mm < driest) or dry_months > len(months) / 2)
+    score = 0.0 if too_dry or any(s == 0 for s in per_month) \
+        else round(0.5 * temp + 0.3 * rain + 0.2 * ph, 3)
     return Suitability(score, round(temp, 3), round(rain, 3), round(ph, 3), tuple(months))
 
 
@@ -409,12 +416,22 @@ def fill_bare(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
                      fills=fills, bare=bare)
 
 
+def _swap(old: Slot, crop: CropInfo) -> Slot:
+    """`crop` planted when `old` was. A much shorter crop is harvested after its typical length,
+    so the months it frees become a bare window like any other (filled or explained)."""
+    typical = (crop.cycle_min_days + crop.cycle_max_days) / 2
+    if old.days <= typical + MIN_GAP_DAYS:
+        return Slot(crop.name, old.plant_month, old.harvest_month, new=True)
+    months = max(1, math.ceil(typical / DAYS_PER_MONTH))
+    return Slot(crop.name, old.plant_month, (old.plant_month + months - 1) % 12 + 1, new=True)
+
+
 def _replace(years: list[list[Slot]], old: Slot, crop: CropInfo) -> list[list[Slot]]:
     new_years = _copy(years)
     for year in new_years:
         for i, slot in enumerate(year):
             if slot == old:
-                year[i] = Slot(crop.name, old.plant_month, old.harvest_month, new=True)
+                year[i] = _swap(old, crop)
                 return new_years
     return new_years
 
@@ -428,7 +445,9 @@ def break_pest(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
     known = Counter({f: n for f, n in families.items() if f != "unknown"})
     if not known:  # crops we have no family for: no honest pest-cycle advice
         return None
-    common = known.most_common(1)[0][0]
+    common, count = known.most_common(1)[0]
+    if count < 2 and len(slots) > 1:  # the family already changes every crop: no cycle to break
+        return None
     best = None
     for slot in (s for s in slots if crop_of(s.crop, catalog).family == common):
         for crop in _pool(profile, catalog):
@@ -446,10 +465,15 @@ def break_pest(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
     if best is None:
         return None
     _, slot, crop, suit = best
-    new_years, fills, bare = fill_gaps(profile, _replace(years, slot, crop), ctx, catalog,
-                                       "pest", avoid_families={common})
-    return Candidate("break_pest", new_years, crop, slot.crop, None, suit,
-                     note=f"{common} family grown {families[common]} time(s)", fills=fills,
+    if len(slots) == 1:  # one crop every year: alternate it with the new family, year by year
+        swapped = [[slot], [_swap(slot, crop)]]
+    else:
+        swapped = _replace(years, slot, crop)
+    new_years, fills, bare = fill_gaps(profile, swapped, ctx, catalog, "pest",
+                                       avoid_families={common})
+    note = (f"{common} family every year" if len(slots) == 1
+            else f"{common} family grown {families[common]} times")
+    return Candidate("break_pest", new_years, crop, slot.crop, None, suit, note=note, fills=fills,
                      bare=bare)
 
 

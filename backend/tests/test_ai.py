@@ -115,6 +115,15 @@ def test_invented_numbers_are_caught_but_digits_inside_names_are_not():
     assert checks.unknown_numbers("expect 8 bags more", allowed) == ["8"]  # "v8" doesn't allow 8
 
 
+def test_invented_thousands_are_caught_however_they_are_grouped():
+    allowed = checks.allowed_numbers({"x": 50, "y": 2454, "text": "2,721 mm"})
+    for text in ("earn ₱50,000 more", "about 50 000 pesos", "50 000 pesos",
+                 "50 000 pesos", "2,000 kg", "12,000 a year", "1" * 400):
+        assert checks.unknown_numbers(text, allowed), text
+    for text in ("about 2,454 mm", "2 454 mm", "2,721 mm", "score 50"):
+        assert checks.unknown_numbers(text, allowed) == [], text
+
+
 def test_scrub_removes_only_offending_items_and_sentences():
     allowed = checks.allowed_numbers({"x": 61.1})
     report = {"why": "Score is 61.1. It adds 900 kg. Ask your expert.",

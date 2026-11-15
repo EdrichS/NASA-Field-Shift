@@ -1,6 +1,6 @@
 # SowSmart dev commands. Run from the repo root.
 
-PYTHON ?= /opt/homebrew/bin/python3.13
+PYTHON ?= python3.13
 VENV   := .venv
 PY     := $(VENV)/bin/python
 API    ?= http://localhost:8000

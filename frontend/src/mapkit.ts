@@ -15,6 +15,9 @@ export type LngLat = { lat: number; lng: number }
 /** The backend buffers a point by this much (backend/app/data/geometry.py FIELD_BUFFER_M). */
 export const FIELD_BUFFER_M = 250
 
+/** The largest drawn field we analyze, so a boundary stays one field (locate step and Detailed). */
+export const MAX_FIELD_HA = 2000
+
 const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services'
 
 // Layer IDs, tile matrix sets and formats checked against the GIBS WMTS GetCapabilities

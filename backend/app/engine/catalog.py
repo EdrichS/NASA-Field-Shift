@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 import math
+import re
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from app.data import crops as crop_data
+
+log = logging.getLogger(__name__)
 
 ALIASES = {
     "corn": "maize", "mung bean": "mungbean", "mung": "mungbean", "rye": "cereal rye",
@@ -17,7 +20,25 @@ ALIASES = {
     "beans": "common bean", "pepper": "chili pepper", "chili": "chili pepper",
     "pumpkin": "squash", "clover": "red clover", "vetch": "hairy vetch", "palay": "rice",
     "mais": "maize", "munggo": "mungbean",
+    "soy": "soybean", "soya bean": "soybean", "soy bean": "soybean", "green gram": "mungbean",
+    "paddy": "rice", "manioc": "cassava", "yuca": "cassava", "kamote": "sweet potato",
+    "chilli": "chili pepper", "chile": "chili pepper", "chili peppers": "chili pepper",
+    "hot pepper": "chili pepper", "oat": "oats", "lucerne": "alfalfa", "rapeseed": "canola",
+    "kidney bean": "common bean", "dry bean": "common bean", "brinjal": "eggplant",
+    "aubergine": "eggplant", "talong": "eggplant", "bok choy": "pak choi",
+    "pechay": "pak choi", "sitaw": "string bean", "long bean": "string bean",
+    "yardlong bean": "string bean", "green bean": "string bean",
 }
+
+
+def _singular(word: str) -> str:
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith(("oes", "shes", "ches")):
+        return word[:-2]
+    if word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
 
 
 @dataclass(frozen=True)
@@ -104,19 +125,42 @@ def load_from_db() -> dict[str, CropInfo]:
     return {r["name"]: from_record(r) for r in rows}
 
 
-@lru_cache
+def has_ranges(catalog: dict[str, CropInfo]) -> bool:
+    """False when FAO EcoCrop wasn't loaded: then no crop has temperature or rain limits."""
+    return any(c.eco for c in catalog.values())
+
+
+_loaded: dict[str, CropInfo] | None = None
+
+
 def default_catalog() -> dict[str, CropInfo]:
-    """TigerData when reachable and loaded, otherwise the CSV + EcoCrop files."""
+    """TigerData when reachable and loaded, otherwise the CSV + EcoCrop files. Only a catalog
+    with EcoCrop ranges is kept, so a database that is slow at startup is retried later."""
+    global _loaded
+    if _loaded is not None:
+        return _loaded
+    catalog: dict[str, CropInfo] = {}
     try:
         catalog = load_from_db()
-        if catalog:
-            return catalog
-    except Exception:
-        pass
-    return load_from_files()
+    except Exception as e:
+        log.warning("crop catalog: database unavailable (%s), using the CSV files",
+                    type(e).__name__)
+    catalog = catalog or load_from_files()
+    if has_ranges(catalog):
+        _loaded = catalog
+    else:
+        log.error("crop catalog has no FAO EcoCrop ranges: run `make load-crops` "
+                  "(or `make ecocrop`); every crop counts as suitable until then")
+    return catalog
 
 
 def resolve(name: str, catalog: dict[str, CropInfo]) -> CropInfo | None:
-    key = (name or "").strip().lower()
-    key = ALIASES.get(key, key)
-    return catalog.get(key)
+    """Catalog crop for a farmer's spelling: 'Sweet potatoes', 'Mung beans', 'soya bean'."""
+    key = re.sub(r"\s+", " ", (name or "").strip().lower())
+    for k in (key, _singular(key), " ".join(_singular(w) for w in key.split(" "))):
+        k = ALIASES.get(k, k)
+        if k in catalog:
+            return catalog[k]
+        if k.replace(" ", "") in ALIASES:
+            return catalog.get(ALIASES[k.replace(" ", "")])
+    return None

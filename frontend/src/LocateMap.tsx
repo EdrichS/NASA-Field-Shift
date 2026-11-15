@@ -6,6 +6,7 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
 import type { Geometry, Polygon } from 'geojson'
 import {
   GIBS_LAYERS,
+  MAX_FIELD_HA,
   areaHa,
   baseStyle,
   centerOf,
@@ -23,8 +24,6 @@ import {
 } from './mapkit'
 
 export type LocateMode = 'point' | 'locate' | 'draw' | 'browse'
-
-const MAX_FIELD_HA = 2000
 
 const MODES: { id: LocateMode; label: string; hint: string }[] = [
   { id: 'point', label: 'Tap a point', hint: 'Tap your field on the map. We study a circle about 250 m around it.' },

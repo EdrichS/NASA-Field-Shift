@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { LANGUAGES } from './i18n'
-import { areaHa, baseStyle, maplibregl, pinMarker } from './mapkit'
+import { MAX_FIELD_HA, areaHa, baseStyle, maplibregl, pinMarker } from './mapkit'
 import type { Feature } from 'geojson'
 import type { UnitSystem } from './SignUp'
 import './DetailedSetup.css'
@@ -131,6 +131,8 @@ export type DetailedDraft = {
   events: string[]
   eventNote: string
   goals: string[]
+  /** True once the farmer reorders or confirms the goals; until then no ranking is sent. */
+  goalsTouched: boolean
   risk: string
   riskCustom: string
   timeFrame: string
@@ -222,6 +224,7 @@ export function createDetailedDraft(units: UnitSystem, pin: LatLng, slopeText: s
     events: [],
     eventNote: '',
     goals: [...GOALS],
+    goalsTouched: false,
     risk: '',
     riskCustom: '',
     timeFrame: '',
@@ -295,7 +298,9 @@ export default function DetailedSetup({
   }
 
   function skip(id: SectionId) {
-    edit({ skipped: draft.skipped.includes(id) ? draft.skipped : [...draft.skipped, id] })
+    const skipped = draft.skipped.includes(id) ? draft.skipped : [...draft.skipped, id]
+    // Skipping priorities means "not sure": all goals then count the same.
+    edit(id === 'priorities' ? { skipped, goalsTouched: false } : { skipped })
   }
 
   function updateField(id: string, partial: Partial<FieldPlot>) {
@@ -496,8 +501,8 @@ function AccountSection({
           label="System"
           value={draft.system}
           options={[
-            { value: 'metric', label: 'Metric' },
-            { value: 'imperial', label: 'Imperial' },
+            { value: 'metric', label: 'Metric · km' },
+            { value: 'imperial', label: 'Imperial · miles' },
           ]}
           onChange={setSystem}
         />
@@ -510,6 +515,7 @@ function AccountSection({
             className="control"
             value={draft.displayName}
             autoComplete="nickname"
+            maxLength={40}
             placeholder="Optional"
             onChange={(event) => edit({ displayName: event.target.value })}
           />
@@ -533,6 +539,7 @@ function FieldsSection({
   updateField: (id: string, partial: Partial<FieldPlot>) => void
   onAdd: () => void
 }) {
+  const [message, setMessage] = useState<string>()
   return (
     <>
       <div className="field-tabs">
@@ -584,7 +591,10 @@ function FieldsSection({
               type="button"
               className="text-action"
               disabled={active.polygon.length === 0}
-              onClick={() => updateField(active.id, { polygon: active.polygon.slice(0, -1), boundaryClosed: false, areaHa: null })}
+              onClick={() => {
+                setMessage(undefined)
+                updateField(active.id, { polygon: active.polygon.slice(0, -1), boundaryClosed: false, areaHa: null })
+              }}
             >
               Undo point
             </button>
@@ -594,6 +604,12 @@ function FieldsSection({
               disabled={active.polygon.length < 3}
               onClick={() => {
                 const areaHa = polygonAreaHa(active.polygon)
+                // Same limit as the locate step: one field, not a whole district.
+                if (areaHa > MAX_FIELD_HA) {
+                  setMessage(`That outline is about ${Math.round(areaHa).toLocaleString()} ha. Please draw one field (under ${MAX_FIELD_HA.toLocaleString()} ha).`)
+                  return
+                }
+                setMessage(undefined)
                 updateField(active.id, {
                   boundaryClosed: true,
                   confirmed: true,
@@ -607,20 +623,22 @@ function FieldsSection({
             <button
               type="button"
               className="text-action"
-              onClick={() =>
+              onClick={() => {
+                setMessage(undefined)
                 updateField(active.id, {
                   polygon: [],
                   boundaryClosed: false,
                   areaHa: null,
                   size: active.sizeEdited ? active.size : '',
                 })
-              }
+              }}
             >
               Clear
             </button>
           </>
         ) : null}
       </div>
+      {message ? <p className="field-error map-error" role="alert">{message}</p> : null}
       <div className="month-pair">
         <div className="field">
           <FieldLabel essential htmlFor={`field-name-${active.id}`}>
@@ -630,6 +648,7 @@ function FieldsSection({
             id={`field-name-${active.id}`}
             className="control"
             value={active.name}
+            maxLength={60}
             placeholder="e.g., North paddy"
             onChange={(event) => updateField(active.id, { name: event.target.value, confirmed: true })}
           />
@@ -776,6 +795,7 @@ function PracticeSection({ draft, edit }: { draft: DetailedDraft; edit: (partial
               id={`rot-crop-${row.id}`}
               className="control"
               value={row.crop}
+              maxLength={60}
               placeholder="e.g., Rice"
               onChange={(event) => setRow(row.id, { crop: event.target.value })}
             />
@@ -968,7 +988,7 @@ function PrioritiesSection({ draft, edit }: { draft: DetailedDraft; edit: (parti
     const goals = [...draft.goals]
     const [item] = goals.splice(index, 1)
     goals.splice(nextIndex, 0, item)
-    edit({ goals })
+    edit({ goals, goalsTouched: true })
   }
   return (
     <>
@@ -994,6 +1014,19 @@ function PrioritiesSection({ draft, edit }: { draft: DetailedDraft; edit: (parti
           </li>
         ))}
       </ol>
+      {/* The starting order is only a list: it counts once the farmer reorders or confirms it. */}
+      {draft.goalsTouched ? (
+        <button type="button" className="text-action" onClick={() => edit({ goalsTouched: false })}>
+          Weigh all goals equally instead
+        </button>
+      ) : (
+        <>
+          <p className="helper">Not ranked yet: all goals count the same until you reorder or confirm the list.</p>
+          <button type="button" className="text-action" onClick={() => edit({ goalsTouched: true })}>
+            Use this order
+          </button>
+        </>
+      )}
       <FieldLabel essential>Land risked on a new crop</FieldLabel>
       <Pills
         single

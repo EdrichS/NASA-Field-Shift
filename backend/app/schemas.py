@@ -3,7 +3,7 @@ types are generated from the OpenAPI schema these produce (shared/contracts/open
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -15,6 +15,7 @@ LANGUAGES = {"en": "English", "tl": "Tagalog", "es": "Spanish", "fr": "French",
 Water = Literal["irrigated", "rainfed", "mixed", "unknown"]
 Equipment = Literal["hand_tools", "animal", "small_tractor", "full_machinery", "unknown"]
 Goal = Literal["save_water", "build_soil", "earn_more", "feed_household", "survive_bad_years"]
+CropName = Annotated[str, Field(max_length=60)]  # typed by the farmer; goes into AI prompts
 
 
 def _check_language(code: str) -> str:
@@ -51,8 +52,8 @@ class Answers(BaseModel):
     equipment: Equipment | None = None
     top_goal: Goal | None = None
     ranked_goals: list[Goal] = Field(default_factory=list, max_length=3)
-    wont_grow: list[str] = Field(default_factory=list, max_length=30)
-    sellable_crops: list[str] = Field(default_factory=list, max_length=30)
+    wont_grow: list[CropName] = Field(default_factory=list, max_length=30)
+    sellable_crops: list[CropName] = Field(default_factory=list, max_length=30)
 
 
 class AnalyzeRequest(GeometryIn):

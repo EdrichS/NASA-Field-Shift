@@ -29,7 +29,8 @@ function yearHalves(steps: Strategy['rotation'][number]): Half[] {
   for (const step of steps) {
     const start = 2 * (step.plant_month - 1) + 1
     const end = 2 * (step.harvest_month - 1) + 1
-    const length = (end - start + 24) % 24 || 1
+    // The same planting and harvest month is a 12-month crop (cassava, sugarcane): the whole year.
+    const length = (end - start + 24) % 24 || 24
     for (let i = 0; i < length; i++) halves[(start + i) % 24] = { crop: step.crop, isNew: step.new }
   }
   return halves

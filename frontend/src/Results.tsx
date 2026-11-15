@@ -18,7 +18,7 @@ import {
 } from './api'
 import PlotName from './PlotName'
 import PrintReport from './PrintReport'
-import { BASE_GLOSSARY, COMPONENT_LABELS, expertQuestions, languageName, strategyColors, stripScore } from './reportText'
+import { BASE_GLOSSARY, COMPONENT_LABELS, expertQuestions, languageName, optionNumbers, strategyColors, stripScore } from './reportText'
 import YearStrip, { rowFromStrategy } from './YearStrip'
 import './Results.css'
 
@@ -43,16 +43,16 @@ export type ResultsProps = {
 
 const OVERVIEW = 'overview'
 
-/** The short label of a rotation in tabs and Year Strip rows: its rank, or "Now". */
-function rankLabel(s: Strategy) {
-  return s.key === 'current' ? 'Now' : String(s.rank)
+/** The short label of a rotation in tabs and Year Strip rows: its option number, or "Now". */
+function rankLabel(s: Strategy, numbers: Record<string, number>) {
+  return s.key === 'current' ? 'Now' : String(numbers[s.key])
 }
 
 /** The longer name used in links: "Option 2", "What you grow now" or "Overview". */
-function tabName(key: string, strategies: Strategy[]) {
+function tabName(key: string, numbers: Record<string, number>) {
   if (key === OVERVIEW) return 'Overview'
   if (key === 'current') return 'What you grow now'
-  return `Option ${strategies.find((s) => s.key === key)?.rank ?? ''}`
+  return `Option ${numbers[key] ?? ''}`
 }
 
 function compareWords(s: Strategy, current?: Strategy) {
@@ -83,7 +83,7 @@ export default function Results({ analysis, title, subtitle, name, onRename, geo
   const names = Object.fromEntries(analysis.strategies.map((s) => [s.key, textFor(s)?.name ?? s.name]))
   const current = analysis.strategies.find((s) => s.key === 'current')
   const options = ranked.filter((s) => s.key !== 'current')
-  const lastRank = Math.max(0, ...options.map((s) => s.rank))
+  const numbers = optionNumbers(analysis.strategies)
 
   const tabs = [OVERVIEW, ...options.map((s) => s.key), ...(current ? ['current'] : [])]
   const [tab, setTab] = useState(OVERVIEW)
@@ -151,7 +151,7 @@ export default function Results({ analysis, title, subtitle, name, onRename, geo
             {tabs.map((key) => {
               const s = analysis.strategies.find((x) => x.key === key)
               const on = key === active
-              const label = s ? rankLabel(s) : 'Overview'
+              const label = s ? rankLabel(s, numbers) : 'Overview'
               return (
                 <button
                   key={key}
@@ -160,7 +160,7 @@ export default function Results({ analysis, title, subtitle, name, onRename, geo
                   role="tab"
                   aria-selected={on}
                   aria-controls={`rpanel-${key}`}
-                  aria-label={s ? `${tabName(key, analysis.strategies)}: ${names[key]}` : undefined}
+                  aria-label={s ? `${tabName(key, numbers)}: ${names[key]}` : undefined}
                   title={s ? names[key] : undefined}
                   tabIndex={on ? 0 : -1}
                   className={`rtab${key === OVERVIEW ? ' is-wide' : key === 'current' ? ' is-now' : ''}`}
@@ -182,6 +182,7 @@ export default function Results({ analysis, title, subtitle, name, onRename, geo
               languages={languages}
               onLanguage={setLanguage}
               ranked={ranked}
+              numbers={numbers}
               current={current}
               textFor={textFor}
               onPick={(key) => select(key, true)}
@@ -208,9 +209,10 @@ export default function Results({ analysis, title, subtitle, name, onRename, geo
                     weights={analysis.weights}
                     stress={analysis.stress_calendar}
                     colors={strategyColors(analysis.strategies)}
-                    lastRank={lastRank}
-                    prev={prev ? { key: prev, label: tabName(prev, analysis.strategies) } : undefined}
-                    next={next ? { key: next, label: tabName(next, analysis.strategies) } : undefined}
+                    numbers={numbers}
+                    optionCount={options.length}
+                    prev={prev ? { key: prev, label: tabName(prev, numbers) } : undefined}
+                    next={next ? { key: next, label: tabName(next, numbers) } : undefined}
                     onPick={(k) => select(k, true)}
                   />
                 </div>
@@ -233,6 +235,7 @@ function Overview({
   languages,
   onLanguage,
   ranked,
+  numbers,
   current,
   textFor,
   onPick,
@@ -248,6 +251,7 @@ function Overview({
   languages: string[]
   onLanguage: (code: string) => void
   ranked: Strategy[]
+  numbers: Record<string, number>
   current?: Strategy
   textFor: (s: Strategy) => StrategyText | undefined
   onPick: (key: string) => void
@@ -258,7 +262,7 @@ function Overview({
   const top = ranked[0]
   const rows = [
     ...(current ? [rowFromStrategy(current, 'Now')] : []),
-    ...ranked.filter((s) => s.key !== 'current').map((s) => rowFromStrategy(s, rankLabel(s))),
+    ...ranked.filter((s) => s.key !== 'current').map((s) => rowFromStrategy(s, rankLabel(s, numbers))),
   ]
   const goals = (analysis.profile?.goals ?? []).map((g) => g.replace(/_/g, ' '))
 
@@ -311,8 +315,8 @@ function Overview({
             return (
               <li key={s.key}>
                 <button type="button" className={s.key === 'current' ? 'rank-row is-now' : 'rank-row'} onClick={() => onPick(s.key)}>
-                  <span className="rank-num" aria-hidden="true">{rankLabel(s)}</span>
-                  <span className="visually-hidden">{s.key === 'current' ? `What you grow now, ranked ${s.rank}:` : `Option ${s.rank}:`}</span>
+                  <span className="rank-num" aria-hidden="true">{rankLabel(s, numbers)}</span>
+                  <span className="visually-hidden">{s.key === 'current' ? `What you grow now, ranked ${s.rank}:` : `Option ${numbers[s.key]}:`}</span>
                   <span className="rank-text">
                     <span className="rank-name">{t?.name ?? s.name}</span>
                     <span className="rank-detail">{t?.headline ?? s.title}</span>
@@ -451,7 +455,8 @@ function OptionPage({
   weights,
   stress,
   colors,
-  lastRank,
+  numbers,
+  optionCount,
   prev,
   next,
   onPick,
@@ -462,7 +467,8 @@ function OptionPage({
   weights: Record<string, number>
   stress: AnalyzeResponse['stress_calendar']
   colors: Record<string, string>
-  lastRank: number
+  numbers: Record<string, number>
+  optionCount: number
   prev?: { key: string; label: string }
   next?: { key: string; label: string }
   onPick: (key: string) => void
@@ -471,7 +477,7 @@ function OptionPage({
   const benefits = text?.benefits ?? s.benefits.map(stripScore)
   const risks = text?.risks ?? s.risks
   const gaps = text?.information_gaps ?? s.gaps
-  const rows = isCurrent || !current ? [rowFromStrategy(s, rankLabel(s))] : [rowFromStrategy(current, 'Now'), rowFromStrategy(s, rankLabel(s))]
+  const rows = isCurrent || !current ? [rowFromStrategy(s, rankLabel(s, numbers))] : [rowFromStrategy(current, 'Now'), rowFromStrategy(s, rankLabel(s, numbers))]
   const band = isCurrent ? undefined : newCropColor(colors, s)
   const words = compareWords(s, current)
   const id = `opt-${s.key}`
@@ -480,7 +486,7 @@ function OptionPage({
     <>
       <div className="opt-head">
         <p className="cap">
-          {isCurrent ? 'What you grow now' : `Option ${s.rank} of ${lastRank}${s.rank === 1 ? ' · best match for your goals' : ''}`}
+          {isCurrent ? 'What you grow now' : `Option ${numbers[s.key]} of ${optionCount}${s.rank === 1 ? ' · best match for your goals' : ''}`}
         </p>
         <h2 className="opt-title">{text?.name ?? s.name}</h2>
         <p className="opt-headline">{text?.headline ?? s.title}</p>
