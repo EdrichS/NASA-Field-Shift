@@ -97,11 +97,11 @@ export default function LocateMap({
         modes: [
           new TerraDrawPolygonMode({
             styles: {
-              fillColor: '#f2c14e',
+              fillColor: '#d9a93a',
               fillOpacity: 0.25,
-              outlineColor: '#f2c14e',
+              outlineColor: '#d9a93a',
               outlineWidth: 2,
-              closingPointColor: '#1c3d32',
+              closingPointColor: '#183323',
               closingPointWidth: 6,
               closingPointOutlineColor: '#ffffff',
               closingPointOutlineWidth: 2,

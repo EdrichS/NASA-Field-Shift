@@ -1,3 +1,7 @@
+/* Signed-in dashboard (S14 home, S15 alerts, S16 fields, S17 account). Design system v1:
+   tokens and shared parts (.index-card, .tag-btn, .secondary, .link-button, .cap, .bell,
+   .toggle-row, .alert-item, .alert-map) come from app.css. Square corners, left-aligned. */
+
 .home,
 .home *,
 .home *::before,
@@ -5,30 +9,37 @@
   box-sizing: border-box;
 }
 
+/* The tab bar is docked to the bottom edge, so the page ends above it: bar height (3.5rem + 2px
+   rule) plus the phone's safe area plus breathing room. Nothing is ever covered. */
 .home {
   min-height: 100dvh;
-  overflow-y: auto;
   display: flex;
   justify-content: center;
   padding:
-    max(1.1rem, env(safe-area-inset-top))
-    max(1.1rem, env(safe-area-inset-right))
-    max(5.5rem, calc(env(safe-area-inset-bottom) + 4.6rem))
-    max(1.1rem, env(safe-area-inset-left));
-  background:
-    radial-gradient(ellipse 70% 46% at 50% 18%, #e5efe4 0%, transparent 68%),
-    #f4f2eb;
-  color: #1c3d32;
-  font-family: Outfit, 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    max(0.9rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    calc(3.5rem + 2px + env(safe-area-inset-bottom, 0px) + 1.75rem)
+    max(1.25rem, env(safe-area-inset-left));
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;
 }
 
 .home-column {
-  width: min(100%, 26rem);
+  width: min(100%, 34rem);
   display: flex;
   flex-direction: column;
 }
 
+.home-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  animation: home-in 200ms ease;
+}
+
+/* Header: wordmark and bell (the bell itself is styled in app.css). */
 .home-bar {
   display: flex;
   align-items: center;
@@ -37,188 +48,430 @@
 }
 
 .home .wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   margin: 0;
-  color: #1a3a2e;
-  font-family: Fraunces, 'Iowan Old Style', Palatino, Georgia, serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: 1.375rem;
+  font-weight: 700;
   line-height: 1;
 }
 
-.home .wordmark-sprout {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.home-lang {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.2rem;
-  color: #5d675f;
-  font-size: 0.72rem;
-  font-weight: 500;
-}
-
-.home-lang select {
-  max-width: 9.5rem;
-  min-height: 2.2rem;
-  padding: 0.25rem 1.6rem 0.25rem 0.65rem;
-  border: 1.5px solid #d5d8d0;
-  border-radius: 999px;
-  background: #fffcf8
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 6L8 10.5 12.5 6' fill='none' stroke='%231c3d32' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-    no-repeat right 0.55rem center;
-  background-size: 0.85rem;
-  appearance: none;
-  color: #1c3d32;
-  font: inherit;
-  font-size: 0.85rem;
-}
-
-.home-lang select:focus {
-  outline: 2px solid #1c3d32;
+.home .bell:focus-visible {
+  outline: 3px solid var(--sun);
   outline-offset: 2px;
 }
 
-.home-kicker {
-  margin: 1rem 0 0.35rem;
-  color: #7d847c;
-  font-size: 0.82rem;
+/* Page heads: the screen title over a 2px ink rule. */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0 0.65rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+.page-head.has-action {
+  align-items: center;
+}
+
+.page-head.is-welcome {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  padding-top: 0;
+}
+
+.page-head .cap {
+  overflow-wrap: anywhere;
 }
 
 .home h1 {
   margin: 0;
-  color: #1a3a2e;
-  font-family: Fraunces, 'Iowan Old Style', Palatino, Georgia, serif;
-  font-size: clamp(1.7rem, 7vw, 2.05rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: clamp(1.85rem, 8.5vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.home h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: 1.3125rem;
+  font-weight: 700;
   line-height: 1.15;
 }
 
-.home-farm {
-  margin: 0.25rem 0 0.9rem;
-  color: #3e5649;
-  font-size: 0.95rem;
-}
-
-.home-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  animation: home-in 220ms ease;
-}
-
-.home-card {
-  padding: 0.95rem 1rem;
-  border: 1px solid rgba(28, 61, 50, 0.1);
-  border-radius: 20px;
-  background: #fffcf8;
-  box-shadow: 0 10px 28px rgba(28, 61, 50, 0.06);
-}
-
-.home-card h2 {
-  margin: 0 0 0.35rem;
-  color: #1a3a2e;
-  font-family: Fraunces, 'Iowan Old Style', Palatino, Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.home-card p,
-.home-card li {
+.home h3 {
   margin: 0;
-  color: #3e5649;
-  font-size: 0.92rem;
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* A section label that is a heading for structure but reads as a label in capitals. */
+.home h2.cap {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+
+.home-meta,
+.home-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
   line-height: 1.45;
 }
 
-.home-card ul {
-  margin: 0;
-  padding-left: 1.1rem;
+.home-empty {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+/* Plain links get a full tap target. */
+.home .link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.75rem;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+/* Home: the alerts summary card and the plan cards. */
+.home-alerts {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.pin-line {
+.home-alerts.band-risk h2.cap {
+  color: var(--risk);
+}
+
+.home-alerts-msg {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.home-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.plan-card .link-button {
+  margin-bottom: -0.5rem;
+}
+
+/* Fields: one index card per field, actions as plain links, alert choices in ruled rows. */
+.field-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-card h2 {
+  overflow-wrap: anywhere;
+}
+
+.field-card .field-name {
+  margin: 0.35rem 0 0.2rem;
+}
+
+.home .field-card .control:focus {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}
+
+.field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+}
+
+.home .alert-prefs {
+  margin: 0.2rem 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.home .alert-prefs summary {
   justify-content: space-between;
   gap: 0.75rem;
+  min-height: 2.75rem;
+  list-style: none;
 }
 
-.pin-line span {
-  color: #7d847c;
+.home .alert-prefs summary::-webkit-details-marker {
+  display: none;
 }
 
-.home-panel {
-  animation: home-in 220ms ease;
+.home .alert-prefs summary::after {
+  content: '+';
+  flex: none;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
 }
 
-.home-panel p + p {
-  margin-top: 0.45rem;
+.home .alert-prefs[open] summary::after {
+  content: '\2013';
 }
 
+.home .alert-prefs summary:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+
+.home .alert-prefs .helper {
+  margin: 0.6rem 0 0.35rem;
+}
+
+.home .toggle-row {
+  align-items: center;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
+.home .toggle-row input {
+  flex: none;
+  margin: 0;
+}
+
+.home .toggle-row input:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.toggle-source {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.home-add {
+  align-self: flex-start;
+}
+
+/* Alerts: the map in a square ink frame (.alert-map, app.css), then the list. */
+.alert-map-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.alert-map-card .helper {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.home .alert-item button:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+
+.home .alert-top {
+  align-items: baseline;
+}
+
+.alert-kind {
+  color: var(--ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.alert-item.sev-warning .alert-kind {
+  color: var(--risk);
+}
+
+.alert-item.sev-watch .alert-kind {
+  color: var(--warn);
+}
+
+.alert-item .alert-kind .sev {
+  color: inherit;
+  font-size: inherit;
+}
+
+/* Read alerts keep full contrast (app.css fades them); the missing "New" label marks them. */
+.home .alert-item.is-read button {
+  opacity: 1;
+}
+
+.alert-new {
+  flex: none;
+  color: var(--ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Account: settings as ruled rows, privacy as a warning-band card, sign out as a link. */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.15rem 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.setting-row dt {
+  grid-column: 1;
+}
+
+.setting-row dd {
+  grid-column: 1;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.setting-row dd.is-note {
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.privacy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.privacy-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.privacy-card .tag-btn {
+  margin-top: 0.25rem;
+}
+
+.home .sign-out {
+  align-self: center;
+}
+
+/* Docked tab bar: full width, attached to the bottom edge, four equal tabs. On wide screens the
+   tabs line up with the centered column. */
 .home-nav {
   position: fixed;
-  left: 50%;
-  bottom: max(0.7rem, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  width: min(calc(100% - 1.6rem), 26rem);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.2rem;
-  padding: 0.3rem;
-  border: 1px solid rgba(28, 61, 50, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 252, 248, 0.94);
-  box-shadow: 0 10px 28px rgba(28, 61, 50, 0.1);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding:
+    0
+    max(0px, env(safe-area-inset-right), calc((100% - 34rem) / 2))
+    env(safe-area-inset-bottom, 0px)
+    max(0px, env(safe-area-inset-left), calc((100% - 34rem) / 2));
+  border-top: 2px solid var(--ink);
+  background: var(--paper);
 }
 
 .home-nav button {
-  min-height: 2.5rem;
+  min-width: 0;
+  min-height: 3.5rem;
   margin: 0;
-  padding: 0.35rem 0.2rem;
+  padding: 0 0.2rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: transparent;
-  color: #5d675f;
+  color: var(--ink);
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
 }
 
 .home-nav button.is-on {
-  background: #1c3d32;
-  color: #f7f6f1;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
 }
 
 .home-nav button:focus-visible {
-  outline: 2px solid #1c3d32;
-  outline-offset: 2px;
+  outline: 3px solid var(--sun);
+  outline-offset: -3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-nav button:not(.is-on):hover {
+    background: var(--tag);
+  }
 }
 
 @keyframes home-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
 
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-stack,
-  .home-panel {
+  .home-stack {
     animation: none;
   }
 }

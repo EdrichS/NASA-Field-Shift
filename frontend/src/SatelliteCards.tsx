@@ -52,7 +52,6 @@ export default function SatelliteCards({
   return (
     <div className="step-panel locate-panel confirm-panel" key="confirm">
       <div className="locate-head">
-        <BackButton onClick={onBack} label="Back to the map" />
         <h1 id="confirm-title" className="where">What the satellites see</h1>
       </div>
       <p className="cards-intro">
@@ -101,7 +100,7 @@ export default function SatelliteCards({
         </details>
       ) : null}
 
-      <button type="button" className="continue" disabled={!data || blocked} onClick={onContinue}>
+      <button type="button" className="tag-btn is-block step-cta" disabled={!data || blocked} onClick={onContinue}>
         Continue
       </button>
     </div>
@@ -121,13 +120,13 @@ function SatCard({ card, answer, onAnswer }: { card: Card; answer?: CardAnswer; 
       <p className="sat-statement">{card.statement}</p>
       {status === 'corrected' ? <p className="sat-correction">Your answer: {describe(answer?.value)}</p> : null}
 
-      <div className="sat-ask" role="group" aria-label={`Is this right? ${card.title}`}>
-        <span>Is this right?</span>
-        <button type="button" className={status === 'confirmed' ? 'pick is-on' : 'pick'} onClick={() => { setEditing(false); onAnswer({ status: 'confirmed' }) }}>Yes</button>
+      <p className="sat-ask-label" aria-hidden="true">Is this right?</p>
+      <div className={edit ? 'sat-ask' : 'sat-ask is-two'} role="group" aria-label={`Is this right? ${card.title}`}>
+        <button type="button" className={status === 'confirmed' ? 'pick is-on' : 'pick'} aria-pressed={status === 'confirmed'} onClick={() => { setEditing(false); onAnswer({ status: 'confirmed' }) }}>Yes</button>
         {edit ? (
-          <button type="button" className={editing || status === 'corrected' ? 'pick is-on' : 'pick'} onClick={() => setEditing((v) => !v)}>Not quite</button>
+          <button type="button" className={editing || status === 'corrected' ? 'pick is-on' : 'pick'} aria-pressed={editing || status === 'corrected'} onClick={() => setEditing((v) => !v)}>Not quite</button>
         ) : null}
-        <button type="button" className={status === 'unsure' ? 'pick is-on' : 'pick'} onClick={() => { setEditing(false); onAnswer({ status: 'unsure' }) }}>I don't know</button>
+        <button type="button" className={status === 'unsure' ? 'pick is-on' : 'pick'} aria-pressed={status === 'unsure'} onClick={() => { setEditing(false); onAnswer({ status: 'unsure' }) }}>I don't know</button>
       </div>
 
       {editing && edit ? (
@@ -213,7 +212,7 @@ function FieldPreview({ geometry }: { geometry: Geometry }) {
   }, [geometry])
   return (
     <div className="sat-block">
-      <p className="sat-badge">Satellite view of your field</p>
+      <p className="sat-badge cap">Satellite view of your field</p>
       <div className="map-frame">
         <div ref={node} className="locate-map preview-map" aria-label="Satellite image of the field" role="img" />
       </div>

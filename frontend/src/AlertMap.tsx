@@ -31,8 +31,8 @@ export default function AlertMap({ alert }: { alert: Alert }) {
         features.push({ type: 'Feature', properties: { kind: 'point' }, geometry: { type: 'Point', coordinates: p } })
       }
       map.addSource('event', { type: 'geojson', data: { type: 'FeatureCollection', features } })
-      map.addLayer({ id: 'event-line', type: 'line', source: 'event', filter: ['==', ['get', 'kind'], 'track'], paint: { 'line-color': '#b4442f', 'line-width': 2.5, 'line-dasharray': [2, 1] } })
-      map.addLayer({ id: 'event-points', type: 'circle', source: 'event', filter: ['==', ['get', 'kind'], 'point'], paint: { 'circle-radius': 6, 'circle-color': '#b4442f', 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } })
+      map.addLayer({ id: 'event-line', type: 'line', source: 'event', filter: ['==', ['get', 'kind'], 'track'], paint: { 'line-color': '#a4442a', 'line-width': 2.5, 'line-dasharray': [2, 1] } })
+      map.addLayer({ id: 'event-points', type: 'circle', source: 'event', filter: ['==', ['get', 'kind'], 'point'], paint: { 'circle-radius': 6, 'circle-color': '#a4442a', 'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } })
       const coords: [number, number][] = [[alert.lon, alert.lat]]
       for (const f of features) {
         if (f.geometry.type === 'Point') coords.push(f.geometry.coordinates as [number, number])

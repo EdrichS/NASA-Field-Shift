@@ -6,8 +6,16 @@ body,
 }
 
 body {
-  background: #f4f2eb;
-  font-family: Outfit, 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: #ece8da;
+  color: #183323;
+  font-family: 'Libre Franklin', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Zilla Slab', Georgia, serif;
+  font-weight: 700;
 }
 
 /* Size with height, not position: maplibre-gl.css sets .maplibregl-map { position: relative }

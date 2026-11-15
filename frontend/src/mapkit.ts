@@ -155,7 +155,7 @@ export function setGibsLayer(map: maplibregl.Map, layer: GibsLayer | null, date:
   map.addLayer({ id: 'gibs', type: 'raster', source: 'gibs', paint: { 'raster-opacity': opacity } }, before)
 }
 
-export const PIN_SVG = `<svg viewBox="0 0 24 36" width="24" height="36" aria-hidden="true"><path fill="#1c3d32" d="M12 35.2S23 21.2 23 12A11 11 0 1 0 1 12c0 9.2 11 23.2 11 23.2z"/><circle cx="12" cy="12" r="4.2" fill="#f7f6f1"/></svg>`
+export const PIN_SVG = `<svg viewBox="0 0 24 36" width="24" height="36" aria-hidden="true"><path fill="#183323" d="M12 35.2S23 21.2 23 12A11 11 0 1 0 1 12c0 9.2 11 23.2 11 23.2z"/><circle cx="12" cy="12" r="4.2" fill="#f8f5ec"/></svg>`
 
 export function pinMarker(at: LngLat) {
   const el = document.createElement('div')
@@ -208,8 +208,8 @@ export function showField(map: maplibregl.Map, geometry: Geometry | null) {
     return
   }
   map.addSource('field', { type: 'geojson', data })
-  map.addLayer({ id: 'field-fill', type: 'fill', source: 'field', paint: { 'fill-color': '#f2c14e', 'fill-opacity': 0.18 } })
-  map.addLayer({ id: 'field-line', type: 'line', source: 'field', paint: { 'line-color': '#f2c14e', 'line-width': 2 } })
+  map.addLayer({ id: 'field-fill', type: 'fill', source: 'field', paint: { 'fill-color': '#d9a93a', 'fill-opacity': 0.18 } })
+  map.addLayer({ id: 'field-line', type: 'line', source: 'field', paint: { 'line-color': '#d9a93a', 'line-width': 2 } })
 }
 
 export function fitField(map: maplibregl.Map, geometry: Geometry, maxZoom = 16) {

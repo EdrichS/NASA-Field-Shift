@@ -319,7 +319,7 @@ export default function DetailedSetup({
 
   return (
     <div className="step-panel questions-panel detailed-panel">
-      <div className="ask-head">
+      <div className="detailed-top">
         <button type="button" className="card-back" onClick={onBack} aria-label="Back to question options">
           <svg viewBox="0 0 16 16" aria-hidden="true">
             <path
@@ -332,13 +332,14 @@ export default function DetailedSetup({
             />
           </svg>
         </button>
-        <div className="quick-titles">
-          <h1 id="detailed-title" className="ask">
-            Detailed Farm Profile
-          </h1>
-          <p className="ask-sub">Essential fields are marked. Skip anything you do not know.</p>
-        </div>
       </div>
+      <div className="detailed-head">
+        <h1 id="detailed-title" className="detailed-title">
+          Detailed setup
+        </h1>
+        <p className="cap detailed-count">{readyCount} of 10 ready</p>
+      </div>
+      <p className="detailed-note">Every section is optional: skip anything you don't know. Only the consent at the end is needed to save.</p>
 
       <label className={draft.showAdvanced ? 'farm-toggle is-on advanced-toggle' : 'farm-toggle advanced-toggle'}>
         <input
@@ -352,21 +353,38 @@ export default function DetailedSetup({
       {draft.notice ? <p className="cleared-note">{draft.notice}</p> : null}
 
       <div className="section-list">
-        {SECTION_IDS.map((id, index) => {
+        {SECTION_IDS.map((id) => {
           const open = draft.openSection === id
           const ready = sectionReady(id, draft)
+          const classes = ['detail-section', open ? 'index-card is-open' : '', ready ? 'is-ready' : ''].filter(Boolean).join(' ')
           return (
-            <section key={id} className={open ? 'detail-section is-open' : 'detail-section'}>
-              <button
-                type="button"
-                className="section-head"
-                aria-expanded={open}
-                onClick={() => edit({ openSection: open ? draft.openSection : id })}
-              >
-                <span className="q-num">{index + 1}</span>
-                <span className="section-title">{SECTION_TITLES[id]}</span>
-                {ready ? <span className="section-done">Ready</span> : null}
-              </button>
+            <section key={id} className={classes}>
+              <div className="section-row">
+                <h2 className="section-heading">
+                  <button
+                    type="button"
+                    className="section-head"
+                    aria-expanded={open}
+                    onClick={() => edit({ openSection: open ? draft.openSection : id })}
+                  >
+                    <span className="section-title">{SECTION_TITLES[id]}</span>
+                    {open ? null : ready ? (
+                      <span className="cap section-done">
+                        Ready <span aria-hidden="true">✓</span>
+                      </span>
+                    ) : (
+                      <span className="section-plus" aria-hidden="true">
+                        +
+                      </span>
+                    )}
+                  </button>
+                </h2>
+                {open && id !== 'privacy' ? (
+                  <button type="button" className="skip-link section-skip" onClick={() => skip(id)}>
+                    {draft.skipped.includes(id) ? 'Section skipped' : 'Skip this section'}
+                  </button>
+                ) : null}
+              </div>
               {open ? (
                 <div className="section-body">
                   {id === 'account' ? (
@@ -399,11 +417,6 @@ export default function DetailedSetup({
                         onReset()
                       }}
                     />
-                  ) : null}
-                  {id !== 'privacy' ? (
-                    <button type="button" className="skip-link section-skip" onClick={() => skip(id)}>
-                      {draft.skipped.includes(id) ? 'Section skipped' : 'Skip this section'}
-                    </button>
                   ) : null}
                 </div>
               ) : null}
@@ -533,7 +546,7 @@ function FieldsSection({
             {field.name.trim() || `Field ${index + 1}`}
           </button>
         ))}
-        <button type="button" className="field-tab" onClick={onAdd}>
+        <button type="button" className="field-tab is-add" onClick={onAdd}>
           + Add another field
         </button>
       </div>
@@ -541,7 +554,7 @@ function FieldsSection({
       <div className="mode-row" role="radiogroup" aria-label="How to mark the field">
         <button
           type="button"
-          className={active.drawMode ? 'mini-pill' : 'mini-pill is-on'}
+          className={active.drawMode ? 'pick' : 'pick is-on'}
           aria-pressed={!active.drawMode}
           onClick={() => updateField(active.id, { drawMode: false })}
         >
@@ -549,7 +562,7 @@ function FieldsSection({
         </button>
         <button
           type="button"
-          className={active.drawMode ? 'mini-pill is-on' : 'mini-pill'}
+          className={active.drawMode ? 'pick is-on' : 'pick'}
           aria-pressed={active.drawMode}
           onClick={() => updateField(active.id, { drawMode: true })}
         >
@@ -697,8 +710,8 @@ function FieldMap({
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
     map.on('load', () => {
       map.addSource('plot', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
-      map.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': '#1c3d32', 'fill-opacity': 0.28 } })
-      map.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': '#f7f6f1', 'line-width': 3 } })
+      map.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': '#183323', 'fill-opacity': 0.28 } })
+      map.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': '#d9a93a', 'line-width': 3 } })
       setLoaded(true)
     })
     map.on('click', (event) => {
@@ -1149,7 +1162,7 @@ function Pills({
           <button
             key={option}
             type="button"
-            className={on ? 'mini-pill is-on' : 'mini-pill'}
+            className={on ? 'pick is-on' : 'pick'}
             aria-pressed={on}
             onClick={() => {
               if (single) {
@@ -1190,7 +1203,7 @@ function Segment<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={value === option.value ? 'mini-pill is-on' : 'mini-pill'}
+            className={value === option.value ? 'pick is-on' : 'pick'}
             aria-pressed={value === option.value}
             onClick={() => onChange(option.value)}
           >

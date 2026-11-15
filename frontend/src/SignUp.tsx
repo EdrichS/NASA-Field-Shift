@@ -6,7 +6,8 @@ import DetailedSetup, { createDetailedDraft, type DetailedDraft } from './Detail
 import LanguageDisclaimer from './LanguageDisclaimer'
 import LocateMap from './LocateMap'
 import { centerOf } from './mapkit'
-import SatelliteCards, { BackButton, type CardAnswers } from './SatelliteCards'
+import SatelliteCards, { type CardAnswers } from './SatelliteCards'
+import YearStrip, { rowFromBareMonths, rowFromCrops, stressFromCards, type StripRow } from './YearStrip'
 import { isLanguage, translate, type LanguageCode } from './i18n'
 import './SignUp.css'
 
@@ -129,6 +130,10 @@ function emptyQuick(): QuickDraft {
   }
 }
 
+/** The 4 steps the farmer sees; the internal steps 4-6 are all "Your farm". */
+const STAGES = ['Your land', 'Satellite check', 'Your farm', 'Report']
+const STAGE_OF: Record<Step, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 3, 6: 3, 7: 4 }
+
 const TITLES: Record<Step, string> = {
   1: 'setup-title',
   2: 'locate-title',
@@ -233,35 +238,111 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
     })
   }
 
-  const wide = step === 2
+  function back() {
+    if (step === 7) {
+      if (questionPath === 'quick') setStep(5)
+      else if (questionPath === 'detailed') setStep(6)
+      else setStep(4)
+    } else if (step === 5 || step === 6) setStep(4)
+    else if (step > 1) setStep((step - 1) as Step)
+  }
+
+  const backLabel: Record<Step, string> = {
+    1: 'Back',
+    2: 'Back',
+    3: 'Back to the map',
+    4: 'Back to the satellite check',
+    5: 'Back to question options',
+    6: 'Back to question options',
+    7: translate(languages[0], 'back'),
+  }
+
+  // The pinned Year Strip: what the satellites saw (with the farmer's corrections), plus the
+  // crops typed in Quick 5. Hidden until there is something to draw.
+  const stripCards = (prefillData?.cards ?? []).map((card) => {
+    const answer = cardAnswers[card.id]
+    return answer?.status === 'corrected' && Array.isArray(answer.value) ? { ...card, value: answer.value } : card
+  })
+  const bareValue = stripCards.find((card) => card.id === 'bare_months')?.value
+  const bareMonths = Array.isArray(bareValue) ? bareValue.filter((m): m is number => typeof m === 'number') : null
+  const typedCrops =
+    questionPath === 'quick' && (step === 5 || step === 7) && !quickDraft.notFarming
+      ? quickDraft.crops
+          .filter((row) => row.crop.trim() && row.planting && row.harvest)
+          .map((row) => ({
+            crop: row.crop.trim(),
+            plant_month: MONTHS.indexOf(row.planting) + 1,
+            harvest_month: MONTHS.indexOf(row.harvest) + 1,
+          }))
+      : []
+  const stripRows: StripRow[] = [
+    ...(bareMonths ? [rowFromBareMonths(bareMonths, 'Field')] : []),
+    ...(typedCrops.length ? [{ ...rowFromCrops(typedCrops, 'You'), highlight: true }] : []),
+  ]
+  const stress = stressFromCards(stripCards)
+  const showStrip = (step === 3 || step === 4 || step === 5 || step === 7) && stripRows.length > 0
 
   return (
-    <main className={wide ? 'signup is-locate' : 'signup'} data-testid="signup">
+    <main className="signup" data-testid="signup">
       <div className="signup-column">
-        <header className="signup-header">
-          <button type="button" className="back" onClick={onBack}>
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {step === 7 ? translate(languages[0], 'back') : 'Home'}
-          </button>
-          <p className="wordmark">
-            <Sprout />
-            <span>Sow Smart</span>
-          </p>
-        </header>
+        {step === 1 ? (
+          <header className="signup-header">
+            <button type="button" className="step-back" onClick={onBack}>
+              <span aria-hidden="true">‹</span> Back
+            </button>
+            <p className="wordmark">SowSmart</p>
+          </header>
+        ) : (
+          <header className="stepper">
+            <div className="stepper-row">
+              <button type="button" className="step-back" onClick={back} aria-label={backLabel[step]}>
+                <span aria-hidden="true">‹</span> {step === 7 ? translate(languages[0], 'back') : 'Back'}
+              </button>
+              <p className="cap">
+                Step {STAGE_OF[step]} of {STAGES.length} · {STAGES[STAGE_OF[step] - 1]}
+              </p>
+            </div>
+            <div className="stepper-bar" aria-hidden="true">
+              {STAGES.map((name, i) => (
+                <span key={name} className={i < STAGE_OF[step] ? 'is-done' : undefined} />
+              ))}
+            </div>
+          </header>
+        )}
 
-        <section className={wide ? 'signup-card is-locate' : 'signup-card'} aria-labelledby={TITLES[step]}>
+        {showStrip ? (
+          <div className="setup-strip">
+            <div className="setup-strip-head">
+              <p className="cap">Your year so far</p>
+              <p className="cap setup-strip-key">Dotted: bare</p>
+            </div>
+            <YearStrip
+              rows={stripRows}
+              stress={stress.some((m) => m.flags.length) ? stress : undefined}
+              legend={false}
+              caption="Your year so far"
+            />
+          </div>
+        ) : null}
+
+        <section className="signup-card" aria-labelledby={TITLES[step]}>
           {step === 1 ? (
             <div className="step-panel" key="setup">
-              <p className="step">{guest ? 'Guest · nothing is saved' : 'Your account'}</p>
-              <h1 id="setup-title">{guest ? 'Before we start' : 'Set up your profile'}</h1>
+              <div className="step-title is-ruled">
+                {!guest ? <p className="cap">Your account</p> : null}
+                <h1 id="setup-title">{guest ? 'Before we start' : 'Set up your profile'}</h1>
+                <p className="step-sub">
+                  {guest ? 'One quick setting before we find your field.' : 'Two quick settings before we find your field.'}
+                </p>
+              </div>
               {!guest && email ? <p className="signed-in-as">Signed in as {email}</p> : null}
 
               <form className="signup-form" onSubmit={submitPreferences} noValidate>
                 {!guest ? (
                   <div className="field">
-                    <label htmlFor={`${formId}-name`}>Display name (optional)</label>
+                    <label htmlFor={`${formId}-name`}>
+                      What should we call you? <span className="optional">(optional)</span>
+                    </label>
                     <input
                       id={`${formId}-name`}
                       className="control"
@@ -269,7 +350,7 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
                       type="text"
                       autoComplete="nickname"
                       maxLength={40}
-                      placeholder="What should we call you?"
+                      placeholder="Your name"
                       value={displayName}
                       onChange={(event) => setDisplayName(event.target.value)}
                     />
@@ -277,25 +358,31 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
                 ) : null}
 
                 <div className="field">
-                  <label htmlFor={`${formId}-units`}>Preferred measurement system</label>
-                  <select
-                    id={`${formId}-units`}
-                    className={units ? 'control unit-select' : 'control unit-select is-placeholder'}
-                    name="units"
-                    value={units}
-                    aria-invalid={unitsError ? true : undefined}
+                  <p className="field-label" id={`${formId}-units-label`}>
+                    Measurement system
+                  </p>
+                  <div
+                    className="pick-row"
+                    role="group"
+                    aria-labelledby={`${formId}-units-label`}
                     aria-describedby={unitsError ? `${formId}-units-error` : undefined}
-                    onChange={(event) => {
-                      setUnits(event.target.value as '' | UnitSystem)
-                      setUnitsError(undefined)
-                    }}
                   >
-                    <option value="" disabled>
-                      Choose a system
-                    </option>
-                    <option value="metric">Metric (hectares, mm, °C)</option>
-                    <option value="imperial">Imperial (acres, inches, °F)</option>
-                  </select>
+                    {UNIT_OPTIONS.map((option, index) => (
+                      <button
+                        key={option.value}
+                        id={index === 0 ? `${formId}-units` : undefined}
+                        type="button"
+                        className={units === option.value ? 'pick is-on' : 'pick'}
+                        aria-pressed={units === option.value}
+                        onClick={() => {
+                          setUnits(option.value)
+                          setUnitsError(undefined)
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                   {unitsError ? (
                     <p id={`${formId}-units-error`} className="field-error" role="alert">
                       {unitsError}
@@ -303,25 +390,29 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
                   ) : null}
                 </div>
 
+                {guest ? (
+                  <div className="index-card guest-note">
+                    <p className="cap">Using SowSmart as a guest</p>
+                    <p>You can do everything except save your plan. To keep it, sign up from the results.</p>
+                  </div>
+                ) : null}
+
                 <p className="helper">
                   SowSmart supports your own judgment and local agricultural expertise. It never replaces them.
                 </p>
 
-                <button type="submit" className="continue">
-                  Next
+                <button type="submit" className="tag-btn is-block step-cta">
+                  Continue
                 </button>
               </form>
             </div>
           ) : step === 2 ? (
             <div className="step-panel locate-panel" key="location">
-              <div className="locate-head">
-                <BackButton onClick={() => setStep(1)} label="Back" />
-                <h1 id="locate-title" className="where">
-                  Where is your land?
-                </h1>
+              <div className="step-title">
+                <h1 id="locate-title">Where is your land?</h1>
               </div>
               <LocateMap geometry={geometry} onGeometry={chooseGeometry} units={system} />
-              <button type="button" className="continue create-account" disabled={!geometry} onClick={() => setStep(3)}>
+              <button type="button" className="tag-btn is-block step-cta" disabled={!geometry} onClick={() => setStep(3)}>
                 See what the satellites see
               </button>
             </div>
@@ -336,14 +427,9 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
               onContinue={() => setStep(4)}
             />
           ) : step === 4 ? (
-            <QuestionPath
-              selected={questionPath}
-              onSelect={setQuestionPath}
-              onBack={() => setStep(3)}
-              onContinue={continueQuestions}
-            />
+            <QuestionPath selected={questionPath} onSelect={setQuestionPath} onContinue={continueQuestions} />
           ) : step === 5 ? (
-            <QuickFive draft={quickDraft} onDraft={setQuickDraft} onBack={() => setStep(4)} onFinish={() => openLanguage()} />
+            <QuickFive draft={quickDraft} onDraft={setQuickDraft} onFinish={() => openLanguage()} />
           ) : step === 6 && detailedDraft && geometry ? (
             <DetailedSetup
               draft={detailedDraft}
@@ -368,11 +454,6 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
                 setDetailedDraft((current) => (current ? { ...current, language: next[0] } : current))
               }}
               onAccepted={setLanguageAccepted}
-              onBack={() => {
-                if (questionPath === 'quick') setStep(5)
-                else if (questionPath === 'detailed') setStep(6)
-                else setStep(4)
-              }}
               onContinue={finish}
             />
           ) : null}
@@ -382,44 +463,34 @@ export default function SignUp({ guest, email, initialName = '', initialUnits, o
   )
 }
 
+const UNIT_OPTIONS: { value: UnitSystem; label: string }[] = [
+  { value: 'metric', label: 'Metric · ha, mm, °C' },
+  { value: 'imperial', label: 'Imperial · ac, in, °F' },
+]
+
 const QUESTION_PATHS: { id: QuestionPath; title: string; detail: string }[] = [
-  { id: 'quick', title: 'Quick 5', detail: '5 fast questions to get started right away' },
-  { id: 'detailed', title: 'Detailed', detail: 'In-depth setup for tailored planting & soil advice' },
-  { id: 'explore', title: 'Just exploring', detail: 'No farm details: see what this land and its climate suggest' },
+  { id: 'quick', title: 'Quick 5', detail: '5 fast questions to get started right away.' },
+  { id: 'detailed', title: 'Detailed', detail: 'In-depth setup for tailored planting and soil advice.' },
+  { id: 'explore', title: 'Just exploring', detail: 'No farm details: see what this land and its climate suggest.' },
 ]
 
 function QuestionPath({
   selected,
   onSelect,
-  onBack,
   onContinue,
 }: {
   selected: QuestionPath | null
   onSelect: (path: QuestionPath) => void
-  onBack: () => void
   onContinue: () => void
 }) {
   return (
     <div className="step-panel questions-panel" key="questions">
-      <div className="ask-head">
-        <button type="button" className="card-back" onClick={onBack} aria-label="Back to location details">
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path
-              d="M10 3L5 8l5 5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <h1 id="questions-title" className="ask">
-          Which options for questions?
-        </h1>
+      <div className="step-title">
+        <h1 id="questions-title">How much do you want to tell us?</h1>
+        <p className="step-sub">More detail makes the comparison fit your farm better.</p>
       </div>
 
-      <div className="path-list" role="radiogroup" aria-label="Which options for questions?">
+      <div className="path-list" role="radiogroup" aria-labelledby="questions-title">
         {QUESTION_PATHS.map((path) => {
           const isSelected = selected === path.id
           return (
@@ -436,15 +507,8 @@ function QuestionPath({
                 <span>{path.detail}</span>
               </span>
               <span className="path-check" aria-hidden="true">
-                <svg viewBox="0 0 16 16">
-                  <path
-                    d="M3.5 8.2 6.5 11.2 12.5 4.8"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 12l5 5L20 6" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="square" />
                 </svg>
               </span>
             </button>
@@ -452,7 +516,7 @@ function QuestionPath({
         })}
       </div>
 
-      <button type="button" className="continue" disabled={!selected} onClick={onContinue}>
+      <button type="button" className="tag-btn is-block step-cta" disabled={!selected} onClick={onContinue}>
         Continue
       </button>
     </div>
@@ -479,12 +543,10 @@ function validateQuick(draft: QuickDraft): QuickErrors {
 function QuickFive({
   draft,
   onDraft,
-  onBack,
   onFinish,
 }: {
   draft: QuickDraft
   onDraft: (draft: QuickDraft) => void
-  onBack: () => void
   onFinish: (draft: QuickDraft) => void
 }) {
   const [chipText, setChipText] = useState('')
@@ -587,50 +649,28 @@ function QuickFive({
     onFinish(next)
   }
 
+  const cropsBlank = !draft.notFarming && draft.crops.every((row) => !row.crop.trim() && !row.planting && !row.harvest)
+
+  function dontKnowCrops() {
+    update({ ...draft, notFarming: false, crops: [blankCrop()] })
+  }
+
   return (
     <div className="step-panel questions-panel quick-panel">
-      <div className="ask-head quick-top">
-        <button type="button" className="card-back" onClick={onBack} aria-label="Back to question options">
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path
-              d="M10 3L5 8l5 5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <div className="quick-titles">
-          <h1 id="quick-title" className="ask">
-            Quick 5 Setup
-          </h1>
-          <p className="ask-sub">Tell us a bit about your land</p>
-        </div>
+      <div className="step-title">
+        <h1 id="quick-title">Quick 5</h1>
+        <p className="step-sub">Tell us a bit about your land. Only the starred questions are needed.</p>
       </div>
 
       <form className="quick-form" onSubmit={submit} noValidate>
         <fieldset className="q-block">
           <legend className="q-label">
-            <span className="q-num">1</span>
+            <span className="cap q-count">Question 1 of 5</span>
             What do you grow now, and in which months?
             <span className="q-star" aria-hidden="true">
               *
             </span>
           </legend>
-          <label className={draft.notFarming ? 'farm-toggle is-on' : 'farm-toggle'}>
-            <input
-              id="quick-not-farming"
-              type="checkbox"
-              checked={draft.notFarming}
-              onChange={(event) => update({ ...draft, notFarming: event.target.checked })}
-            />
-            <span>I'm not farming this land yet</span>
-          </label>
-          {!draft.notFarming ? (
-            <p className="helper">Not sure? Leave it blank and we'll estimate your crop months from when the field looks green from space.</p>
-          ) : null}
           <div className={draft.notFarming ? 'crop-slot is-closed' : 'crop-slot'} inert={draft.notFarming}>
             <div className="crop-slot-inner">
               {draft.crops.map((row, index) => {
@@ -639,16 +679,19 @@ function QuickFive({
                 const harvestMissing = submitted && !!errors.crops && !row.harvest
                 return (
                   <div className="crop-row" key={row.id}>
-                    {index > 0 ? (
-                      <button
-                        type="button"
-                        className="crop-remove"
-                        aria-label={`Remove crop ${index + 1}`}
-                        onClick={() => removeCrop(row.id)}
-                      >
-                        ×
-                      </button>
-                    ) : null}
+                    <div className="crop-row-head">
+                      <p className="cap">Crop {index + 1}</p>
+                      {index > 0 ? (
+                        <button
+                          type="button"
+                          className="crop-remove"
+                          aria-label={`Remove crop ${index + 1}`}
+                          onClick={() => removeCrop(row.id)}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
                     <div className="field">
                       <label htmlFor={`crop-${row.id}`}>Crop</label>
                       <input
@@ -666,7 +709,7 @@ function QuickFive({
                     </div>
                     <div className="month-pair">
                       <div className="field">
-                        <label htmlFor={`plant-${row.id}`}>Planting Month</label>
+                        <label htmlFor={`plant-${row.id}`}>Planting month</label>
                         <select
                           id={`plant-${row.id}`}
                           className={row.planting ? 'control unit-select' : 'control unit-select is-placeholder'}
@@ -684,7 +727,7 @@ function QuickFive({
                         </select>
                       </div>
                       <div className="field">
-                        <label htmlFor={`harvest-${row.id}`}>Harvest Month</label>
+                        <label htmlFor={`harvest-${row.id}`}>Harvest month</label>
                         <select
                           id={`harvest-${row.id}`}
                           className={row.harvest ? 'control unit-select' : 'control unit-select is-placeholder'}
@@ -706,7 +749,7 @@ function QuickFive({
                 )
               })}
               <button type="button" className="add-crop" onClick={addCrop}>
-                + Add more crops
+                + Add another crop
               </button>
               {errors.crops ? (
                 <p id="quick-crops-error" className="field-error" role="alert">
@@ -715,11 +758,33 @@ function QuickFive({
               ) : null}
             </div>
           </div>
+          {!draft.notFarming ? (
+            <p className="helper">Not sure? Leave it blank and we'll estimate your crop months from when the field looks green from space.</p>
+          ) : null}
+          <div className="pick-row" role="group" aria-label="Other answers">
+            <button
+              id="quick-not-farming"
+              type="button"
+              className={draft.notFarming ? 'pick is-on' : 'pick'}
+              aria-pressed={draft.notFarming}
+              onClick={() => update({ ...draft, notFarming: !draft.notFarming })}
+            >
+              Not farming it yet
+            </button>
+            <button
+              type="button"
+              className={cropsBlank ? 'pick is-on' : 'pick'}
+              aria-pressed={cropsBlank}
+              onClick={dontKnowCrops}
+            >
+              I don't know
+            </button>
+          </div>
         </fieldset>
 
         <div className="q-block">
           <label className="q-label" htmlFor="quick-water">
-            <span className="q-num">2</span>
+            <span className="cap q-count">Question 2 of 5</span>
             Is it irrigated or rain-fed?
             <span className="q-star" aria-hidden="true">
               *
@@ -750,7 +815,7 @@ function QuickFive({
 
         <div className="q-block">
           <label className="q-label" htmlFor="quick-equipment">
-            <span className="q-num">3</span>
+            <span className="cap q-count">Question 3 of 5</span>
             What equipment do you use?
             <span className="q-star" aria-hidden="true">
               *
@@ -781,7 +846,7 @@ function QuickFive({
 
         <div className="q-block">
           <label className="q-label" htmlFor="quick-goal">
-            <span className="q-num">4</span>
+            <span className="cap q-count">Question 4 of 5</span>
             Your top goal (pick one)
             <span className="q-star" aria-hidden="true">
               *
@@ -813,9 +878,8 @@ function QuickFive({
         <div className="q-block">
           <div className="q-head">
             <label className="q-label" htmlFor="quick-avoided">
-              <span className="q-num">5</span>
+              <span className="cap q-count">Question 5 of 5 · optional</span>
               Crops you won't grow
-              <span className="q-optional">optional</span>
             </label>
             <button type="button" className="skip-link" onClick={skipAvoided}>
               Skip
@@ -858,28 +922,10 @@ function QuickFive({
           {draft.avoidedSkipped && draft.avoided.length === 0 ? <p className="skipped-note">Skipped for now</p> : null}
         </div>
 
-        <button type="submit" className="continue">
-          Finish & View My Plan
+        <button type="submit" className="tag-btn is-block step-cta">
+          Continue
         </button>
       </form>
     </div>
   )
 }
-
-
-function Sprout() {
-  return (
-    <svg className="wordmark-sprout" viewBox="0 0 36 36" aria-hidden="true">
-      <path
-        d="M18 33.5V18.2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path d="M17.6 22.8c-1.4-4.2-5.2-7.3-10.4-8.2 2.2 4.6 6 7.4 10.4 8.2z" fill="#4d7a5e" />
-      <path d="M18.3 16.6c2.2-5.6 7.4-9.4 13.2-9.8-2.4 5.6-7.6 9.4-13.2 9.8z" fill="currentColor" />
-    </svg>
-  )
-}
-

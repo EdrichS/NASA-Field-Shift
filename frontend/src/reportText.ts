@@ -44,9 +44,31 @@ export const STRESS_LABELS: Record<string, { label: string; icon: string; plain:
   very_wet: { label: 'Very wet', icon: 'W', plain: 'Very heavy rain: flooding or waterlogging risk' },
 }
 
-const PALETTE = ['#4d7a5e', '#c9893b', '#5b84b1', '#a65d57', '#8a7bb0', '#b3a247', '#3f8f8a', '#9a6b43']
+// Deep Field crop colors: common crops keep one color everywhere (every strip, the PDF, the deck),
+// so a crop never changes color between the overview and an option page.
+const KNOWN_CROPS: Record<string, string> = {
+  rice: '#4d7a55',
+  mungbean: '#c99548',
+  sorghum: '#5674a0',
+  'sweet potato': '#9b5b4a',
+  maize: '#8f8a3e',
+  soybean: '#7a6aa0',
+  'cereal rye': '#3f7f78',
+  peanut: '#8a6440',
+  sunflower: '#a35f7a',
+  canola: '#b5651d',
+}
+const PALETTE = ['#4d7a55', '#c99548', '#5674a0', '#9b5b4a', '#7a6aa0', '#8f8a3e', '#3f7f78', '#8a6440']
 
 /** One distinct color per crop, in the order the crops are listed. */
 export function cropColors(crops: string[]): Record<string, string> {
-  return Object.fromEntries(crops.map((c, i) => [c, PALETTE[i % PALETTE.length]]))
+  const taken = new Set(crops.map((c) => KNOWN_CROPS[c]).filter(Boolean))
+  const free = PALETTE.filter((p) => !taken.has(p))
+  let next = 0
+  return Object.fromEntries(crops.map((c) => [c, KNOWN_CROPS[c] ?? free[next++ % free.length]]))
+}
+
+/** One color per crop across all the strategies, so every strip on a page agrees. */
+export function strategyColors(strategies: Strategy[]): Record<string, string> {
+  return cropColors([...new Set(strategies.flatMap((s) => s.rotation.flat().map((c) => c.crop)))])
 }

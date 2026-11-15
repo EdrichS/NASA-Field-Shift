@@ -1,203 +1,190 @@
+/* Landing (S01). Loaded eagerly, so it stays small. Shared pieces (.tag-btn, .demo-farm,
+   .landing-note, .tagline) live in app.css. The analyzing list is here too, because the
+   Analyzing screen is also loaded eagerly and has no stylesheet of its own. */
+
 .landing {
   box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
+  display: flex;
   padding:
-    max(1.5rem, env(safe-area-inset-top))
-    max(1.25rem, env(safe-area-inset-right))
-    max(1.5rem, env(safe-area-inset-bottom))
-    max(1.25rem, env(safe-area-inset-left));
-  background:
-    radial-gradient(ellipse 70% 46% at 50% 42%, #e5efe4 0%, transparent 68%),
-    #f4f2eb;
-  color: #1c3d32;
-  font-family: Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    max(1.75rem, env(safe-area-inset-top))
+    max(1.375rem, env(safe-area-inset-right))
+    max(1.4rem, env(safe-area-inset-bottom))
+    max(1.375rem, env(safe-area-inset-left));
+  background: var(--ground);
+  color: var(--ink);
   -webkit-tap-highlight-color: transparent;
 }
 
 .landing-cluster {
-  width: min(100%, 22.5rem);
+  flex: 1;
+  width: min(100%, 32rem);
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  gap: 1.15rem;
+  text-align: left;
 }
 
 .brand {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  margin: 0 0 2.15rem;
-  font-family: Fraunces, 'Iowan Old Style', Palatino, Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(2.55rem, 11vw, 3.15rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: #1a3a2e;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.sprout {
-  width: 0.82em;
-  height: 0.82em;
-  flex: none;
-  margin-top: 0.02em;
-}
-
-.actions {
-  display: flex;
-  gap: 0.7rem;
-}
-
-.pill {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 3rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 999px;
-  border: 1.5px solid transparent;
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    border-color 180ms ease,
-    transform 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.pill-login {
-  background: transparent;
-  color: #1c3d32;
-  border-color: #1c3d32;
-}
-
-.pill-signup {
-  background: #1c3d32;
-  color: #f7f6f1;
-  border-color: #1c3d32;
-}
-
-.pill:active {
-  transform: scale(0.98);
-}
-
-.pill-login:active {
-  background: #1c3d32;
-  color: #f7f6f1;
-}
-
-.pill-signup:active {
-  background: #142e26;
-}
-
-.or {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  margin: 1.15rem 0 0.95rem;
-  color: #8a9088;
-  font-size: 0.875rem;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
-.or::before,
-.or::after {
-  content: '';
-  height: 1px;
-  flex: 1;
-  background: #d0d4cc;
-}
-
-.guest {
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+.brand-name {
   margin: 0;
-  padding: 0.45rem 0.15rem;
+  font-family: var(--font-head);
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand-mark {
+  display: flex;
+  gap: 2px;
+}
+
+.brand-mark i {
+  width: 8px;
+  height: 8px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--muted);
+}
+
+.brand-mark i.is-on {
   border: 0;
-  background: none;
-  color: #3e5649;
-  font: inherit;
-  font-size: 0.98rem;
-  font-weight: 500;
-  cursor: pointer;
+  background: var(--good);
 }
 
-.guest-label {
-  text-decoration: underline;
-  text-decoration-color: rgba(62, 86, 73, 0.4);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.22em;
-  transition: text-decoration-color 220ms ease;
+.landing-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.4rem;
 }
 
-.guest-arrow {
-  width: 0.95rem;
-  height: 0.95rem;
-  flex: none;
-  transition: transform 220ms ease;
+.landing-intro h1 {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: clamp(1.9rem, 8.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.05;
 }
 
-.pill:focus-visible,
-.guest:focus-visible {
-  outline: 2px solid #8c6a45;
-  outline-offset: 3px;
+.landing-intro .tagline {
+  margin: 0;
+}
+
+.landing .notice {
+  margin: 0;
+}
+
+.landing-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.landing-account {
+  margin-top: 0.35rem;
+}
+
+.landing-auth {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.landing-auth .tag-btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.landing .demo-farms {
+  margin-top: 0.2rem;
+}
+
+.landing .demo-farm strong {
+  font-weight: 700;
+}
+
+/* The disclaimer sits at the foot of the screen when there is room. */
+.landing .landing-note {
+  margin-top: auto;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .pill-login:hover {
-    background: #1c3d32;
-    color: #f7f6f1;
+  .landing .tag-btn:hover:not(:disabled) {
+    background: var(--ink-deep);
   }
 
-  .pill-signup:hover {
-    background: #142e26;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(20, 46, 38, 0.16);
+  .landing .tag-btn.is-quiet:hover:not(:disabled) {
+    background: #d1c9b0;
   }
 
-  .pill-signup:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: none;
-  }
-
-  .guest:hover .guest-label {
-    text-decoration-color: currentColor;
-  }
-
-  .guest:hover .guest-arrow {
-    transform: translateX(3px);
+  .landing .demo-farm:hover {
+    border-color: var(--ink);
   }
 }
 
-@media (max-width: 320px) {
-  .actions {
-    flex-direction: column;
-  }
-
-  .brand {
-    font-size: 2.35rem;
-  }
+/* Analyzing (S09): what is read, as a plain list (no fake progress ticks). */
+.analyzing .analyzing-card {
+  width: min(100%, 30rem);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pill,
-  .guest-label,
-  .guest-arrow {
-    transition: none;
-  }
+.analyzing-steps {
+  width: 100%;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+  list-style: none;
+}
 
-  .pill-signup:hover,
-  .pill:active {
-    transform: none;
-  }
+.analyzing-steps li {
+  display: grid;
+  grid-template-columns: 0.75rem minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.analyzing-steps li::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-top: 0.35rem;
+  box-sizing: border-box;
+  border: 1.5px solid var(--ink);
+}
+
+.analyzing-steps strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.analyzing-steps span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.analyzing-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.analyzing-elapsed {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
 }
