@@ -19,7 +19,7 @@ def test_committed_showcase_analysis_is_complete_and_current(farm):
     entry = showcase.stored(farm["id"])
     assert entry is not None, "run `make showcase` to pre-compute this farm"
     analysis = AnalyzeResponse.model_validate(entry["analysis"])
-    assert len(analysis.strategies) >= 4  # current + 3 or 4 alternatives
+    assert len(analysis.strategies) >= 3  # the challenge's minimum: current + 2 alternatives
     assert entry["request_key"] == showcase.request_key(showcase.request_for(farm)), \
         "the farm's answers changed since the last `make showcase`"
     for lang in farm["report_languages"]:
