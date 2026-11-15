@@ -104,7 +104,7 @@ export default function PrintReport({
             <figcaption>NASA MODIS Terra true color (via NASA GIBS), {map.day}, about 44 km across. The circle marks the field.</figcaption>
           </figure>
           <div className="p-cover-side">
-            <h2>Your options, best match first</h2>
+            <h2>{current ? 'Your options, best match first' : 'Starting options for this land, best match first'}</h2>
             <ol className="p-ranked">
               {ranked.map((s) => (
                 <li key={s.key}>
@@ -161,7 +161,7 @@ export default function PrintReport({
         <h2>3. Your year, month by month</h2>
         {content ? <p>{content.bare_and_risky_seasons}</p> : null}
         <div className="p-strip">
-          <YearStrip rows={rows} stress={analysis.stress_calendar} colors={colors} caption="12-month calendar: what you grow now and each option" />
+          <YearStrip rows={rows} stress={analysis.stress_calendar} colors={colors} caption={current ? '12-month calendar: what you grow now and each option' : '12-month calendar: each starting option'} />
           {analysis.strategies.some((s) => s.rotation.length > 1) ? <p className="p-small">Rotations over two years show year 1 on top and year 2 below.</p> : null}
         </div>
         <h3>How the options compare</h3>

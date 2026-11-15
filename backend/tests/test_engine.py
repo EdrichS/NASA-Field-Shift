@@ -204,12 +204,12 @@ def test_unknown_answers_become_information_gaps():
     assert any("No goal" in a for a in profile.assumptions)
 
 
-def test_just_exploring_estimates_crops_from_satellite_greenness():
+def test_just_exploring_assumes_no_crops_and_shows_starting_options():
     ndvi = [0.3, 0.3, 0.3, 0.3, 0.7, 0.8, 0.8, 0.8, 0.7, 0.3, 0.3, 0.3]
     ff = fake_field(WARM, WET, ndvi=ndvi)
     result = run_engine(ff, {"mode": "exploring"}, CATALOG)
-    assert result.profile["rotation_source"] == "satellite"
-    assert result.strategies  # still produces a comparison
+    assert result.profile["rotation_source"] == "none"
+    assert result.strategies and all(s.key.startswith("explore_") for s in result.strategies)
 
 
 # --- building blocks ---------------------------------------------------------------

@@ -327,7 +327,7 @@ def test_ai_failure_still_returns_the_comparison(api, monkeypatch):
     monkeypatch.setattr(routes, "get_llm", lambda: FakeGrok(
         lambda r: httpx.Response(401, text="no")).client())
     r = api.post("/analyze", json={"geometry": POINT})
-    assert r.status_code == 200 and len(r.json()["strategies"]) == 4
+    assert r.status_code == 200 and len(r.json()["strategies"]) == 3  # no crops: starting options
     assert r.json()["reports_tier1"] == {"en": None}
     assert r.json()["report_status"]["en"]["status"] == "failed"
 

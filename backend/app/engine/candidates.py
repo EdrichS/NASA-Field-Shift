@@ -191,6 +191,74 @@ def fill_bare(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
     return Candidate("fill_bare", new_years, crop, None, gap, suit)
 
 
+EXPLORE_OPTIONS = 3
+
+
+def explore(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo],
+            min_suit: float = SUITABLE_MIN) -> list[Candidate]:
+    """No current rotation: the best main crops for this land (locally grown, best planting
+    month), each with a short legume or cover crop in the rest of the year when one fits.
+    Different plant families first, so the options really differ."""
+    scored = []
+    for crop in _pool(profile, catalog):
+        if crop.is_cover:
+            continue
+        best = None
+        for start in range(1, 13):
+            months = [(start + k - 1) % 12 + 1 for k in range(crop.cycle_months + 1)]
+            suit = suitability(crop, months, ctx, profile.water)
+            if suit.score < min_suit:
+                continue
+            value = (suit.score * goal_factor(crop, profile)
+                     * stress_factor(crop, months, ctx, profile.water)
+                     * _machinery_factor(crop, profile) * familiarity(crop.name, profile.local))
+            if best is None or value > best[0]:
+                best = (value, months, suit)
+        if best is not None:
+            scored.append((round(best[0], 4), crop.name, crop, best[1], best[2]))
+    scored.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    picked, families = [], set()
+    for item in scored:  # one per family first
+        if item[2].family not in families:
+            picked.append(item)
+            families.add(item[2].family)
+        if len(picked) == EXPLORE_OPTIONS:
+            break
+    for item in scored:
+        if len(picked) == EXPLORE_OPTIONS:
+            break
+        if item not in picked:
+            picked.append(item)
+    out = []
+    for i, (_, _, crop, months, suit) in enumerate(picked, start=1):
+        main = Slot(crop.name, months[0], months[-1], new=True)
+        follow = _follow_up(profile, ctx, catalog, crop, months[-1])
+        years = [[main] + ([follow] if follow else [])]
+        out.append(Candidate(f"explore_{i}", years, crop, None, None, suit,
+                             note=follow.crop if follow else ""))
+    return out
+
+
+def _follow_up(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo],
+               main: CropInfo, harvest_month: int) -> Slot | None:
+    """A short legume or cover crop right after the main harvest, for its own season length
+    only (the rest of the year is shown as bare, honestly)."""
+    best = None
+    for crop in _pool(profile, catalog):
+        short_legume = crop.is_legume and crop.cycle_max_days <= SHORT_LEGUME_MAX_DAYS
+        if crop.name == main.name or not (crop.is_cover or short_legume):
+            continue
+        months = [(harvest_month + k - 1) % 12 + 1 for k in range(crop.cycle_months + 1)]
+        suit = suitability(crop, months, ctx, profile.water)
+        if suit.score < SUITABLE_MIN:
+            continue
+        value = (suit.score * (1 + 0.3 * crop.is_legume) * goal_factor(crop, profile)
+                 * familiarity(crop.name, profile.local))
+        if best is None or (round(value, 4), crop.name) > best[0]:
+            best = ((round(value, 4), crop.name), Slot(crop.name, months[0], months[-1], new=True))
+    return best[1] if best else None
+
+
 def _replace(years: list[list[Slot]], old: Slot, crop: CropInfo) -> list[list[Slot]]:
     new_years = _copy(years)
     for year in new_years:

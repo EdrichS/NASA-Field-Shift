@@ -52,7 +52,7 @@ def test_sandy_soil_removes_the_wet_soil_drainage_risk(ph_ff, catalog):
     assert not [r for s in sandy["strategies"] for r in s["risks"] if "clay" in r]
 
 
-def test_corrected_bare_months_drive_the_satellite_rotation(ph_ff, catalog):
+def test_corrected_bare_months_are_used(ph_ff, catalog):
     result = run_engine(ph_ff, {"confirmed_prefill": {
         "bare_months": {"status": "corrected", "value": [3, 4, 5]}}}, catalog).to_dict()
     assert result["bare_months"]["satellite"] == [3, 4, 5]
@@ -92,8 +92,21 @@ def test_suggestions_stay_with_crops_the_country_grows(ph_ff, catalog):
     assert new and new <= set(local)
 
 
-def test_blank_crops_assume_the_countrys_main_crop(ph_ff, catalog):
-    result = run_engine(ph_ff, {}, catalog, country="Philippines").to_dict()
-    current = next(s for s in result["strategies"] if s["key"] == "current")
-    assert "rice" in current["title"]
-    assert any("we assumed rice" in g and "the Philippines" in g for g in result["gaps"])
+def test_no_crops_or_exploring_means_no_comparison_and_nothing_assumed(ph_ff, catalog):
+    for answers in ({}, {"mode": "exploring"}, {"not_farming": True}):
+        result = run_engine(ph_ff, answers, catalog, country="Philippines").to_dict()
+        keys = [s["key"] for s in result["strategies"]]
+        assert "current" not in keys and keys and all(k.startswith("explore_") for k in keys)
+        assert not any("we assumed" in g for g in result["gaps"])  # no crop is assumed
+        assert "starting options" in result["gaps"][0]
+        assert result["bare_months"]["current_rotation"] == []
+
+
+def test_starting_options_are_local_and_different(ph_ff, catalog):
+    from app.engine.regional import local_crops
+
+    result = run_engine(ph_ff, {"mode": "exploring"}, catalog, country="Philippines").to_dict()
+    mains = [s["rotation"][0][0]["crop"] for s in result["strategies"]]
+    assert len(mains) == len(set(mains)) == 3
+    assert set(mains) <= set(local_crops("Philippines"))
+    assert all(s["why"] and s["name"].startswith("Start with") for s in result["strategies"])
