@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent, type RefObject } from 'react'
 import './SignUp.css'
 
 export type UnitSystem = 'imperial' | 'metric'
+
+export type LandAnswer = 'yes' | 'no' | 'unsure'
 
 export type SignUpAccount = {
   username: string
@@ -10,6 +12,7 @@ export type SignUpAccount = {
   units: UnitSystem
   latitude: number
   longitude: number
+  confirmation: LandAnswer
 }
 
 type SignUpProps = {
@@ -59,7 +62,9 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   const mapRef = useRef<LeafletMap | null>(null)
   const markerRef = useRef<LeafletMarker | null>(null)
   const pinRef = useRef<Pin | null>(null)
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [answer, setAnswer] = useState<LandAnswer | null>(null)
+  const [elevation, setElevation] = useState<{ lat: number; lng: number; meters: number } | null>(null)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -122,24 +127,35 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   }
 
   useEffect(() => {
-    if (step !== 2 || !mapNode.current || !window.L) return
+    if ((step !== 2 && step !== 3) || !mapNode.current || !window.L) return
     const L = window.L
+    const satellite = step === 3
     const start = pinRef.current
-    const map = L.map(mapNode.current, { zoomControl: true }).setView(
+    const map = L.map(mapNode.current, { zoomControl: true, maxZoom: satellite ? 18 : 16 }).setView(
       start ? [start.lat, start.lng] : [20, 0],
-      start ? 12 : 2,
+      satellite ? 14 : start ? 12 : 2,
     )
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution: 'Tiles &copy; Esri',
-        maxZoom: 16,
-      },
-    ).addTo(map)
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 16 },
-    ).addTo(map)
+    if (satellite) {
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
+          maxZoom: 18,
+        },
+      ).addTo(map)
+    } else {
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: 'Tiles &copy; Esri',
+          maxZoom: 16,
+        },
+      ).addTo(map)
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        { maxZoom: 16 },
+      ).addTo(map)
+    }
 
     const icon = L.divIcon({
       className: 'sow-pin',
@@ -206,11 +222,35 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
     )
   }
 
+  useEffect(() => {
+    if (step !== 3 || !pin) return
+    const controller = new AbortController()
+    const { lat, lng } = pin
+    fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`, {
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('elevation'))))
+      .then((data: { elevation?: number[] }) => {
+        const value = data.elevation?.[0]
+        if (typeof value === 'number') setElevation({ lat, lng, meters: value })
+      })
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [step, pin])
+
+  const elevationM =
+    pin && elevation && elevation.lat === pin.lat && elevation.lng === pin.lng ? elevation.meters : null
+
   function createAccount() {
     if (!pin) {
       setPinError('Drop a pin on the map, or use your location.')
       return
     }
+    setStep(3)
+  }
+
+  function finishSetup() {
+    if (!pin || !answer) return
     onCreate({
       username: username.trim(),
       email: email.trim(),
@@ -218,6 +258,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
       units: units as UnitSystem,
       latitude: pin.lat,
       longitude: pin.lng,
+      confirmation: answer,
     })
   }
 
@@ -227,7 +268,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
   const unitsErrorId = `${formId}-units-error`
 
   return (
-    <main className={step === 2 ? 'signup is-locate' : 'signup'} data-testid="signup">
+    <main className={step === 1 ? 'signup' : 'signup is-locate'} data-testid="signup">
       <div className="signup-column">
         <header className="signup-header">
           <button type="button" className="back" onClick={onBack}>
@@ -249,10 +290,13 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
           </p>
         </header>
 
-        <section className={step === 2 ? 'signup-card is-locate' : 'signup-card'} aria-labelledby={`${formId}-title`}>
+        <section
+          className={step === 1 ? 'signup-card' : 'signup-card is-locate'}
+          aria-labelledby={step === 3 ? 'confirm-title' : `${formId}-title`}
+        >
           {step === 1 ? (
             <div className="step-panel" key="account">
-              <p className="step">Step 1 of 2</p>
+              <p className="step">Step 1 of 3</p>
               <h1 id={`${formId}-title`}>Create your account</h1>
 
               <form className="signup-form" onSubmit={handleSubmit} noValidate>
@@ -378,7 +422,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
                 </button>
               </p>
             </div>
-          ) : (
+          ) : step === 2 ? (
             <div className="step-panel locate-panel" key="location">
               <div className="locate-head">
                 <button type="button" className="card-back" onClick={() => setStep(1)} aria-label="Back to account details">
@@ -410,7 +454,18 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
                 </p>
               ) : null}
             </div>
-          )}
+          ) : pin ? (
+            <ConfirmLand
+              pin={pin}
+              units={units === 'imperial' ? 'imperial' : 'metric'}
+              elevationM={elevationM}
+              answer={answer}
+              onAnswer={setAnswer}
+              onBack={() => setStep(2)}
+              onFinish={finishSetup}
+              mapNode={mapNode}
+            />
+          ) : null}
         </section>
 
         {step === 2 ? (
@@ -421,6 +476,163 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
       </div>
     </main>
   )
+}
+
+function ConfirmLand({
+  pin,
+  units,
+  elevationM,
+  answer,
+  onAnswer,
+  onBack,
+  onFinish,
+  mapNode,
+}: {
+  pin: Pin
+  units: UnitSystem
+  elevationM: number | null
+  answer: LandAnswer | null
+  onAnswer: (answer: LandAnswer) => void
+  onBack: () => void
+  onFinish: () => void
+  mapNode: RefObject<HTMLDivElement | null>
+}) {
+  const preview = landPreview(pin.lat, elevationM, units)
+  const choices: { id: LandAnswer; label: string }[] = [
+    { id: 'yes', label: 'Yes' },
+    { id: 'no', label: 'No' },
+    { id: 'unsure', label: "I don't know" },
+  ]
+
+  return (
+    <div className="step-panel locate-panel confirm-panel" key="confirm">
+      <div className="locate-head">
+        <button type="button" className="card-back" onClick={onBack} aria-label="Back to location">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M10 3L5 8l5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <h1 id="confirm-title" className="where">
+          Does this look like your land?
+        </h1>
+      </div>
+      <p className="pin-coords">{formatCoord(pin)}</p>
+
+      <dl className="land-summary">
+        <div>
+          <dt>Terrain & elevation</dt>
+          <dd>{preview.terrain}</dd>
+        </div>
+        <div>
+          <dt>Land cover / soil appearance</dt>
+          <dd>{preview.cover}</dd>
+        </div>
+        <div>
+          <dt>Typical weather pattern</dt>
+          <dd>{preview.weather}</dd>
+        </div>
+      </dl>
+
+      <div className="choices" role="radiogroup" aria-label="Does this look like your land?">
+        {choices.map((choice) => (
+          <button
+            key={choice.id}
+            type="button"
+            className={answer === choice.id ? 'choice is-selected' : 'choice'}
+            role="radio"
+            aria-checked={answer === choice.id}
+            onClick={() => onAnswer(choice.id)}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+
+      {answer === 'no' ? (
+        <p className="adjust-pin">Tap the satellite view below to move your pin, or use the arrow to choose again.</p>
+      ) : null}
+
+      <div className="sat-block">
+        <p className="sat-badge">NASA Satellite & Earth View</p>
+        <div className="map-frame">
+          <div ref={mapNode} className="locate-map" role="application" aria-label="Satellite view of your pin. Tap to move it." />
+        </div>
+      </div>
+
+      <button type="button" className="continue" disabled={!answer} onClick={onFinish}>
+        Finish Setup
+      </button>
+    </div>
+  )
+}
+
+function formatCoord(pin: Pin) {
+  const ns = pin.lat >= 0 ? 'N' : 'S'
+  const ew = pin.lng >= 0 ? 'E' : 'W'
+  return `${Math.abs(pin.lat).toFixed(2)}° ${ns}, ${Math.abs(pin.lng).toFixed(2)}° ${ew}`
+}
+
+function landPreview(lat: number, elevationM: number | null, units: UnitSystem) {
+  const abs = Math.abs(lat)
+  const high = elevationM !== null && elevationM >= 800
+  const low = elevationM !== null && elevationM < 40
+  const height = elevationM === null ? '' : elevationPhrase(elevationM, units)
+
+  if (abs < 12) {
+    return {
+      terrain: `${high ? 'Highland tropical ground' : low ? 'Low, nearly flat tropical ground' : 'Slightly raised tropical ground'}${height}`,
+      cover: high ? 'Thinner vegetation with more open soil' : 'Dense vegetation and cropland, with small patches of open soil',
+      weather: 'Warm and humid through the year, with heavy rainfall',
+    }
+  }
+  if (abs < 25) {
+    return {
+      terrain: `${high ? 'Highland tropical terrain' : low ? 'Lowland tropical terrain' : 'Slightly raised / rolling terrain'}${height}`,
+      cover: 'Mixed vegetation with patches of open or bare soil',
+      weather: 'Tropical seasonal climate, a wet season and a drier season',
+    }
+  }
+  if (abs < 35) {
+    return {
+      terrain: `${high ? 'Highland, rolling terrain' : 'Gently rolling terrain'}${height}`,
+      cover: 'Mixed cropland, grass, and patches of open soil',
+      weather: 'Warm summers, mild winters, and moderate rainfall',
+    }
+  }
+  if (abs < 55) {
+    return {
+      terrain: `${high ? 'Higher, rolling terrain' : 'Gently rolling terrain'}${height}`,
+      cover: 'Mixed vegetation with seasonal bare soil',
+      weather: 'Temperate seasonal climate, moderate rainfall, warm summers',
+    }
+  }
+  if (abs < 66) {
+    return {
+      terrain: `${high ? 'Cool highland ground' : 'Cool, gently rolling ground'}${height}`,
+      cover: 'Forest, grass, and open soil',
+      weather: 'Short summers, cold winters, and moderate precipitation',
+    }
+  }
+  return {
+    terrain: `Open, cold ground${height}`,
+    cover: 'Sparse vegetation and bare soil',
+    weather: 'A cold climate with a short growing season',
+  }
+}
+
+function elevationPhrase(meters: number, units: UnitSystem) {
+  if (units === 'imperial') {
+    const feet = Math.round(meters * 3.28084)
+    return `, ~${feet.toLocaleString('en-US')} ft elevation`
+  }
+  return `, ~${Math.round(meters).toLocaleString('en-US')} m elevation`
 }
 
 function Sprout() {
