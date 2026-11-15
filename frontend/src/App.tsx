@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import Landing from './Landing'
+import SignUp from './SignUp'
 
 // MapLibre looks for its worker next to its own module, which breaks once Vite pre-bundles it.
 // Point it at the (self-contained) worker file explicitly; works in dev and in the build.
@@ -14,18 +15,28 @@ const GIBS_BLUE_MARBLE =
   'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg'
 
 export default function App() {
-  const [entered, setEntered] = useState(false)
+  const [screen, setScreen] = useState<'landing' | 'signup' | 'map'>('landing')
 
-  if (!entered) {
+  if (screen === 'signup') {
+    return (
+      <SignUp
+        onBack={() => setScreen('landing')}
+        onLogin={() => setScreen('landing')}
+        onContinue={() => {
+          // Step 2 of sign-up is next. Nothing is sent to the backend from this screen.
+        }}
+      />
+    )
+  }
+
+  if (screen === 'landing') {
     return (
       <Landing
         onLogin={() => {
           // Auth0 sign-in is step 3.4. The button is ready; it does not log anyone in yet.
         }}
-        onSignUp={() => {
-          // Auth0 sign-up is step 3.4. The button is ready; it does not create an account yet.
-        }}
-        onGuest={() => setEntered(true)}
+        onSignUp={() => setScreen('signup')}
+        onGuest={() => setScreen('map')}
       />
     )
   }
