@@ -231,13 +231,13 @@ function Screens() {
     // Dev-only layout preview with sample data (no sign-in, nothing is called).
     const sample: Me = {
       display_name: 'Ana', language: 'tl', units: 'metric', has_email: true,
-      fields: [{ id: 'f1', name: 'North paddy', area_ha: 19.63, input_mode: 'point', lat: 15.6, lon: 120.9,
+      fields: [{ id: 'f1', name: 'Buclad paddy', area_ha: 19.63, input_mode: 'point', lat: 7.4945, lon: 125.7513,
         analysis_id: 'a1', top_strategy: 'break_pest', analyzed_at: null, created_at: null,
         alert_types: ['natural_event', 'fire', 'heavy_rain', 'drought', 'pest_risk', 'new_findings'], email: true, push: true, unread: 2 }],
     }
     return (
-      <Dashboard me={sample} email="ana@example.org" name="Ana" farms={farms} onRefresh={() => undefined}
-        onOpenPlan={() => undefined} onNewAnalysis={() => undefined} onDemo={() => undefined}
+      <Dashboard me={sample} email="ana@example.org" name="Ana" onRefresh={() => undefined}
+        onOpenPlan={() => undefined} onNewAnalysis={() => undefined}
         onLogout={() => undefined} onError={setError} onNotice={setNotice} getToken={async () => null}
         initialTab={window.location.hash.endsWith('/alerts') ? 'alerts' : 'home'} initialAlerts={SAMPLE_ALERTS} />
     )
@@ -308,8 +308,6 @@ function Screens() {
           onRefresh={() => void refreshMe()}
           onOpenPlan={(id) => void openSaved(id)}
           onNewAnalysis={() => setScreen({ name: 'setup', guest: false })}
-          onDemo={(id) => void openDemo(id)}
-          farms={farms}
           onLogout={session.logout}
           onError={setError}
           onNotice={setNotice}
@@ -365,15 +363,15 @@ export default function App() {
 // pest-risk weather), so the alerts screen can be reviewed without signing in.
 const SAMPLE_ALERTS: Alert[] = [
   {
-    id: 's1', field_id: 'f1', field_name: 'North paddy', type: 'natural_event', severity: 'warning',
-    message: '(Simulation for the demo) Simulated Typhoon Amihan is 90 km from North paddy and moving closer. Follow local warnings and get ready.',
-    source: 'NASA EONET (simulated)', triggered_at: '2026-11-15T06:15:00Z', read_at: null, lat: 15.6, lon: 120.9,
-    data: { event_geometry: { type: 'MultiPoint', coordinates: [[125.08, 15.6], [123.69, 15.8], [122.39, 16.0], [121.46, 16.2]] } },
+    id: 's1', field_id: 'f1', field_name: 'Buclad paddy', type: 'natural_event', severity: 'warning',
+    message: '(Simulation for the demo) Simulated Typhoon Amihan is 75 km from Buclad paddy and moving closer. Follow local warnings and get ready.',
+    source: 'NASA EONET (simulated)', triggered_at: '2026-11-15T06:15:00Z', read_at: null, lat: 7.4945, lon: 125.7513,
+    data: { event_geometry: { type: 'MultiPoint', coordinates: [[129.84, 7.4945], [128.477, 7.6945], [127.205, 7.8945], [126.296, 8.0945]] } },
   },
   {
-    id: 's2', field_id: 'f1', field_name: 'North paddy', type: 'pest_risk', severity: 'watch',
-    message: 'Weather at North paddy favors bacterial leaf blight on rice: 25-34 °C and humidity above 70% for 2+ days in a row. Conditions favor it; check your field. This is not a confirmed outbreak.',
-    source: 'NASA POWER daily weather + team pest rules', triggered_at: '2026-11-15T06:15:00Z', read_at: null, lat: 15.6, lon: 120.9,
+    id: 's2', field_id: 'f1', field_name: 'Buclad paddy', type: 'pest_risk', severity: 'watch',
+    message: 'Weather at Buclad paddy favors bacterial leaf blight on rice: 25-34 °C and humidity above 70% for 2+ days in a row. Conditions favor it; check your field. This is not a confirmed outbreak.',
+    source: 'NASA POWER daily weather + team pest rules', triggered_at: '2026-11-15T06:15:00Z', read_at: null, lat: 7.4945, lon: 125.7513,
     data: {},
   },
 ]

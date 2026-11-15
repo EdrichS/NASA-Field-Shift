@@ -11,6 +11,7 @@ from statistics import fmean
 
 from app.engine.answers import FarmProfile
 from app.engine.catalog import CropInfo
+from app.engine.regional import familiarity
 from app.engine.rotation import Gap, Slot, gap_months, gaps
 from app.engine.scoring import (
     TOLERANCE,
@@ -120,8 +121,12 @@ def goal_factor(crop: CropInfo, profile: FarmProfile) -> float:
 
 
 def _pool(profile: FarmProfile, catalog: dict[str, CropInfo]) -> list[CropInfo]:
-    return sorted((c for c in catalog.values() if c.name not in profile.wont_grow),
-                  key=lambda c: c.name)
+    """Crops we may suggest: not on the farmer's won't-grow list and, when the country is
+    known, grown there (FAOSTAT). Never a crop the region doesn't know."""
+    crops = [c for c in catalog.values() if c.name not in profile.wont_grow]
+    if profile.local is not None:
+        crops = [c for c in crops if c.name in profile.local]
+    return sorted(crops, key=lambda c: c.name)
 
 
 def _machinery_factor(crop: CropInfo, profile: FarmProfile) -> float:
@@ -146,7 +151,7 @@ def _copy(years: list[list[Slot]]) -> list[list[Slot]]:
 
 
 def fill_bare(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
-              catalog: dict[str, CropInfo]) -> Candidate | None:
+              catalog: dict[str, CropInfo], min_suit: float = SUITABLE_MIN) -> Candidate | None:
     best = None
     for gap in gaps(years, MIN_GAP_DAYS):
         for crop in _pool(profile, catalog):
@@ -160,13 +165,14 @@ def fill_bare(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
                 options = [gap_months(gap)]
             for months in options:
                 suit = suitability(crop, months, ctx, profile.water)
-                if suit.score < SUITABLE_MIN:
+                if suit.score < min_suit:
                     continue
                 trial = Slot(crop.name, months[0], months[-1])
                 thirst = min(0.5, water_deficit_mm([trial], ctx, catalog) / 1000)
                 value = (suit.score * (1 + 0.3 * crop.is_legume) * goal_factor(crop, profile)
                          * stress_factor(crop, months, ctx, profile.water) * (1 - thirst)
-                         * (1 + gap.days / 720) * _machinery_factor(crop, profile))
+                         * (1 + gap.days / 720) * _machinery_factor(crop, profile)
+                         * familiarity(crop.name, profile.local))
                 key = (round(value, 4), crop.name)
                 if best is None or key > best[0]:
                     best = (key, gap, crop, suit)
@@ -196,23 +202,26 @@ def _replace(years: list[list[Slot]], old: Slot, crop: CropInfo) -> list[list[Sl
 
 
 def break_pest(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
-               catalog: dict[str, CropInfo]) -> Candidate | None:
+               catalog: dict[str, CropInfo], min_suit: float = SUITABLE_MIN) -> Candidate | None:
     slots = [s for y in years for s in y]
     if not slots:
         return None
     families = Counter(crop_of(s.crop, catalog).family for s in slots)
-    common = families.most_common(1)[0][0]
+    known = Counter({f: n for f, n in families.items() if f != "unknown"})
+    if not known:  # crops we have no family for: no honest pest-cycle advice
+        return None
+    common = known.most_common(1)[0][0]
     best = None
     for slot in (s for s in slots if crop_of(s.crop, catalog).family == common):
         for crop in _pool(profile, catalog):
             if crop.family in families or crop.is_cover or crop.cycle_min_days > slot.days + 15:
                 continue
             suit = suitability(crop, slot.months(), ctx, profile.water)
-            if suit.score < SUITABLE_MIN:
+            if suit.score < min_suit:
                 continue
             value = (suit.score * (1 + 0.2 * crop.is_legume) * goal_factor(crop, profile)
                      * stress_factor(crop, slot.months(), ctx, profile.water)
-                     * _machinery_factor(crop, profile))
+                     * _machinery_factor(crop, profile) * familiarity(crop.name, profile.local))
             key = (round(value, 4), crop.name)
             if best is None or key > best[0]:
                 best = (key, slot, crop, suit)
@@ -224,7 +233,8 @@ def break_pest(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
 
 
 def save_water(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
-               catalog: dict[str, CropInfo], avoid: list[list[list[Slot]]]) -> Candidate | None:
+               catalog: dict[str, CropInfo], avoid: list[list[list[Slot]]],
+               min_suit: float = SUITABLE_MIN) -> Candidate | None:
     slots = [s for y in years for s in y]
     if not slots:
         return None
@@ -241,7 +251,7 @@ def save_water(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
         if not (factor < old_factor or (factor == old_factor and drier)):
             continue
         suit = suitability(crop, target.months(), ctx, profile.water)
-        if suit.score < SUITABLE_MIN:
+        if suit.score < min_suit:
             continue
         new_slot = Slot(crop.name, target.plant_month, target.harvest_month)
         saving = old_deficit - water_deficit_mm([new_slot], ctx, catalog)
@@ -250,7 +260,7 @@ def save_water(profile: FarmProfile, years: list[list[Slot]], ctx: FieldContext,
         value = (suit.score * (1 + max(saving, 0) / 500) * (1 + 0.1 * crop.is_legume)
                  * goal_factor(crop, profile)
                  * stress_factor(crop, target.months(), ctx, profile.water)
-                 * _machinery_factor(crop, profile))
+                 * _machinery_factor(crop, profile) * familiarity(crop.name, profile.local))
         options.append(((round(value, 4), crop.name), crop, suit))
     for _, crop, suit in sorted(options, key=lambda o: o[0], reverse=True):
         new_years = _replace(years, target, crop)

@@ -163,13 +163,6 @@ export default function PrintReport({
             <li key={q}>{q}</li>
           ))}
         </ol>
-        {content?.idea_to_discuss ? (
-          <>
-            <h3>An idea to discuss</h3>
-            <p className="p-ai">{content.idea_label}</p>
-            <p>{content.idea_to_discuss}</p>
-          </>
-        ) : null}
         <h2>Words in plain language</h2>
         <dl className="p-glossary">
           {(content?.glossary.length ? content.glossary : BASE_GLOSSARY).map((g) => (

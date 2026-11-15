@@ -9,12 +9,10 @@ import {
   readAlert,
   renameField,
   setAlertPreferences,
-  simulateAlert,
   type Alert,
   type AlertType,
   type FieldSummary,
   type Me,
-  type ShowcaseFarm,
 } from './api'
 import AlertMap from './AlertMap'
 import { formatArea } from './mapkit'
@@ -45,11 +43,9 @@ type DashboardProps = {
   me: Me | null
   email?: string
   name: string
-  farms: ShowcaseFarm[]
   onRefresh: () => void
   onOpenPlan: (analysisId: string) => void
   onNewAnalysis: () => void
-  onDemo: (id: string) => void
   onLogout: () => void
   onError: (message: string) => void
   onNotice: (message: string) => void
@@ -60,7 +56,7 @@ type DashboardProps = {
 }
 
 export default function Dashboard(props: DashboardProps) {
-  const { me, email, name, farms, onRefresh, onOpenPlan, onNewAnalysis, onDemo, onLogout, onError, onNotice, getToken } = props
+  const { me, email, name, onRefresh, onOpenPlan, onNewAnalysis, onLogout, onError, onNotice, getToken } = props
   const [tab, setTab] = useState<Tab>(props.initialTab ?? 'home')
   const [alerts, setAlerts] = useState<Alert[]>(props.initialAlerts ?? [])
   const [checking, setChecking] = useState(false)
@@ -106,20 +102,6 @@ export default function Dashboard(props: DashboardProps) {
       onRefresh()
     } catch (e) {
       fail(e, 'Could not update the alert.')
-    }
-  }
-
-  async function simulate(field: FieldSummary) {
-    const token = await getToken()
-    if (!token) return
-    try {
-      const result = await simulateAlert(token, field.id)
-      setAlerts(result.alerts)
-      onNotice(result.new ? `${result.title}: ${result.new} alert(s) sent to every saved field nearby.` : `${result.title} was already simulated this hour.`)
-      setTab('alerts')
-      onRefresh()
-    } catch (e) {
-      fail(e, 'Could not run the simulation.')
     }
   }
 
@@ -185,18 +167,6 @@ export default function Dashboard(props: DashboardProps) {
               </div>
             </article>
 
-            {farms.length ? (
-              <article className="home-card">
-                <h2>Demo farms</h2>
-                <div className="plan-buttons">
-                  {farms.map((farm) => (
-                    <button key={farm.id} type="button" className="secondary" onClick={() => onDemo(farm.id)}>
-                      {farm.name}
-                    </button>
-                  ))}
-                </div>
-              </article>
-            ) : null}
           </div>
         ) : null}
 
@@ -212,11 +182,9 @@ export default function Dashboard(props: DashboardProps) {
                 key={f.id}
                 field={f}
                 units={units}
-                near={nearDemo(f, farms)}
                 getToken={getToken}
                 onChanged={onRefresh}
                 onOpenPlan={onOpenPlan}
-                onSimulate={() => void simulate(f)}
                 onError={(e) => fail(e, 'Could not update the field.')}
               />
             ))}
@@ -263,34 +231,19 @@ export default function Dashboard(props: DashboardProps) {
   )
 }
 
-function nearDemo(field: FieldSummary, farms: ShowcaseFarm[]) {
-  return farms.some((farm) => {
-    if (farm.geometry.type !== 'Point') return false
-    const [lon, lat] = farm.geometry.coordinates
-    const dLat = ((field.lat - lat) * Math.PI) / 180
-    const dLon = ((field.lon - lon) * Math.PI) / 180
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat * Math.PI) / 180) * Math.cos((field.lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
-    return 2 * 6371 * Math.asin(Math.sqrt(a)) <= 100
-  })
-}
-
 function FieldCard({
   field,
   units,
-  near,
   getToken,
   onChanged,
   onOpenPlan,
-  onSimulate,
   onError,
 }: {
   field: FieldSummary
   units: 'metric' | 'imperial'
-  near: boolean
   getToken: () => Promise<string | null>
   onChanged: () => void
   onOpenPlan: (id: string) => void
-  onSimulate: () => void
   onError: (e: unknown) => void
 }) {
   const [name, setName] = useState(field.name)
@@ -351,11 +304,6 @@ function FieldCard({
         {field.analysis_id ? (
           <button type="button" className="secondary" onClick={() => onOpenPlan(field.analysis_id!)}>
             Open plan
-          </button>
-        ) : null}
-        {near ? (
-          <button type="button" className="secondary" onClick={onSimulate} title="Demo only: a simulated storm near the demo farms">
-            Simulate a storm (demo)
           </button>
         ) : null}
       </div>

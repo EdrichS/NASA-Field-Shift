@@ -1,12 +1,13 @@
-"""Alert endpoints (signed in): check, list, read, per-field preferences, browser push, and the
-demo simulation. Checks run when the app opens (cached ~6 hours) and on "Check now"."""
+"""Alert endpoints (signed in): check, list, read, per-field preferences and browser push.
+Checks run when the app opens (cached ~6 hours) and on "Check now". Storm simulations are
+admin-only (scripts/simulate_storm.py), never an API route."""
 
 from __future__ import annotations
 
 import uuid
 from typing import Any, Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from app.alerts import push, service
@@ -17,15 +18,10 @@ from app.store import ALERT_TYPES
 
 router = APIRouter(prefix="/alerts")
 check_limit = RateLimiter(limit=20, window_s=3600)
-simulate_limit = RateLimiter(limit=10, window_s=3600)
 
 
 class CheckIn(BaseModel):
     force: bool = Field(False, description="True for 'Check now' (skips the 6-hour cache)")
-
-
-class SimulateIn(BaseModel):
-    field_id: str
 
 
 class PreferencesIn(BaseModel):
@@ -92,15 +88,3 @@ def subscribe(body: SubscriptionIn, user: CurrentUser) -> Response:
 def unsubscribe(body: SubscriptionIn, user: CurrentUser) -> Response:
     service.remove_subscription(user.sub, body.endpoint)
     return Response(status_code=204)
-
-
-@router.post("/simulate", dependencies=[Depends(simulate_limit)])
-def simulate(body: SimulateIn, user: CurrentUser, tasks: BackgroundTasks) -> dict[str, Any]:
-    """Demo: a simulated storm near a showcase farm. Every saved field in range is alerted."""
-    try:
-        result = service.simulate(user.sub, _uuid(body.field_id))
-    except LookupError as exc:
-        raise HTTPException(status_code=404, detail="Field not found") from exc
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=str(exc)) from exc
-    return {**result, "alerts": service.list_alerts(user.sub)}

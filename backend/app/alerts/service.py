@@ -28,7 +28,6 @@ from app.store import ALERT_TYPES, _conn
 
 log = logging.getLogger(__name__)
 CHECK_EVERY = timedelta(hours=6)
-SIMULATION_RADIUS_KM = 100  # simulations only near the showcase farms
 _eonet_lock = threading.Lock()
 _eonet_checked: datetime | None = None
 APP_LINK = "Open SowSmart to see the alert and your field."
@@ -268,27 +267,18 @@ def run_check(sub: str | None, *, force: bool = False) -> dict[str, Any]:
 
 # --- simulation (demo) -----------------------------------------------------------------------
 
-def simulate(sub: str, field_id: str) -> dict[str, Any]:
-    """A simulated storm moving toward a field near a showcase farm, matched against every saved
-    field (so a second account with a field nearby is alerted too). Same hour = same event, so
-    re-running creates no duplicates."""
-    with _conn() as conn:
-        f = conn.execute(
-            """SELECT ST_Y(ST_Centroid(geom)) AS lat, ST_X(ST_Centroid(geom)) AS lon FROM fields
-                WHERE id = %s AND user_id = %s""", (field_id, sub)).fetchone()
-    if f is None:
-        raise LookupError("field not found")
-    near = []
-    for farm in showcase.farms():
-        lon, lat = farm["geometry"]["coordinates"][:2]
-        near.append((triggers.haversine_km(f["lat"], f["lon"], lat, lon), farm))
-    km, farm = min(near, key=lambda x: x[0])
-    if km > SIMULATION_RADIUS_KM:
-        raise PermissionError("Simulations only run for fields near the demo farms.")
+def simulate(farm_id: str, *, fresh: bool = False) -> dict[str, Any]:
+    """ADMIN ONLY (scripts/simulate_storm.py; no API route): a simulated storm moving toward a
+    demo farm, matched against every saved field like a real NASA EONET event, so every account
+    with a field in range gets one alert. Same hour = same event (re-running sends nothing new)
+    unless fresh=True."""
+    farm = next((f for f in showcase.farms() if f["id"] == farm_id), None)
+    if farm is None:
+        raise LookupError(f"unknown demo farm {farm_id!r}")
     lon, lat = farm["geometry"]["coordinates"][:2]
     tropical = abs(lat) < 25
-    hour = datetime.now(UTC).strftime("%Y%m%d%H")
-    event_id = f"SIM-{farm['id']}-{hour}"
+    stamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S" if fresh else "%Y%m%d%H")
+    event_id = f"SIM-{farm['id']}-{stamp}"
     # Track: four points from ~450 km east to ~60 km east of the farm, moving west.
     km_per_deg_lon = 111 * max(0.2, abs(math.cos(math.radians(lat))))
     track = [(lon + d / km_per_deg_lon, lat + 0.2 * i)
@@ -301,6 +291,16 @@ def simulate(sub: str, field_id: str) -> dict[str, Any]:
     new = match_events([event_id])
     deliver(new)
     return {"event_id": event_id, "new": len(new), "title": title}
+
+
+def clear_simulations() -> dict[str, int]:
+    """ADMIN ONLY: remove every simulated event and the alerts it created."""
+    with _conn() as conn:
+        alerts = conn.execute(
+            "DELETE FROM alerts WHERE type = 'natural_event' AND source_event_id LIKE 'SIM-%'"
+        ).rowcount
+        events = conn.execute("DELETE FROM natural_events WHERE simulated").rowcount
+    return {"alerts": alerts, "events": events}
 
 
 # --- delivery --------------------------------------------------------------------------------

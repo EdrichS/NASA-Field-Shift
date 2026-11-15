@@ -18,7 +18,7 @@ from app.api import accounts, routes
 from app.config import get_settings
 from app.main import app
 
-SHOWCASE = Path(__file__).resolve().parents[2] / "data" / "showcase" / "central-luzon-rice.json"
+SHOWCASE = Path(__file__).resolve().parents[2] / "data" / "showcase" / "tagum-rice.json"
 
 
 @pytest.fixture
@@ -106,8 +106,9 @@ def test_save_list_read_and_isolation(client, users):
     me = client.get("/me", headers=bearer(alice)).json()
     assert [f["name"] for f in me["fields"]] == ["North paddy"]
     field = me["fields"][0]
-    assert field["analysis_id"] == saved["analysis_id"] and field["top_strategy"] == "break_pest"
-    assert round(field["lat"], 1) == 15.6 and field["area_ha"] == pytest.approx(19.63, abs=0.01)
+    top = min(analysis["strategies"], key=lambda s: s["rank"])["key"]
+    assert field["analysis_id"] == saved["analysis_id"] and field["top_strategy"] == top
+    assert round(field["lat"], 1) == 7.5 and field["area_ha"] == pytest.approx(19.63, abs=0.01)
     assert "natural_event" in field["alert_types"]
 
     got = client.get(f"/analyses/{saved['analysis_id']}", headers=bearer(alice))
@@ -127,8 +128,8 @@ def test_saving_again_reuses_the_field_and_flags_new_findings(client, users):
     first = client.post("/analyses/save", headers=bearer(alice),
                         json={"request": request, "analysis": analysis}).json()
     changed = json.loads(json.dumps(analysis))
-    for s in changed["strategies"]:  # pretend the ranking changed: fill_bare is now #1
-        s["rank"] = {"fill_bare": 1, "break_pest": 2}.get(s["key"], s["rank"])
+    for s in changed["strategies"]:  # pretend the ranking changed: #1 and #2 swap
+        s["rank"] = {1: 2, 2: 1}.get(s["rank"], s["rank"])
     second = client.post("/analyses/save", headers=bearer(alice),
                          json={"request": request, "analysis": changed}).json()
     assert second["field_id"] == first["field_id"]

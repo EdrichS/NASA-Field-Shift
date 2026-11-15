@@ -121,7 +121,10 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
                 ) : null}
               </>
             )}
-            {content?.datasets_line ? <p className="datasets">{content.datasets_line}</p> : <DatasetsLine analysis={analysis} />}
+            <details className="more">
+              <summary>Where the data comes from</summary>
+              {content?.datasets_line ? <p className="datasets">{content.datasets_line}</p> : <DatasetsLine analysis={analysis} />}
+            </details>
           </section>
 
           <section className="r-card" aria-labelledby="sat-h">
@@ -132,7 +135,6 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
                 <li key={card.id}>
                   <strong>{card.title}</strong>
                   <span>{card.statement}</span>
-                  <span className={`confidence confidence-${card.confidence}`}>{card.confidence} confidence</span>
                 </li>
               ))}
             </ul>
@@ -153,14 +155,6 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
               <StrategyCard key={s.key} strategy={s} text={textFor(s)} weights={analysis.weights} current={current} />
             ))}
           </ol>
-
-          {content?.idea_to_discuss ? (
-            <section className="r-card idea-card" aria-labelledby="idea-h">
-              <h2 id="idea-h">An idea to discuss</h2>
-              <p className="idea-label">{content.idea_label}</p>
-              <p>{content.idea_to_discuss}</p>
-            </section>
-          ) : null}
 
           <section className="r-card" aria-labelledby="q-h">
             <h2 id="q-h">Questions for your local expert</h2>
@@ -212,7 +206,7 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
 function AiBadge({ report }: { report: AIReport }) {
   return (
     <span className="ai-badge" title={`Model: ${report.meta.model ?? 'AI'}. Every number was checked against SowSmart's data.`}>
-      Written by AI from SowSmart's results{report.checks.numbers_ok ? ' · numbers checked' : ''}
+      Written by AI from SowSmart's results
     </span>
   )
 }
@@ -255,13 +249,9 @@ function StrategyCard({
           <span>/100</span>
         </div>
       </div>
-      <p className="strategy-meta">
-        <span className={`confidence confidence-${s.confidence}`}>{s.confidence} confidence</span>
-        {!isCurrent && current ? (
-          <span>{s.total >= current.total ? `+${(s.total - current.total).toFixed(1)}` : (s.total - current.total).toFixed(1)} vs. now</span>
-        ) : null}
-        {text?.fallback ? <span>(engine text: the AI skipped this one)</span> : null}
-      </p>
+      {!isCurrent && current ? (
+        <p className="strategy-meta">{s.total > current.total ? 'Scores better than what you grow now' : s.total < current.total ? 'Scores lower than what you grow now' : 'Scores the same as what you grow now'}</p>
+      ) : null}
 
       {s.changes.length && !isCurrent ? (
         <div className="changes">
@@ -275,7 +265,12 @@ function StrategyCard({
       {gaps.length ? <ListBlock title="What we don't know yet" items={gaps} tone="gap" /> : null}
 
       <details className="breakdown">
-        <summary>Score breakdown and evidence</summary>
+        <summary>More details</summary>
+        <p className="bar-summary">
+          How sure we are: {s.confidence}.
+          {!isCurrent && current ? ` Score ${s.total} vs. ${current.total} for what you grow now.` : ''}
+          {text?.fallback ? ' (Plain text from the engine: the AI skipped this option.)' : ''}
+        </p>
         <ul className="bars">
           {Object.entries(s.components).map(([key, c]) => (
             <li key={key}>

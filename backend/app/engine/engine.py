@@ -8,9 +8,16 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from app.engine import corrections
+from app.engine import corrections, regional
 from app.engine.answers import FarmProfile, parse_answers
-from app.engine.candidates import Candidate, break_pest, fill_bare, save_water
+from app.engine.candidates import (
+    SUITABLE_MIN,
+    Candidate,
+    break_pest,
+    fill_bare,
+    save_water,
+    suitability,
+)
 from app.engine.catalog import CropInfo, default_catalog
 from app.engine.evidence import Evidence
 from app.engine.rotation import Slot, bare_by_month, cover_by_month, group_years
@@ -215,8 +222,53 @@ def _confidence(cand: Candidate | None, profile: FarmProfile, ff: FieldFeatures,
     return "high" if points >= 3 else "medium" if points == 2 else "low"
 
 
+RELAXED_MIN = 0.01  # when no locally grown crop fits well: the best local one, never a stranger
+
+
+def _assume_crops(profile: FarmProfile, ctx: FieldContext, catalog: dict[str, CropInfo]) -> None:
+    """No crops given: the satellite shows when the field is green; assume the most widely grown
+    crop in the country that fits each green run (never an "unknown crop")."""
+    local = profile.local or {}
+    names = [n for n, _ in sorted(local.items(), key=lambda kv: -kv[1]) if n in catalog]
+    names = names or sorted(n for n, c in catalog.items() if not c.is_cover)
+    used: list[str] = []
+    slots = []
+    for slot in profile.slots:
+        if slot.crop != "unknown crop":
+            slots.append(slot)
+            continue
+        fits = [catalog[n] for n in names
+                if not catalog[n].is_cover and catalog[n].cycle_min_days <= slot.days + 15]
+        scored = [(suitability(c, slot.months(), ctx, profile.water).score, c.name) for c in fits]
+        good = [name for score, name in scored if score >= SUITABLE_MIN]
+        pick = good[0] if good else (max(scored)[1] if scored else names[0])
+        slots.append(Slot(pick, slot.plant_month, slot.harvest_month))
+        used.append(pick)
+    profile.slots = slots
+    if used:
+        picked = list(dict.fromkeys(used))
+        crops = " and ".join(picked)
+        where = f"in {_country_text(profile.country)} " if profile.country and local else ""
+        many = len(picked) > 1
+        profile.assumptions = [a for a in profile.assumptions
+                               if not a.startswith("Current crops estimated")]
+        profile.assumptions.append(
+            f"You didn't list your crops, so we assumed {crops}: the most widely grown "
+            f"{'crops' if many else 'crop'} {where}that {'fit' if many else 'fits'} the months "
+            "your field looks green. Tell us your crops for better advice.")
+
+
+def _country_text(name: str | None) -> str:
+    """'the Philippines', 'the United States of America', 'Kenya'."""
+    if not name:
+        return ""
+    plural = name.endswith(("ines", "lands", "ives", "amas")) or name.startswith(("United ",))
+    return f"the {name}" if plural or " of " in name else name
+
+
 def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
-               catalog: dict[str, CropInfo] | None = None) -> EngineResult:
+               catalog: dict[str, CropInfo] | None = None,
+               country: str | None = None) -> EngineResult:
     catalog = catalog if catalog is not None else default_catalog()
     calendar = stress_calendar(ff)
     fixes = corrections.corrected(raw_answers)  # the farmer's card corrections win
@@ -228,6 +280,10 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     notes += bare_notes
     green = [m for m in range(1, 13) if m not in sat_bare] if sat_bare else []
     profile = parse_answers(raw_answers, catalog, runs(green))
+    profile.country = country
+    profile.local = regional.local_crops(country)
+    if profile.rotation_source == "satellite":
+        _assume_crops(profile, ctx, catalog)
     weights = weights_for(profile.goals)
 
     current_years = group_years(profile.slots)
@@ -237,17 +293,31 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
     candidates: list[Candidate] = []
     for build in (fill_bare, break_pest):
         cand = build(profile, current_years, ctx, catalog)
+        if cand is None and profile.local:
+            cand = build(profile, current_years, ctx, catalog, min_suit=RELAXED_MIN)
         if cand is not None:
             candidates.append(cand)
-    water_cand = save_water(profile, current_years, ctx, catalog,
-                            [c.years for c in candidates] + [current_years])
+    avoid = [c.years for c in candidates] + [current_years]
+    water_cand = save_water(profile, current_years, ctx, catalog, avoid)
+    if water_cand is None and profile.local:
+        water_cand = save_water(profile, current_years, ctx, catalog, avoid,
+                                min_suit=RELAXED_MIN)
     if water_cand is not None:
         candidates.append(water_cand)
+    weak = [c for c in candidates if c.suit is not None and c.suit.score < SUITABLE_MIN]
 
     data_gaps = notes + list(profile.assumptions) + list(ff.gaps) + [
         "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
         "Soil values are SoilGrids estimates; a soil test would be more accurate",
     ]
+    if profile.local is None:
+        data_gaps.append("We couldn't tell which country this field is in, so suggestions "
+                         "aren't limited to locally grown crops")
+    for c in weak:
+        place = _country_text(profile.country)
+        data_gaps.append(f"Few crops grown in {place} suit this field well; "
+                         f"{c.crop.name if c.crop else 'this option'} is the best local fit "
+                         "but scored low. Check it with a local expert.")
     if len(candidates) < 3:
         missing = {"fill_bare", "break_pest", "save_water"} - {c.key for c in candidates}
         data_gaps.append("No suitable crop found for: " + ", ".join(sorted(missing)))
@@ -301,7 +371,7 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
                "end_month": ff.end_month},
         profile={"mode": profile.mode, "water": profile.water, "equipment": profile.equipment,
                  "goals": profile.goals, "wont_grow": sorted(profile.wont_grow),
-                 "rotation_source": profile.rotation_source},
+                 "rotation_source": profile.rotation_source, "country": profile.country},
         weights=weights,
         bare_months={"satellite": sat_bare, "satellite_evidence": sat_ev,
                      "current_rotation": calendar_bare},

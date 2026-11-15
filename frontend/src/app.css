@@ -770,3 +770,7 @@
   inset: 0;
   height: auto;
 }
+
+.sat-sources p {
+  margin: 0.3rem 0 0;
+}

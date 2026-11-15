@@ -1,16 +1,16 @@
 [
  {
-  "id": "central-luzon-rice",
-  "name": "Central Luzon rice farm",
-  "persona": "Illustrative smallholder rice farmer, Nueva Ecija",
+  "id": "tagum-rice",
+  "name": "Tagum City rice farm",
+  "persona": "Illustrative smallholder rice farmer, Tagum City",
   "country": "Philippines",
-  "place": "Nueva Ecija province, Central Luzon, about 13 km south of the Science City of Munoz",
-  "story": "Two irrigated rice crops a year leave a hot, dry gap from April to June (35 C+ in 29-30 of the last 30 years, driest soil in April). A short, heat-tolerant legume such as mungbean could fill it. Typhoons and heavy rain are a real risk (August 2026 rain was 2.6x normal).",
+  "place": "Barangay Buclad, Tagum City, Davao del Norte (Davao Region)",
+  "story": "Two rice crops a year (January-April and June-September) leave the field bare from late September to January, in a wet climate with no real dry season. A short legume such as mungbean or peanut could use that window. La Nina floods and heavy rain are the main weather risk here.",
   "geometry": {
    "type": "Point",
    "coordinates": [
-    120.9,
-    15.6
+    125.7513,
+    7.4945
    ]
   },
   "report_languages": [
@@ -18,7 +18,7 @@
    "tl"
   ],
   "available": true,
-  "generated_at": "2026-11-15T03:17:12+00:00",
+  "generated_at": "2026-11-15T09:03:13+00:00",
   "model": "grok-4.20-0309-non-reasoning"
  },
  {
@@ -39,7 +39,7 @@
    "en"
   ],
   "available": true,
-  "generated_at": "2026-11-15T03:17:21+00:00",
+  "generated_at": "2026-11-15T09:03:27+00:00",
   "model": "grok-4.20-0309-non-reasoning"
  }
 ]

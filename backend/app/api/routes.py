@@ -23,6 +23,7 @@ from app.api import showcase
 from app.api.ratelimit import RateLimiter, client_key
 from app.auth import MaybeUser
 from app.config import get_settings
+from app.data.country import country_of
 from app.engine.catalog import CropInfo, default_catalog
 from app.engine.engine import run_engine
 from app.features.harmonize import FieldFeatures, build_field_features, store_features
@@ -67,6 +68,11 @@ def get_features(geometry: dict[str, Any], tasks: BackgroundTasks | None = None)
         _stored.add(stored_key)
         tasks.add_task(store_features, features, daily)
     return features
+
+
+def get_country(ff: FieldFeatures) -> str | None:
+    """The field's country (FAO name), so suggestions stay to locally grown crops."""
+    return country_of(ff.lon, ff.lat)
 
 
 def unusable(ff: FieldFeatures) -> bool:
@@ -129,7 +135,7 @@ def run_analysis(body: AnalyzeRequest, *, tasks: BackgroundTasks | None = None,
     answers = body.answers.model_dump()
     answers["mode"] = body.mode
     try:
-        result = run_engine(ff, answers, crop_catalog()).to_dict()
+        result = run_engine(ff, answers, crop_catalog(), country=get_country(ff)).to_dict()
     except ValueError as exc:  # e.g. NASA POWER unavailable for this spot right now
         raise HTTPException(status_code=503,
                             detail=f"Not enough data to analyze yet: {exc}") from exc

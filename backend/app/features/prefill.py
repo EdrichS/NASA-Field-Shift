@@ -77,9 +77,8 @@ def prefill_cards(ff: FieldFeatures) -> list[dict[str, Any]]:
         wettest = max(range(12), key=lambda i: sm.normal[i])
         cards.append(_card(
             "driest_soil", "When the soil is driest",
-            f"The root zone is driest in {MONTH_NAMES[driest[0]]} "
-            f"({sm.normal[driest[0]]:.2f} m³/m³) and wettest in {MONTH_NAMES[wettest]} "
-            f"({sm.normal[wettest]:.2f}).",
+            f"The soil where roots drink is driest in {MONTH_NAMES[driest[0]]} and wettest "
+            f"in {MONTH_NAMES[wettest]}.",
             [i + 1 for i in sorted(driest)],
             [from_feature(sm, f"Root-zone soil moisture in {MONTH_NAMES[i]}", sm.normal[i])
              for i in driest + [wettest]],
@@ -156,8 +155,8 @@ def prefill_cards(ff: FieldFeatures) -> list[dict[str, Any]]:
         word = "stable" if abs(trend) < 0.3 else ("falling" if trend < 0 else "rising")
         cards.append(_card(
             "groundwater", "Regional water storage",
-            f"Water stored in the wider region has been {word} since 2002 "
-            f"({trend:+.1f} cm/year). This is a regional picture, not your well.",
+            f"Water stored underground in the wider region has been {word} since 2002. "
+            "This is a regional picture, not your well.",
             trend,
             [Evidence("Regional water storage trend", trend, "cm/year", water["source"],
                       water["native_resolution"], water["period"],

@@ -18,6 +18,7 @@ def client(monkeypatch, tmp_path, ph_ff, catalog):
     monkeypatch.setattr(routes, "get_features", lambda geometry, tasks=None: state["ff"])
     monkeypatch.setattr(routes, "crop_catalog", lambda: catalog)
     monkeypatch.setattr(routes, "get_llm", lambda: None)
+    monkeypatch.setattr(routes, "get_country", lambda ff: "Philippines")
     for limiter in (routes.prefill_limit, routes.analyze_limit, routes.followup_limit,
                     routes.ai_call_limit):
         limiter._hits.clear()

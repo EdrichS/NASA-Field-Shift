@@ -7,7 +7,7 @@ Point at a field, check what the satellites see, answer up to five questions (ea
 > SowSmart supports farmer judgment and local agricultural expertise. It never replaces them.
 
 - **Demo deck:** [link]
-- **Try the demo farms:** [Cloudflare Pages link] (works without our server; open `#/demo/central-luzon-rice` or `#/demo/iowa-corn-soybean`)
+- **Try the demo farms:** [Cloudflare Pages link] (works without our server; open `#/demo/tagum-rice` or `#/demo/iowa-corn-soybean`)
 - **Project page and details:** `docs/PROJECT_PAGE.md`; every dataset, library and tool: [`REFERENCES.md`](REFERENCES.md)
 
 ## How it works

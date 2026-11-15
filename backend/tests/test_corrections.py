@@ -67,3 +67,33 @@ def test_soil_test_ph_overrides_soilgrids(ph_ff, catalog):
 def test_bad_correction_values_are_ignored(ph_ff, catalog):
     result = run(ph_ff, catalog, {"slope": "cliff", "heat": "lots", "bare_months": [13, "x"]})
     assert len(result["strategies"]) == 4
+
+
+# --- regional crops (FAOSTAT) and no "unknown crop" -------------------------------------------
+
+def _crops_in(result):
+    return {c["crop"] for s in result["strategies"] for y in s["rotation"] for c in y}
+
+
+def test_blank_crops_never_show_unknown_crop(ph_ff, catalog):
+    for country in (None, "Philippines"):
+        result = run_engine(ph_ff, {}, catalog, country=country).to_dict()
+        assert "unknown crop" not in _crops_in(result)
+        assert not any("unknown crop" in s["title"] for s in result["strategies"])
+
+
+def test_suggestions_stay_with_crops_the_country_grows(ph_ff, catalog):
+    from app.engine.regional import local_crops
+
+    local = local_crops("Philippines")
+    assert local and "rice" in local and "pearl millet" not in local and "sorghum" not in local
+    result = run_engine(ph_ff, ANSWERS, catalog, country="Philippines").to_dict()
+    new = {c["crop"] for s in result["strategies"] for y in s["rotation"] for c in y if c["new"]}
+    assert new and new <= set(local)
+
+
+def test_blank_crops_assume_the_countrys_main_crop(ph_ff, catalog):
+    result = run_engine(ph_ff, {}, catalog, country="Philippines").to_dict()
+    current = next(s for s in result["strategies"] if s["key"] == "current")
+    assert "rice" in current["title"]
+    assert any("we assumed rice" in g and "the Philippines" in g for g in result["gaps"])

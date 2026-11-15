@@ -1,6 +1,6 @@
 """Pre-compute both showcase farms, Tier 1 reports included, into data/showcase/<id>.json.
 
-  python scripts/precache_showcase.py [--only central-luzon-rice] [--no-ai]
+  python scripts/precache_showcase.py [--only tagum-rice] [--no-ai]
 
 Runs the same code as /analyze. Reports use XAI_MODEL from .env; for the demo recording run
   XAI_MODEL=grok-4.7 python scripts/precache_showcase.py

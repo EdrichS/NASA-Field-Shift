@@ -6,7 +6,7 @@ PY     := $(VENV)/bin/python
 API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
-.PHONY: bundle-demo vapid pages tunnel setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
+.PHONY: regional-crops bundle-demo vapid pages tunnel simulate-storm clear-simulations setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
 	ecocrop validate-data load-crops test-email contracts showcase
 
 # FAO EcoCrop database, via the OpenCLIM/ecocrop repo, pinned to a fixed commit
@@ -92,6 +92,17 @@ showcase:
 # Browser-push (VAPID) keys -> .env.push (gitignored); safe to re-run
 vapid:
 	$(PY) scripts/make_vapid_keys.py
+
+# Which crops each country grows (FAOSTAT area harvested) -> data/regional_crops.csv
+regional-crops:
+	$(PY) scripts/build_regional_crops.py
+
+# ADMIN ONLY demo: a simulated storm near a demo farm alerts every saved field in range
+simulate-storm:
+	$(PY) scripts/simulate_storm.py --farm $(or $(FARM),tagum-rice) $(if $(NEW),--new)
+
+clear-simulations:
+	$(PY) scripts/simulate_storm.py --clear
 
 # Static copy on Cloudflare Pages: the demo farms keep working after the event without a server.
 # One-time: npx wrangler@4.156.0 login   (opens Cloudflare sign-in in the browser)

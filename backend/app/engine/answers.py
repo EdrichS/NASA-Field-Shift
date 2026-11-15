@@ -27,6 +27,8 @@ class FarmProfile:
     sellable: set[str]
     rotation_source: str  # "farmer" | "satellite" | "none"
     assumptions: list[str] = field(default_factory=list)
+    country: str | None = None
+    local: dict[str, float] | None = None  # crops grown in the country (ha); None = no filter
 
 
 def _month(value: Any) -> int | None:

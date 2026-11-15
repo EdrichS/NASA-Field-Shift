@@ -393,14 +393,6 @@ export function setAlertPreferences(token: string, fieldId: string, alertTypes: 
   })
 }
 
-export function simulateAlert(token: string, fieldId: string) {
-  return call<{ event_id: string; new: number; title: string; alerts: Alert[] }>('/alerts/simulate', {
-    method: 'POST',
-    body: JSON.stringify({ field_id: fieldId }),
-    token,
-  })
-}
-
 export function pushKey() {
   return call<{ public_key: string | null }>('/alerts/push-key')
 }

@@ -117,9 +117,6 @@ function SatCard({ card, answer, onAnswer }: { card: Card; answer?: CardAnswer; 
     <li className={`sat-card${status ? ` is-${status}` : ''}`}>
       <div className="sat-card-head">
         <h3>{card.title}</h3>
-        <span className={`confidence confidence-${card.confidence}`} title="How sure the satellite estimate is">
-          {card.confidence} confidence
-        </span>
       </div>
       <p className="sat-statement">{card.statement}</p>
       {status === 'corrected' ? <p className="sat-correction">Your answer: {describe(answer?.value)}</p> : null}
@@ -138,7 +135,8 @@ function SatCard({ card, answer, onAnswer }: { card: Card; answer?: CardAnswer; 
       ) : null}
 
       <details className="sat-sources">
-        <summary>Where this comes from</summary>
+        <summary>More details</summary>
+        <p>How sure we are: {card.confidence}. Sources:</p>
         <ul>
           {dedupe(card.evidence.map((e) => `${e.dataset} · ${e.native_resolution} · ${e.period}`)).map((line) => (
             <li key={line}>{line}</li>

@@ -355,5 +355,6 @@ def test_followup_endpoint(api, analysis):
 
 def test_followup_without_ai_is_a_clear_503(api, analysis, monkeypatch):
     monkeypatch.setattr(routes, "get_llm", lambda: None)
+    monkeypatch.setattr(routes, "get_country", lambda ff: "Philippines")
     r = api.post("/reports/followup", json={"analysis_payload": analysis})
     assert r.status_code == 503 and "not set up" in r.json()["detail"]

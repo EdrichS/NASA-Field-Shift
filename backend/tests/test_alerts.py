@@ -16,7 +16,7 @@ from app.api import accounts, alerts, routes
 from app.config import get_settings
 from app.main import app
 
-SHOWCASE = Path(__file__).resolve().parents[2] / "data" / "showcase" / "central-luzon-rice.json"
+SHOWCASE = Path(__file__).resolve().parents[2] / "data" / "showcase" / "tagum-rice.json"
 
 
 # --- rules -----------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ def client(monkeypatch):
     monkeypatch.setattr(auth, "decode_token", fake_decode)
     monkeypatch.setattr(accounts, "email_of", lambda user: None)
     monkeypatch.setattr(routes, "get_llm", lambda: None)
-    for limiter in (alerts.check_limit, alerts.simulate_limit, accounts.save_limit):
+    for limiter in (alerts.check_limit, accounts.save_limit):
         limiter._hits.clear()
     return TestClient(app)
 
@@ -128,7 +128,17 @@ def bearer(sub):
 def test_alert_routes_need_login(client):
     assert client.get("/alerts").status_code == 401
     assert client.post("/alerts/check", json={}).status_code == 401
-    assert client.post("/alerts/simulate", json={"field_id": str(uuid.uuid4())}).status_code == 401
+
+
+def test_there_is_no_simulate_route_for_users(client):
+    # Simulations are admin-only (scripts/simulate_storm.py): no user can fake an alert.
+    r = client.post("/alerts/simulate", headers=bearer("anyone"), json={"field_id": "x"})
+    assert r.status_code in (404, 405)
+
+
+def test_simulating_an_unknown_farm_fails():
+    with pytest.raises(LookupError):
+        service.simulate("not-a-farm")
 
 
 def test_push_key_is_public(client):
@@ -163,6 +173,8 @@ def two_farmers(client):
     for sub in subs:
         client.delete("/me", headers=bearer(sub))
     with service._conn() as conn:  # simulated storms made by these tests must not alert others
+        conn.execute("DELETE FROM alerts WHERE source_event_id IN (SELECT id FROM natural_events"
+                     " WHERE simulated AND seen_at >= %s)", (started,))
         conn.execute("DELETE FROM natural_events WHERE simulated AND seen_at >= %s", (started,))
 
 
@@ -170,14 +182,13 @@ def two_farmers(client):
 def test_one_simulated_storm_alerts_both_nearby_farmers_once(client, two_farmers, monkeypatch):
     monkeypatch.setattr(service, "deliver", lambda ids: None)  # no email/push from tests
     alice, bob = two_farmers
-    field_a = _save_field(client, alice, 120.90, 15.60, "Alice's paddy")
-    _save_field(client, bob, 120.94, 15.63, "Bob's paddy")  # about 5 km away
+    _save_field(client, alice, 125.7513, 7.4945, "Alice's paddy")
+    _save_field(client, bob, 125.79, 7.51, "Bob's paddy")  # about 5 km away
 
-    r = client.post("/alerts/simulate", headers=bearer(alice), json={"field_id": field_a})
-    assert r.status_code == 200, r.text
-    event = r.json()["event_id"]
-    again = client.post("/alerts/simulate", headers=bearer(alice), json={"field_id": field_a})
-    assert again.json()["event_id"] == event and again.json()["new"] == 0  # no duplicates
+    first = service.simulate("tagum-rice")
+    assert first["new"] >= 2
+    again = service.simulate("tagum-rice")
+    assert again["event_id"] == first["event_id"] and again["new"] == 0  # no duplicates
 
     for sub in (alice, bob):
         storm = [a for a in client.get("/alerts", headers=bearer(sub)).json()
@@ -192,23 +203,15 @@ def test_one_simulated_storm_alerts_both_nearby_farmers_once(client, two_farmers
 
 
 @pytest.mark.db
-def test_simulation_refused_far_from_demo_farms(client, two_farmers):
-    alice, _ = two_farmers
-    field = _save_field(client, alice, 2.35, 48.85, "Paris plot")
-    r = client.post("/alerts/simulate", headers=bearer(alice), json={"field_id": field})
-    assert r.status_code == 403
-
-
-@pytest.mark.db
 def test_turning_off_natural_events_stops_them(client, two_farmers, monkeypatch):
     monkeypatch.setattr(service, "deliver", lambda ids: None)
     alice, bob = two_farmers
-    field_a = _save_field(client, alice, 120.90, 15.60, "A")
-    field_b = _save_field(client, bob, 120.94, 15.63, "B")
+    _save_field(client, alice, 125.7513, 7.4945, "A")
+    field_b = _save_field(client, bob, 125.79, 7.51, "B")
     r = client.put("/alerts/preferences", headers=bearer(bob),
                    json={"field_id": field_b, "alert_types": ["fire"], "email": False,
                          "push": False})
     assert r.status_code == 204
-    client.post("/alerts/simulate", headers=bearer(alice), json={"field_id": field_a})
+    service.simulate("tagum-rice", fresh=True)
     assert not [a for a in client.get("/alerts", headers=bearer(bob)).json()
                 if a["type"] == "natural_event"]
