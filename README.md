@@ -1,50 +1,106 @@
 # SowSmart
 
-**Compare crop rotations for your field with NASA satellite data.** Built for the NASA Space Apps Challenge 2026, challenge *"Adapting Farms with NASA Data"*.
+**Crop-rotation advice for any field on Earth, from NASA satellite data, in the farmer's own language.**
 
-Point at a field, check what the satellites see, answer up to five questions (each accepts "I don't know"), and compare your current rotation with three alternatives on a 12-month calendar: fill the bare window, break the pest cycle, or save water. Every option explains why, shows its evidence, benefits, information gaps and risks, and lists questions for a local expert, in plain language and in up to two languages, with a printable PDF. Signed-in farmers get alerts for storms, fires, heavy rain, dry soil and pest-favoring weather near their saved fields.
+Built for the NASA Space Apps Challenge 2026 · Challenge: *Adapting Farms with NASA Data*
 
 > SowSmart supports farmer judgment and local agricultural expertise. It never replaces them.
 
-- **Demo deck:** [link]
-- **Try the demo farms:** https://sowsmart-8zm.pages.dev (works without our server; open `#/demo/tagum-rice` or `#/demo/iowa-corn-soybean`)
-- **Project page and details:** `docs/PROJECT_PAGE.md`; every dataset, library and tool: [`REFERENCES.md`](REFERENCES.md)
+## Try it
+
+| | |
+|---|---|
+| **Demo farms (no login, works anytime)** | https://sowsmart-8zm.pages.dev · [Tagum City rice](https://sowsmart-8zm.pages.dev/#/demo/tagum-rice) · [Iowa corn-soybean](https://sowsmart-8zm.pages.dev/#/demo/iowa-corn-soybean) |
+| **Demo deck** | [link] |
+| **Full app (sign-in, live analysis, alerts)** | Runs during local judging through a Cloudflare Tunnel link |
+
+## What it does
+
+1. **Find your land:** use your location, tap a point, draw the field boundary, or browse NASA satellite layers by date.
+2. **See what the satellites see:** when the field sits bare, the driest soil months, rain, heat, frost, slope and soil, from years of NASA data. The farmer can correct any card, and the scores follow.
+3. **Answer up to five questions:** current crops, water, equipment, top goal, crops you won't grow. Every question accepts "I don't know".
+4. **Compare rotations:** your current rotation vs. three alternatives (fill the bare window, break the pest cycle, save water) on a 12-month calendar, with benefits, risks, information gaps and questions for a local expert.
+5. **Read it your way:** a plain-language report in up to two languages (e.g. English and Tagalog), technical details only on request, and a printable PDF.
+6. **Get warned (with an account):** storms and other natural events, fires, heavy rain, dry soil and pest-favoring weather near your saved fields, in the app, by email and as phone notifications. One storm alerts every farmer in its path.
+
+Suggestions only include crops actually grown in the field's country (FAO statistics), so seed, know-how and buyers exist locally.
 
 ## How it works
 
-1. **NASA data, per field:** NASA POWER weather and 30-year normals, SMAP soil moisture, MODIS greenness, water use and land-surface temperature, GPM IMERG rain, GRACE/GRACE-FO water storage and SRTM slope are reduced over the field (Google Earth Engine), plus SoilGrids soil and ESA WorldCover land cover. Every value keeps its dataset, resolution and period.
-2. **The engine decides:** deterministic Python filters crops with FAO EcoCrop ranges, builds three alternatives and scores water, soil building, erosion, pest cycle, weather risk, income and labor, weighted by the farmer's goals. The farmer's corrections to the satellite cards replace the estimates.
-3. **AI only explains:** Grok (xAI) turns the engine's results into a plain-language report per language. Every number it writes is checked against the engine's output; the ranking never changes.
-4. **Alerts:** NASA EONET events are matched with PostGIS against every saved field; NASA FIRMS fires, JAXA GSMaP heavy rain, SMAP dry soil and cited pest-weather rules are checked per field. Delivery: in the app, by email, and as web push.
+```
+NASA + partner data  ──►  12-month field features  ──►  Scoring engine  ──►  AI writes plain words  ──►  App · PDF · alerts
+(per field, with             (each value keeps its         (decides: 7 scores,      (explains only; every
+ dataset, resolution,         source)                       weighted by goals)       number is checked)
+ period)
+```
 
-## Stack
+- **The engine decides:** deterministic Python filters crops with FAO EcoCrop ranges and the country's crop list, builds three alternatives and scores water, soil building, erosion, pest cycle, weather risk, income and labor.
+- **AI only explains:** Grok (xAI) turns the engine's results into a report per language. Any number not in the engine's output is rejected; the ranking never changes.
+- **Alerts:** NASA EONET events are matched with PostGIS against every saved field; FIRMS fires, JAXA GSMaP heavy rain, SMAP dry soil and cited pest-weather rules are checked per field.
 
-FastAPI (Python 3.13) · Google Earth Engine · TigerData (Postgres + TimescaleDB + PostGIS) · xAI Grok · Auth0 · React + TypeScript + Vite · MapLibre GL JS + Terra Draw + Turf · Web Push · Cloudflare Tunnel and Pages.
+## Data
+
+| Source | Used for |
+|---|---|
+| NASA POWER | Daily weather and 30-year normals; crop water demand; pest-risk weather |
+| NASA SMAP L4 | Soil moisture; dry-soil alerts |
+| NASA MODIS (NDVI, ET, land surface temperature) | When fields are bare or green; water use; heat |
+| NASA GPM IMERG | Rainfall |
+| NASA GRACE / GRACE-FO | Regional water-storage trend |
+| NASA SRTM | Slope and erosion risk |
+| NASA EONET · NASA FIRMS | Natural-event and fire alerts |
+| NASA GIBS (incl. HLS 30 m) | Browse maps; PDF map |
+| JAXA GSMaP · ESA WorldCover | Heavy-rain alerts · land cover |
+| FAOSTAT · FAO EcoCrop · ISRIC SoilGrids | Crops each country grows · crop ranges · soil |
+
+Every dataset, library and tool, with licenses: [REFERENCES.md](REFERENCES.md).
+
+## Tech stack
+
+Python 3.13 · FastAPI · Google Earth Engine · TigerData (Postgres + TimescaleDB + PostGIS) · xAI Grok · Auth0 · React + TypeScript + Vite · MapLibre GL JS · Terra Draw · Turf · Web Push · Cloudflare Tunnel and Pages
+
+## Repository layout
+
+```
+backend/    FastAPI app: data fetching, features, engine, AI reports, alerts, accounts, tests
+frontend/   React app (mobile-first)
+data/       crop traits, pest rules, country crop table, demo farms
+scripts/    demo-farm precompute, storm simulation (admin), data builders, checks
+docs/       project page draft, judging review, deck source and screenshots
+```
 
 ## Run it locally
 
-Needs Python 3.13, Node, a Google Earth Engine project, and the keys listed in `.env.example` (copy it to `.env`; `frontend/.env.example` to `frontend/.env.local`).
+Needs Python 3.13, Node, a Google Earth Engine project and the keys listed in `.env.example` (copy it to `.env`, and `frontend/.env.example` to `frontend/.env.local`).
 
 ```bash
-make setup          # venv + backend and frontend dependencies
+make setup          # Python venv + frontend packages
 make migrate        # database tables (TigerData)
 make dev-backend    # API on http://localhost:8000
-make dev-frontend   # app on http://localhost:5173 (forwards /api to the backend)
-make check          # lint, tests, data validation, frontend build
+make dev-frontend   # app on http://localhost:5173
+make check          # lint, tests, data checks, frontend build
 ```
 
-Other targets: `make showcase` (pre-compute the demo farms), `make vapid` (web-push keys), `make tunnel` (public HTTPS link), `make pages` (static copy on Cloudflare Pages), `make check-db` (live database tests).
+| Command | What it does |
+|---|---|
+| `make showcase` | Recompute the demo farms (with AI reports) and bundle them into the app |
+| `make tunnel` | Public HTTPS link to the running app |
+| `make pages` | Deploy the static demo copy to Cloudflare Pages |
+| `make simulate-storm` | Admin only: simulate a storm near a demo farm (`make clear-simulations` removes it) |
+| `make regional-crops` | Rebuild the country crop table from FAOSTAT |
+| `make vapid` | Create web-push keys |
+| `make check-db` | Live database tests |
 
-## Use of Super Intelligence (SI) / AI disclosure
+Demo instructions and how to keep the demo in sync after changes: [HOWTODEMO.md](HOWTODEMO.md).
 
-- **Code and data:** much of this repository's code, tests, documentation and data-preparation scripts was written with **Claude Code (Anthropic)**, directed and reviewed by the team. The crop-trait and pest-rule tables in `data/` were compiled with its help from cited sources (each row lists its source). The idea and product decisions are the team's.
-- **In the product:** reports are written by **Grok (xAI)** from the engine's results and are labeled "Written by AI" in the app and the PDF; the AI-suggested idea is labeled as not scored.
-- **Images:** no AI-generated images or video. No NASA logos or branding.
+## AI disclosure
 
-## Data credits
+AI was used to help build SowSmart, and AI writes the plain-language reports inside the app (labeled in the app and PDF). Full statement: [disclosure.txt](disclosure.txt).
 
-NASA POWER, SMAP, MODIS, GPM IMERG, GRACE/GRACE-FO, SRTM, EONET, FIRMS and GIBS (NASA); JAXA GSMaP (JAXA); ESA WorldCover (ESA, CC BY 4.0); SoilGrids (ISRIC, CC BY 4.0); FAO EcoCrop and FAO-56 (FAO); basemaps © Esri. Details and licenses in [`REFERENCES.md`](REFERENCES.md).
+## Limits
+
+Weather is a ~55 km regional average and soil moisture 9 km (shown as confidence in the details; farmers can correct any estimate). Pest alerts mean the weather favors a pest, not a confirmed outbreak. Reports in languages other than English are less reliable.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). Data credits and licenses in [REFERENCES.md](REFERENCES.md).
