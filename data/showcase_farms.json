@@ -1,0 +1,72 @@
+{
+  "note": "Showcase farms for the demo. The farmers are illustrative personas, not real people. Locations were chosen and verified by Claude Code on 2026-11-14 with ESA WorldCover, USDA NASS Cropland Data Layer and NASA MODIS land cover in Google Earth Engine.",
+  "farms": [
+    {
+      "id": "central-luzon-rice",
+      "name": "Central Luzon rice farm",
+      "persona": "Illustrative smallholder rice farmer, Nueva Ecija",
+      "country": "Philippines",
+      "place": "Nueva Ecija province, Central Luzon, about 13 km south of the Science City of Munoz",
+      "geometry": {"type": "Point", "coordinates": [120.9, 15.6]},
+      "verification": {
+        "esa_worldcover_2021_cropland_share_250m": 1.0,
+        "esa_worldcover_2021_built_or_water_share_250m": 0.0,
+        "modis_mcd12q1_2025_igbp_class": 12,
+        "modis_mcd12q1_2025_class_name": "Croplands",
+        "satellite_crop_pattern": "MODIS NDVI 2001-2026 normal peaks in February and August (two rice crops a year) and is lowest April-June; dry-season rain is about 1 mm/day, so the dry-season crop is irrigated"
+      },
+      "story": "Two irrigated rice crops a year leave a hot, dry gap from April to June (35 C+ in 29-30 of the last 30 years, driest soil in April). A short, heat-tolerant legume such as mungbean could fill it. Typhoons and heavy rain are a real risk (August 2026 rain was 2.6x normal).",
+      "answers": {
+        "mode": "quick",
+        "current_crops": [
+          {"crop": "rice", "plant_month": 12, "harvest_month": 4, "season": "dry"},
+          {"crop": "rice", "plant_month": 6, "harvest_month": 10, "season": "wet"}
+        ],
+        "water": "irrigated",
+        "equipment": "small_tractor",
+        "top_goal": "earn_more",
+        "wont_grow": []
+      },
+      "report_languages": ["en", "tl"],
+      "sources": [
+        {"claim": "Nueva Ecija is Central Luzon's largest rice producer; PhilRice's Central Experiment Station is in the Science City of Munoz", "title": "Daily Tribune: Central Luzon lands yield high-quality palay (2023)", "url": "https://tribune.net.ph/2023/10/25/central-luzon-lands-yield-high-quality-palay"},
+        {"claim": "Rice is grown in a wet season and a dry season; a cropping season lasts about 3 to 3.5 months", "title": "DA Bureau of Plant Industry: Region III wet and dry season report, July 2018 - June 2019", "url": "https://cpmd.buplant.da.gov.ph/assets/pdf/2019-wet-dry-season/Region-III-July-2018-June-2019.pdf"},
+        {"claim": "Rice-rice-mungbean rotation: mungbean planted right after the rice harvest at the start of the dry season, valued for drought tolerance and soil fertility", "title": "DA AMIA: Investment Prioritization for Region II, Adaptive Crop Diversification, Rotation Rice-Rice-Mungbean (2024)", "url": "https://amia.da.gov.ph/wp-content/uploads/2024/12/Investment-Prioritization-for-Region-II_Adaptive-Crop-Diversification_Rotation_Rice-Rice-Mungbean.pdf"},
+        {"claim": "Mungbean was the best upland crop for using residual soil moisture after rice", "title": "AGRIS (FAO) record of a UP Los Banos study on crops after rice", "url": "https://agris.fao.org/search/en/records/6471fa3777fd37171a726290"},
+        {"claim": "About 20 tropical cyclones enter the Philippine Area of Responsibility each year; 8-9 cross the country", "title": "PAGASA: Tropical Cyclone Information", "url": "https://www.pagasa.dost.gov.ph/climate/tropical-cyclone-information"}
+      ]
+    },
+    {
+      "id": "iowa-corn-soybean",
+      "name": "Central Iowa corn-soybean farm",
+      "persona": "Illustrative mechanized corn-soybean farmer, Boone County",
+      "country": "United States",
+      "place": "Rural Boone County, Iowa, west of Ames",
+      "geometry": {"type": "Point", "coordinates": [-93.768, 41.976]},
+      "verification": {
+        "usda_cdl_2021_2025": ["soybeans", "corn", "soybeans", "corn", "soybeans"],
+        "usda_cdl_min_main_crop_share_250m": 0.995,
+        "esa_worldcover_2021_tree_built_water_share_250m": 0.0,
+        "inferred_2026_crop": "corn (the field alternates every year)"
+      },
+      "story": "The classic two-crop rotation, mechanized and rain-fed. Fields sit bare from the October harvest to the May planting, through frost and snowmelt. A cereal rye cover crop could hold the soil over winter. A strong contrast with the Philippines farm.",
+      "answers": {
+        "mode": "quick",
+        "current_crops": [
+          {"crop": "maize", "plant_month": 5, "harvest_month": 10, "season": "2026"},
+          {"crop": "soybean", "plant_month": 5, "harvest_month": 10, "season": "2027 (rotation)"}
+        ],
+        "water": "rainfed",
+        "equipment": "full_machinery",
+        "top_goal": "build_soil",
+        "wont_grow": []
+      },
+      "report_languages": ["en"],
+      "sources": [
+        {"claim": "This field alternated soybean and corn every year 2021-2025 (at least 99.5% of the 250 m circle in the main crop)", "title": "USDA NASS Cropland Data Layer 2021-2025 (via Google Earth Engine, USDA/NASS/CDL)", "url": "https://developers.google.com/earth-engine/datasets/catalog/USDA_NASS_CDL"},
+        {"claim": "Corn and soybean planting runs mid-April to early June (57% of corn and 39% of soybeans planted by May 12, 2024); harvest runs mid-September to November", "title": "USDA NASS: Iowa Annual Crop Progress 2024", "url": "https://publications.iowa.gov/51278/1/IA-Annual-Crop-Progress-2024.pdf"},
+        {"claim": "Cereal rye is a recommended cover crop in Iowa corn-soybean rotations, terminated before soybean planting", "title": "Iowa State University Extension and Outreach: cover crop recipe (cereal rye)", "url": "https://store.extension.iastate.edu/product/15548.pdf"}
+      ]
+    }
+  ]
+}

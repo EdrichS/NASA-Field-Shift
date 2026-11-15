@@ -1,26 +1,28 @@
 crop,scientific_name,family,is_legume,root_depth_m,water_need,heat_tolerance,drought_tolerance,waterlogging_tolerance,cover_crop_role,forage,labor_need,source,notes
-rice,Oryza sativa,Poaceae,no,,,,,,,,,TODO,
-maize,Zea mays,Poaceae,no,,,,,,,,,TODO,
-mungbean,Vigna radiata,Fabaceae,yes,,,,,,,,,TODO,
-peanut,Arachis hypogaea,Fabaceae,yes,,,,,,,,,TODO,
-soybean,Glycine max,Fabaceae,yes,,,,,,,,,TODO,
-cowpea,Vigna unguiculata,Fabaceae,yes,,,,,,,,,TODO,
-sweet potato,Ipomoea batatas,Convolvulaceae,no,,,,,,,,,TODO,
-cassava,Manihot esculenta,Euphorbiaceae,no,,,,,,,,,TODO,
-sorghum,Sorghum bicolor,Poaceae,no,,,,,,,,,TODO,
-pearl millet,Pennisetum glaucum,Poaceae,no,,,,,,,,,TODO,
-wheat,Triticum aestivum,Poaceae,no,,,,,,,,,TODO,
-barley,Hordeum vulgare,Poaceae,no,,,,,,,,,TODO,
-oats,Avena sativa,Poaceae,no,,,,,,,,,TODO,
-cereal rye,Secale cereale,Poaceae,no,,,,,,,,,TODO,
-alfalfa,Medicago sativa,Fabaceae,yes,,,,,,,,,TODO,
-red clover,Trifolium pratense,Fabaceae,yes,,,,,,,,,TODO,
-hairy vetch,Vicia villosa ssp. villosa,Fabaceae,yes,,,,,,,,,TODO,
-sunn hemp,Crotalaria juncea,Fabaceae,yes,,,,,,,,,TODO,
-buckwheat,Fagopyrum esculentum,Polygonaceae,no,,,,,,,,,TODO,
-common bean,Phaseolus vulgaris,Fabaceae,yes,,,,,,,,,TODO,
-onion,Allium cepa,Amaryllidaceae,no,,,,,,,,,TODO,
-tomato,Lycopersicon esculentum,Solanaceae,no,,,,,,,,,TODO,
-cabbage,Brassica oleracea var. capitata,Brassicaceae,no,,,,,,,,,TODO,
-chili pepper,Capsicum annuum,Solanaceae,no,,,,,,,,,TODO,
-squash,Cucurbita moschata,Cucurbitaceae,no,,,,,,,,,TODO,
+rice,Oryza sativa,Poaceae,no,0.75,high,medium,low,high,none,no,high,"FAO-56 Table 22 (Rice) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Rice (paddy)) + ch.4 paddy water | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+maize,Zea mays,Poaceae,no,1.35,medium,medium,low,low,none,no,medium,"FAO-56 Table 22 (Maize field grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Maize) | FAO EcoCrop (heat, drainage, category)",estimate: waterlogging tolerance (no EcoCrop drainage data); labor need
+mungbean,Vigna radiata,Fabaceae,yes,0.80,low,high,high,low,none,yes,high,"FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+peanut,Arachis hypogaea,Fabaceae,yes,0.75,medium,medium,medium,low,none,no,high,"FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+soybean,Glycine max,Fabaceae,yes,0.95,medium,medium,medium,medium,none,no,medium,"FAO-56 Table 22 (Soybeans) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Soybean) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+cowpea,Vigna unguiculata,Fabaceae,yes,0.80,medium,high,high,low,none,yes,medium,"FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+sweet potato,Ipomoea batatas,Convolvulaceae,no,1.25,high,low,high,low,none,no,high,"FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",estimate: waterlogging tolerance (no EcoCrop drainage data); labor need
+cassava,Manihot esculenta,Euphorbiaceae,no,0.65,high,low,high,low,none,no,medium,"FAO-56 Table 22 (Cassava year 1) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+sorghum,Sorghum bicolor,Poaceae,no,1.50,medium,high,high,low,none,yes,medium,"FAO-56 Table 22 (Sorghum grain) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sorghum/Millet) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+pearl millet,Pennisetum glaucum,Poaceae,no,1.50,medium,high,high,low,none,no,medium,"FAO-56 Table 22 (Millet) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sorghum/Millet) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+wheat,Triticum aestivum,Poaceae,no,1.25,medium,low,medium,low,none,yes,medium,"FAO-56 Table 22 (Spring Wheat) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+barley,Hordeum vulgare,Poaceae,no,1.25,medium,low,medium,low,none,no,medium,"FAO-56 Table 22 (Barley) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+oats,Avena sativa,Poaceae,no,1.25,medium,low,medium,low,cover,no,low,"FAO-56 Table 22 (Oats) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: labor need
+cereal rye,Secale cereale,Poaceae,no,1.25,medium,low,medium,medium,cover,yes,low,"FAO-56 Table 22 analog (small grains (Barley/Oats)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Barley/Oats/Wheat (analog)) | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: root depth from closest FAO-56 crop; water need from closest FAO Table 14 crop; labor need
+alfalfa,Medicago sativa,Fabaceae,yes,1.50,high,low,medium,low,none,yes,medium,"FAO-56 Table 22 (Alfalfa for hay) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Alfalfa) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+red clover,Trifolium pratense,Fabaceae,yes,0.75,medium,low,high,high,green_manure,yes,low,"FAO-56 Table 22 (Clover hay Berseem) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: labor need
+hairy vetch,Vicia villosa ssp. villosa,Fabaceae,yes,0.75,low,low,high,medium,green_manure,yes,low,"FAO-56 Table 22 analog (Beans dry and Pulses) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: root depth from closest FAO-56 crop; labor need
+sunn hemp,Crotalaria juncea,Fabaceae,yes,0.80,medium,medium,high,low,green_manure,yes,low,"FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: root depth from closest FAO-56 crop; labor need
+buckwheat,Fagopyrum esculentum,Polygonaceae,no,0.60,medium,low,high,low,cover,yes,low,"FAO-56 Table 22 analog (Beans green) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | SARE Managing Cover Crops Profitably 3rd ed.",estimate: root depth from closest FAO-56 crop; labor need
+common bean,Phaseolus vulgaris,Fabaceae,yes,0.75,low,low,low,low,none,yes,medium,"FAO-56 Table 22 (Beans dry and Pulses) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+onion,Allium cepa,Amaryllidaceae,no,0.45,low,low,low,low,none,no,high,"FAO-56 Table 22 (Onions dry) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Onion) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+tomato,Lycopersicon esculentum,Solanaceae,no,1.10,medium,low,low,low,none,yes,high,"FAO-56 Table 22 (Tomato) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Tomato) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+cabbage,Brassica oleracea var. capitata,Brassicaceae,no,0.65,low,low,low,low,none,no,high,"FAO-56 Table 22 (Cabbage) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Cabbage) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+chili pepper,Capsicum annuum,Solanaceae,no,0.75,high,medium,low,low,none,no,high,"FAO-56 Table 22 (Sweet Peppers (bell)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Pepper) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+squash,Cucurbita moschata,Cucurbitaceae,no,1.25,medium,medium,low,low,none,yes,medium,"FAO-56 Table 22 (Pumpkin Winter Squash) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Melon (analog)) | FAO EcoCrop (heat, drainage, category)",estimate: water need from closest FAO Table 14 crop; labor need
+sunflower,Helianthus annuus,Asteraceae,no,1.15,high,medium,medium,low,none,no,medium,"FAO-56 Table 22 (Sunflower) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Sunflower) | FAO EcoCrop (heat, drainage, category)",estimate: labor need
+canola,Brassica napus,Brassicaceae,no,1.25,low,low,high,low,none,yes,medium,"FAO-56 Table 22 (Rapeseed Canola) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",estimate: labor need
