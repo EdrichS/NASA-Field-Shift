@@ -3,6 +3,8 @@
 - DbCache: the shared `data_cache` table in TigerData (used whenever DATABASE_URL is set)
 - FileCache: JSON files in data/cache/ (gitignored; for tests and offline work)
 
+MemoryCache sits in front of the database so repeat requests in one process skip the round trips.
+
 A cache problem must never break a fetch: DbCache treats database errors as a miss.
 """
 
@@ -13,7 +15,9 @@ import json
 import logging
 import os
 import tempfile
+import threading
 import time
+from collections import OrderedDict
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
@@ -119,10 +123,43 @@ class DbCache:
             log.warning("data_cache write failed (%s); not cached", type(exc).__name__)
 
 
+class MemoryCache:
+    """An in-process copy of recent entries in front of another cache. Entries are served from
+    memory for at most `ttl_s` (and never past the caller's max_age_s), then re-read."""
+
+    def __init__(self, inner: Cache, max_items: int = 1024, ttl_s: float = 3600) -> None:
+        self.inner, self.max_items, self.ttl_s = inner, max_items, ttl_s
+        self._items: OrderedDict[str, tuple[float, Any]] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def _remember(self, key: str, value: Any) -> None:
+        with self._lock:
+            self._items[key] = (time.monotonic(), value)
+            self._items.move_to_end(key)
+            while len(self._items) > self.max_items:
+                self._items.popitem(last=False)
+
+    def get(self, key: str, max_age_s: float | None = None) -> Any | None:
+        limit = self.ttl_s if max_age_s is None else min(self.ttl_s, max_age_s)
+        with self._lock:
+            hit = self._items.get(key)
+        if hit is not None and time.monotonic() - hit[0] <= limit:
+            return hit[1]
+        value = self.inner.get(key, max_age_s)
+        if value is not None:
+            self._remember(key, value)
+        return value
+
+    def set(self, key: str, value: Any) -> None:
+        self.inner.set(key, value)
+        self._remember(key, value)
+
+
 @lru_cache
 def default_cache() -> Cache:
-    """The shared database cache when DATABASE_URL is set, else local files."""
+    """The shared database cache (with an in-memory front) when DATABASE_URL is set, else
+    local files."""
     from app.config import get_settings
 
     url = get_settings().database_url.get_secret_value()
-    return DbCache(url) if url else FileCache()
+    return MemoryCache(DbCache(url)) if url else FileCache()

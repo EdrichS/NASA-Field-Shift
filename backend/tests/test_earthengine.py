@@ -142,6 +142,8 @@ def test_fetch_field_uses_cache_without_touching_earth_engine(monkeypatch):
                 return FIXTURE["terrain"]
             if kind == "soilgrids":
                 return FIXTURE["soil"]
+            if kind == "landcover":
+                return FIXTURE["land_cover"]
             return FIXTURE["series"][kind]
 
         def set(self, key, value):
@@ -155,6 +157,7 @@ def test_fetch_field_uses_cache_without_touching_earth_engine(monkeypatch):
     assert data.errors == {}
     assert set(data.series) == {s.key for s in E.SERIES}
     assert data.soil.texture == "silty clay loam"
+    assert data.land_cover.main_class == "cropland"
 
 
 def test_one_failing_dataset_is_reported_not_raised(monkeypatch):
@@ -170,5 +173,5 @@ def test_one_failing_dataset_is_reported_not_raised(monkeypatch):
 
     monkeypatch.setattr(E, "_ee", broken)
     data = E.fetch_field(POINT, end_month="2026-10", cache=EmptyCache())
-    assert set(data.errors) == {s.key for s in E.SERIES} | {"terrain", "soil"}
+    assert set(data.errors) == {s.key for s in E.SERIES} | {"terrain", "soil", "land_cover"}
     assert data.series == {} and data.soil is None

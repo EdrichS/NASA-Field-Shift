@@ -150,7 +150,9 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
     soil_ev += [from_crop(c, f"{c.name} root depth", c.root_depth_m, "m") for c in crops.values()]
     soil_c = ComponentScore(soil_score, f"Soil covered {cover:.0%} of the year; legumes "
                             f"{legume_share:.0%} of crop time", soil_ev,
-                            {"cover": round(cover, 2), "legume_share": round(legume_share, 2)})
+                            {"cover": round(cover, 2), "legume_share": round(legume_share, 2),
+                             "root_depth_m": round(sum(roots) / len(roots), 2) if roots else None,
+                             "cover_crop": has_cover})
 
     # 3. Erosion: bare months x rain x slope
     slope = ctx.slope_deg if ctx.slope_deg is not None else 3.0
@@ -223,8 +225,9 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
                           round(value / n_years, 1), "harvest-equivalents",
                           "Strategy calendar; farmer's sellable crops" if sellable
                           else "Strategy calendar (no market info given)", "field", "", "low")]
+    harvests = sum(1 for slot in slots if not crops[slot.crop].is_cover) / n_years
     income_c = ComponentScore(income_score, f"{value / n_years:.1f} sellable or edible harvest(s)"
-                              " per year", income_ev)
+                              " per year", income_ev, {"harvests_per_year": round(harvests, 2)})
 
     # 7. Labor: hand work per year, eased by machinery
     points = sum(LABOR_POINTS[crops[s.crop].labor_need] for s in slots) / n_years

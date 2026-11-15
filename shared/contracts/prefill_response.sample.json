@@ -1,0 +1,410 @@
+{
+  "field": {
+    "geom_hash": "519a546d5fa8f140",
+    "lat": 15.6,
+    "lon": 120.9,
+    "end_month": "2026-10"
+  },
+  "warning": null,
+  "cards": [
+    {
+      "id": "land_cover",
+      "title": "What the land is",
+      "statement": "From space this spot looks like 100% cropland.",
+      "value": {
+        "trees": 0.004,
+        "cropland": 0.996
+      },
+      "confidence": "high",
+      "evidence": [
+        {
+          "claim": "Land cover share of the field",
+          "value": {
+            "trees": 0.004,
+            "cropland": 0.996
+          },
+          "unit": "share",
+          "dataset": "ESA WorldCover 10 m v200 (2021)",
+          "native_resolution": "10 m",
+          "period": "2021",
+          "confidence": "high"
+        }
+      ],
+      "edit": {
+        "type": "choice",
+        "options": [
+          "it's farmland",
+          "it's not farmland"
+        ]
+      }
+    },
+    {
+      "id": "bare_months",
+      "title": "When your field looks bare",
+      "statement": "Your field usually looks bare or newly planted in Apr–Jun, Oct–Jan.",
+      "value": [
+        1,
+        4,
+        5,
+        6,
+        10,
+        11,
+        12
+      ],
+      "confidence": "high",
+      "evidence": [
+        {
+          "claim": "Greenness in Jan is 0.41",
+          "value": 0.4091,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in Apr is 0.44",
+          "value": 0.4425,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in May is 0.46",
+          "value": 0.461,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in Jun is 0.49",
+          "value": 0.4869,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in Oct is 0.48",
+          "value": 0.4782,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in Nov is 0.47",
+          "value": 0.4679,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenness in Dec is 0.41",
+          "value": 0.4075,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        },
+        {
+          "claim": "Greenest month normal is 0.76; bare threshold 0.51",
+          "value": 0.758,
+          "unit": "NDVI",
+          "dataset": "NASA MODIS Terra MOD13Q1 v6.1",
+          "native_resolution": "250 m",
+          "period": "2001-2026",
+          "confidence": "high"
+        }
+      ],
+      "edit": {
+        "type": "months"
+      }
+    },
+    {
+      "id": "driest_soil",
+      "title": "When the soil is driest",
+      "statement": "The root zone is driest in Apr (0.14 m³/m³) and wettest in Sep (0.31).",
+      "value": [
+        3,
+        4
+      ],
+      "confidence": "medium",
+      "evidence": [
+        {
+          "claim": "Root-zone soil moisture in Apr",
+          "value": 0.1408,
+          "unit": "m³/m³",
+          "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+          "native_resolution": "9 km",
+          "period": "2015-2026",
+          "confidence": "medium"
+        },
+        {
+          "claim": "Root-zone soil moisture in Mar",
+          "value": 0.1477,
+          "unit": "m³/m³",
+          "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+          "native_resolution": "9 km",
+          "period": "2015-2026",
+          "confidence": "medium"
+        },
+        {
+          "claim": "Root-zone soil moisture in Sep",
+          "value": 0.3133,
+          "unit": "m³/m³",
+          "dataset": "NASA SMAP L4 v8 (SPL4SMGP.008)",
+          "native_resolution": "9 km",
+          "period": "2015-2026",
+          "confidence": "medium"
+        }
+      ],
+      "edit": {
+        "type": "months"
+      }
+    },
+    {
+      "id": "rain",
+      "title": "Typical rain",
+      "statement": "About 2721 mm of rain a year: as little as 0.9 mm/day in Feb, up to 18.4 mm/day in Aug.",
+      "value": [
+        0.95,
+        0.94,
+        1.17,
+        2.12,
+        7.07,
+        11.28,
+        18.29,
+        18.41,
+        14.65,
+        8.33,
+        3.54,
+        2.13
+      ],
+      "confidence": "low",
+      "evidence": [
+        {
+          "claim": "Yearly rainfall (30-year normal)",
+          "value": 2721,
+          "unit": "mm/year",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        },
+        {
+          "claim": "Driest month: Feb",
+          "value": 0.94,
+          "unit": "mm/day",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        },
+        {
+          "claim": "Wettest month: Aug",
+          "value": 18.41,
+          "unit": "mm/day",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        }
+      ],
+      "edit": {
+        "type": "choice",
+        "options": [
+          "drier than this",
+          "about right",
+          "wetter than this"
+        ]
+      }
+    },
+    {
+      "id": "heat",
+      "title": "Hot spells",
+      "statement": "Heat of 35 °C or more is common in Feb–May.",
+      "value": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "confidence": "low",
+      "evidence": [
+        {
+          "claim": "Feb reached 35 °C or more in 12 of the last 30 years",
+          "value": 12,
+          "unit": "years of 30",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        },
+        {
+          "claim": "Mar reached 35 °C or more in 29 of the last 30 years",
+          "value": 29,
+          "unit": "years of 30",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        },
+        {
+          "claim": "Apr reached 35 °C or more in 30 of the last 30 years",
+          "value": 30,
+          "unit": "years of 30",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        },
+        {
+          "claim": "May reached 35 °C or more in 29 of the last 30 years",
+          "value": 29,
+          "unit": "years of 30",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        }
+      ],
+      "edit": {
+        "type": "months"
+      }
+    },
+    {
+      "id": "frost",
+      "title": "Frost",
+      "statement": "No frost (0 °C or below) in the last 30 years.",
+      "value": [],
+      "confidence": "low",
+      "evidence": [
+        {
+          "claim": "Typical coldest hour by month",
+          "value": [
+            17.379,
+            18.045,
+            19.6097,
+            21.892,
+            23.4003,
+            23.1947,
+            23.0963,
+            22.9257,
+            22.7547,
+            21.311,
+            20.05,
+            18.7387
+          ],
+          "unit": "°C",
+          "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+          "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+          "period": "1996-2025",
+          "confidence": "low"
+        }
+      ],
+      "edit": {
+        "type": "months"
+      }
+    },
+    {
+      "id": "slope",
+      "title": "Slope",
+      "statement": "The land is gently sloping (about 2°).",
+      "value": 2.0,
+      "confidence": "high",
+      "evidence": [
+        {
+          "claim": "Average slope over the field",
+          "value": 2.0,
+          "unit": "degrees",
+          "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+          "native_resolution": "30 m",
+          "period": "static",
+          "confidence": "high"
+        }
+      ],
+      "edit": {
+        "type": "choice",
+        "options": [
+          "flat",
+          "gentle slope",
+          "steep"
+        ]
+      }
+    },
+    {
+      "id": "soil",
+      "title": "Soil",
+      "statement": "The soil is probably silty clay loam (about 39% clay, pH 6.6). A soil test would be more accurate.",
+      "value": "silty clay loam",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "claim": "Estimated soil texture (0-30 cm)",
+          "value": "silty clay loam",
+          "unit": "USDA class",
+          "dataset": "ISRIC SoilGrids 2.0 (not NASA)",
+          "native_resolution": "250 m",
+          "period": "static",
+          "confidence": "medium"
+        },
+        {
+          "claim": "Estimated soil pH (0-30 cm)",
+          "value": 6.64,
+          "unit": "pH",
+          "dataset": "ISRIC SoilGrids 2.0 (not NASA)",
+          "native_resolution": "250 m",
+          "period": "static",
+          "confidence": "medium"
+        }
+      ],
+      "edit": {
+        "type": "choice",
+        "options": [
+          "sandy",
+          "loam",
+          "clay",
+          "silty",
+          "I have a soil test"
+        ]
+      }
+    },
+    {
+      "id": "groundwater",
+      "title": "Regional water storage",
+      "statement": "Water stored in the wider region has been stable since 2002 (-0.0 cm/year). This is a regional picture, not your well.",
+      "value": -0.0,
+      "confidence": "low",
+      "evidence": [
+        {
+          "claim": "Regional water storage trend",
+          "value": -0.0,
+          "unit": "cm/year",
+          "dataset": "NASA/GFZ GRACE & GRACE-FO, JPL mascons RL06.3 v4 (CRI filtered)",
+          "native_resolution": "0.5° grid (3° mascons)",
+          "period": "2002-04 to 2024-09",
+          "confidence": "low"
+        }
+      ],
+      "edit": {
+        "type": "choice",
+        "options": [
+          "my water is getting scarcer",
+          "about right",
+          "I don't know"
+        ]
+      }
+    }
+  ],
+  "gaps": []
+}

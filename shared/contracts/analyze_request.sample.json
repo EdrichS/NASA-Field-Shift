@@ -1,0 +1,36 @@
+{
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      120.9,
+      15.6
+    ]
+  },
+  "mode": "quick",
+  "answers": {
+    "mode": "quick",
+    "current_crops": [
+      {
+        "crop": "rice",
+        "plant_month": 12,
+        "harvest_month": 4,
+        "season": "dry"
+      },
+      {
+        "crop": "rice",
+        "plant_month": 6,
+        "harvest_month": 10,
+        "season": "wet"
+      }
+    ],
+    "water": "irrigated",
+    "equipment": "small_tractor",
+    "top_goal": "earn_more",
+    "wont_grow": []
+  },
+  "report_languages": [
+    "en",
+    "tl"
+  ],
+  "generate_reports": false
+}

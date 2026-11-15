@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     xai_model_dev: str = ""
     xai_model_demo: str = ""
     xai_model: str = ""
+    # Only sent to reasoning models (e.g. grok-4.7, which always reasons): keep cost and time low
+    xai_reasoning_effort: str = "low"
 
     # Auth0 (the backend validates tokens)
     auth0_domain: str = ""

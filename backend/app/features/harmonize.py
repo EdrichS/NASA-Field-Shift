@@ -300,6 +300,9 @@ def harmonize(
             static["terrain"] = asdict(satellite.terrain)
         if satellite.soil is not None:
             static["soil"] = asdict(satellite.soil)
+        if satellite.land_cover is not None:
+            static["land_cover"] = {**asdict(satellite.land_cover),
+                                    "main_class": satellite.land_cover.main_class}
         for name, problem in satellite.errors.items():
             gaps.append(f"Satellite dataset '{name}' unavailable ({problem.split(':')[0]})")
 

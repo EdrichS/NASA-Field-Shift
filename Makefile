@@ -7,7 +7,7 @@ API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
 .PHONY: setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
-	ecocrop validate-data load-crops test-email
+	ecocrop validate-data load-crops test-email contracts showcase
 
 # FAO EcoCrop database, via the OpenCLIM/ecocrop repo, pinned to a fixed commit
 ECOCROP_URL := https://raw.githubusercontent.com/OpenCLIM/ecocrop/ea43ecd418fd1a1ea08d32c7dce64b7fae02dec4/EcoCrop_DB.csv
@@ -76,3 +76,14 @@ smoke:
 	@curl -fsS $(WEB)/ | grep -q 'id="root"' \
 		&& echo "✅ frontend serves the app" || { echo "❌ frontend at $(WEB)"; exit 1; }
 	@$(MAKE) --no-print-directory check-db
+	@$(PY) scripts/smoke_api.py --api $(API)
+
+# OpenAPI schema + live request/response samples for the frontend (backend must be running)
+contracts:
+	$(PY) scripts/export_openapi.py
+	$(PY) scripts/smoke_api.py --api $(API) --save
+
+# Pre-compute both showcase farms with Tier 1 reports (~3 Grok calls, about $0.025).
+# For the demo recording: make showcase XAI_MODEL=grok-4.7
+showcase:
+	$(if $(XAI_MODEL),XAI_MODEL=$(XAI_MODEL) )$(PY) scripts/precache_showcase.py

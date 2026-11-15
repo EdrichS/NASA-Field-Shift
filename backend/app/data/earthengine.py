@@ -134,6 +134,10 @@ SERIES: tuple[SeriesSpec, ...] = (
 SERIES_BY_KEY = {s.key: s for s in SERIES}
 
 SRTM_ID = "USGS/SRTMGL1_003"
+WORLDCOVER_ID = "ESA/WorldCover/v200"  # 10 m, 2021; ESA is a 2026 Space Agency Partner
+WORLDCOVER_CLASSES = {"10": "trees", "20": "shrubs", "30": "grass", "40": "cropland",
+                      "50": "built_up", "60": "bare", "70": "snow_ice", "80": "water",
+                      "90": "wetland", "95": "mangroves", "100": "moss"}
 SOILGRIDS = {  # property -> (unit, divide raw by) per the SoilGrids 2.0 conversion table
     "clay": ("%", 10),
     "sand": ("%", 10),
@@ -189,6 +193,17 @@ class Soil:
 
 
 @dataclass(frozen=True)
+class LandCover:
+    shares: dict[str, float]  # class -> share of the field area
+    dataset: str = "ESA WorldCover 10 m v200 (2021)"
+    native_resolution: str = "10 m"
+
+    @property
+    def main_class(self) -> str:
+        return max(self.shares, key=self.shares.get) if self.shares else "unknown"
+
+
+@dataclass(frozen=True)
 class FieldSatelliteData:
     geom_hash: str
     end_month: str
@@ -196,6 +211,7 @@ class FieldSatelliteData:
     terrain: Terrain | None
     soil: Soil | None
     errors: dict[str, str]  # dataset key -> what went wrong (becomes an information gap)
+    land_cover: LandCover | None = None
 
 
 # --- months ------------------------------------------------------------------------------
@@ -339,6 +355,34 @@ def _soil_raw(geometry: dict, cache: Cache) -> dict[str, Any]:
     return raw
 
 
+def _land_cover_raw(geometry: dict, cache: Cache) -> dict[str, Any]:
+    key = f"earthengine:landcover:{geom_hash(geometry)}"
+    raw = cache.get(key)
+    if raw is None:
+        ee = _ee()
+        image = ee.ImageCollection(WORLDCOVER_ID).first().select("Map")
+        raw = image.reduceRegion(
+            ee.Reducer.frequencyHistogram(), to_ee_geometry(ee, geometry), 10,
+            bestEffort=True, maxPixels=1e8,
+        ).getInfo()
+        cache.set(key, raw)
+    return raw
+
+
+def parse_land_cover(raw: dict[str, Any]) -> LandCover:
+    histogram = raw.get("Map") or {}
+    total = sum(histogram.values()) or 1
+    shares: dict[str, float] = {}
+    for code, count in histogram.items():
+        name = WORLDCOVER_CLASSES.get(str(int(float(code))), "other")
+        shares[name] = round(shares.get(name, 0) + count / total, 3)
+    return LandCover(shares)
+
+
+def fetch_land_cover(geometry: dict, *, cache: Cache | None = None) -> LandCover:
+    return parse_land_cover(_land_cover_raw(geometry, cache or default_cache()))
+
+
 def fetch_series(
     key: str, geometry: dict, *, end_month: str | None = None, cache: Cache | None = None
 ) -> MonthlySeries:
@@ -367,6 +411,7 @@ def fetch_field(
     }
     jobs["terrain"] = lambda: fetch_terrain(geometry, cache=cache)
     jobs["soil"] = lambda: fetch_soil(geometry, cache=cache)
+    jobs["land_cover"] = lambda: fetch_land_cover(geometry, cache=cache)
 
     results: dict[str, Any] = {}
     errors: dict[str, str] = {}
@@ -384,6 +429,7 @@ def fetch_field(
         terrain=results.get("terrain"),
         soil=results.get("soil"),
         errors=errors,
+        land_cover=results.get("land_cover"),
     )
 
 

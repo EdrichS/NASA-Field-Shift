@@ -25,12 +25,43 @@ def _card(card_id: str, title: str, statement: str, value: Any, evidence: list[E
             "confidence": confidence, "evidence": [e.to_dict() for e in evidence], "edit": edit}
 
 
+def field_warning(ff: FieldFeatures) -> str | None:
+    """A friendly message when the spot doesn't look like farmland (never an error)."""
+    if "land_cover" not in ff.static:
+        return None  # land cover unavailable: say nothing rather than guess
+    lc = ff.static["land_cover"].get("shares") or {}
+    if not lc:  # WorldCover maps land only: no data means open water
+        return "This spot looks like open water. Tap on farmland to analyze a field."
+    if lc.get("water", 0) >= 0.5:
+        return "This spot looks like water. Tap on farmland to analyze a field."
+    if lc.get("built_up", 0) >= 0.5:
+        return "This spot is mostly buildings or roads. Tap on farmland to analyze a field."
+    if lc.get("cropland", 0) < 0.2:
+        main = max(lc, key=lc.get).replace("_", " ")
+        return (f"Satellites see mostly {main} here, not cropland. You can still explore it, "
+                "but the results fit farmland best.")
+    return None
+
+
 def _months_text(months: list[int]) -> str:
     return ", ".join(month_range(r) for r in sorted(runs(months), key=lambda r: r[0]))
 
 
 def prefill_cards(ff: FieldFeatures) -> list[dict[str, Any]]:
     cards = []
+
+    lc = ff.static.get("land_cover")
+    if lc and lc.get("shares"):
+        top = [kv for kv in sorted(lc["shares"].items(), key=lambda kv: -kv[1])[:2]
+               if kv[1] >= 0.05] or [max(lc["shares"].items(), key=lambda kv: kv[1])]
+        text = " and ".join(f"{share:.0%} {name.replace('_', ' ')}" for name, share in top)
+        cards.append(_card(
+            "land_cover", "What the land is", f"From space this spot looks like {text}.",
+            lc["shares"],
+            [Evidence("Land cover share of the field", lc["shares"], "share", lc["dataset"],
+                      lc["native_resolution"], "2021", "high")],
+            {"type": "choice", "options": ["it's farmland", "it's not farmland"]},
+        ))
 
     bare, bare_ev = satellite_bare_months(ff)
     if bare:

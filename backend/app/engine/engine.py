@@ -34,7 +34,7 @@ NAMES = {"current": "Your current rotation", "fill_bare": "Fill the bare gap",
          "break_pest": "Break the pest cycle", "save_water": "Save water"}
 BENEFIT_TEXT = {
     "water": "Needs less water beyond rainfall",
-    "soil": "Builds soil: more months covered and/or nitrogen from a legume",
+    "soil": "Builds soil",  # made specific by _soil_benefit
     "erosion": "Less bare soil exposed to rain",
     "pest_cycle": "Breaks pest and disease cycles with a different plant family",
     "climate_risk": "Less exposure to heat, frost, dry spells or flooding",
@@ -50,6 +50,21 @@ TRADEOFF_TEXT = {
     "income": "Fewer harvests to sell or eat",
     "labor": "More hand work",
 }
+
+
+def _soil_benefit(new: dict[str, Any], old: dict[str, Any]) -> str:
+    """Say exactly which soil factor improved (an "and/or" text let the AI guess wrong)."""
+    n, o = new["soil"].metrics, old["soil"].metrics
+    parts = []
+    if n.get("cover", 0) > o.get("cover", 0) + 0.02:
+        parts.append("the soil is covered more months")
+    if n.get("legume_share", 0) > o.get("legume_share", 0):
+        parts.append("a legume adds nitrogen")
+    if (n.get("root_depth_m") or 0) > (o.get("root_depth_m") or 0) + 0.05:
+        parts.append("deeper roots")
+    if n.get("cover_crop") and not o.get("cover_crop"):
+        parts.append("a cover crop protects and feeds the soil")
+    return "Builds soil: " + "; ".join(parts) if parts else "Builds soil"
 
 
 @dataclass
@@ -249,10 +264,15 @@ def run_engine(ff: FieldFeatures, raw_answers: dict[str, Any] | None,
                                profile.sellable)
         why, changes = _why(cand, current_comps, comps, catalog)
         risks, questions = _risks_and_questions(cand, ctx, catalog, profile)
-        benefits = [BENEFIT_TEXT[c] + f" (+{comps[c].score - current_comps[c].score:.0f})"
-                    for c in COMPONENTS if comps[c].score - current_comps[c].score >= 5]
+        harvest_change = (comps["income"].metrics.get("harvests_per_year", 0)
+                          - current_comps["income"].metrics.get("harvests_per_year", 0))
+        benefits = [(_soil_benefit(comps, current_comps) if c == "soil" else BENEFIT_TEXT[c])
+                    + f" (+{comps[c].score - current_comps[c].score:.0f})"
+                    for c in COMPONENTS if comps[c].score - current_comps[c].score >= 5
+                    and (c != "income" or harvest_change > 0)]  # a cover crop isn't a harvest
         risks += [TRADEOFF_TEXT[c] + f" ({comps[c].score - current_comps[c].score:.0f})"
-                  for c in COMPONENTS if comps[c].score - current_comps[c].score <= -5]
+                  for c in COMPONENTS if comps[c].score - current_comps[c].score <= -5
+                  and (c != "income" or harvest_change < 0)]
         title = " + ".join(_slot_text(s) for y in cand.years for s in y)
         strategies.append(Strategy(
             key=cand.key, name=NAMES[cand.key], title=title,

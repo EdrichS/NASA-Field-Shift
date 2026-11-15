@@ -37,7 +37,7 @@ Every dataset, API, library and tool SowSmart uses. NASA data is the core of eve
 | Google Earth Engine (project `sowsmart-ee`, noncommercial) | Google | https://earthengine.google.com | Earth Engine terms of service (noncommercial use) | Fetches and reduces NASA satellite data and SoilGrids over each field |
 | TigerData (Tiger Cloud free service: Postgres + TimescaleDB + PostGIS) | TigerData (sponsor) | https://www.tigerdata.com | Free tier, TigerData terms | The app's only database: daily climate in a TimescaleDB hypertable, field geometries and region-wide alert matching with PostGIS, users' saved fields, analyses, reports and alerts. Only the backend connects. |
 | Auth0 (free plan) | Okta / Auth0 (sponsor) | https://auth0.com | Free plan, Auth0 terms | Sign-up and login: SPA app "SowSmart Web" in the browser, API "SowSmart API" (RS256) whose tokens the backend validates. Guests can analyze without it; an account saves fields and gets alerts. |
-| Grok API | xAI (sponsor) | https://docs.x.ai | xAI API terms (paid per token, sponsor credits) | Writes the plain-language Tier 1 and Tier 2 reports from the engine's JSON results, with structured outputs. Explains only; never decides or adds numbers. |
+| Grok API | xAI (sponsor) | https://docs.x.ai | xAI API terms (paid per token, sponsor credits) | Writes the plain-language Tier 1 and Tier 2 reports from the engine's JSON results through the Chat Completions endpoint with structured outputs (JSON schema). Models: `grok-4.20-0309-non-reasoning` while building, `grok-4.7` for the demo. Explains only; never decides; every number is checked against the input. |
 
 ## Backend libraries
 

@@ -1,0 +1,1125 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SowSmart API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/prefill": {
+      "post": {
+        "summary": "Prefill",
+        "operationId": "prefill_prefill_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeometryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrefillResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze": {
+      "post": {
+        "summary": "Analyze",
+        "operationId": "analyze_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/showcase": {
+      "get": {
+        "summary": "Showcase List",
+        "description": "The demo farms, with whether their pre-computed analysis is available.",
+        "operationId": "showcase_list_showcase_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShowcaseFarmOut"
+                  },
+                  "type": "array",
+                  "title": "Response Showcase List Showcase Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/showcase/{farm_id}": {
+      "get": {
+        "summary": "Showcase Analysis",
+        "operationId": "showcase_analysis_showcase__farm_id__get",
+        "parameters": [
+          {
+            "name": "farm_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Farm Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/followup": {
+      "post": {
+        "summary": "Followup",
+        "description": "Tier 2: a detailed answer with the dataset behind each claim. Only on request.",
+        "operationId": "followup_reports_followup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIReportOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIReportOut": {
+        "properties": {
+          "tier": {
+            "type": "integer",
+            "title": "Tier"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "language_level": {
+            "type": "string",
+            "title": "Language Level"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "ai_generated": {
+            "type": "boolean",
+            "title": "Ai Generated"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "checks": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Checks",
+            "description": "Result of the no-new-numbers check"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Meta",
+            "description": "Model, tokens, seconds and cost"
+          },
+          "cached": {
+            "type": "boolean",
+            "title": "Cached"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier",
+          "language",
+          "language_level",
+          "question",
+          "ai_generated",
+          "content",
+          "checks",
+          "meta",
+          "cached"
+        ],
+        "title": "AIReportOut",
+        "description": "An AI-written report. Tier 1: content follows Tier1Report; Tier 2: Tier2Answer\n(app/ai/prompts.py). Always labeled AI-written; the engine's ranking is unchanged."
+      },
+      "AnalyzeRequest": {
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry",
+            "description": "GeoJSON Point (buffered to 250 m) or Polygon/MultiPolygon, EPSG:4326",
+            "examples": [
+              {
+                "coordinates": [
+                  120.9,
+                  15.6
+                ],
+                "type": "Point"
+              }
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "quick",
+              "detailed",
+              "exploring"
+            ],
+            "title": "Mode",
+            "default": "quick"
+          },
+          "answers": {
+            "$ref": "#/components/schemas/Answers"
+          },
+          "report_languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Report Languages"
+          },
+          "generate_reports": {
+            "type": "boolean",
+            "title": "Generate Reports",
+            "description": "False returns the comparison only (no AI call), e.g. for tests",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "geometry"
+        ],
+        "title": "AnalyzeRequest"
+      },
+      "AnalyzeResponse": {
+        "properties": {
+          "analysis_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis Id",
+            "description": "Set only for signed-in users who save"
+          },
+          "field": {
+            "$ref": "#/components/schemas/FieldOut"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          },
+          "prefill": {
+            "items": {
+              "$ref": "#/components/schemas/CardOut"
+            },
+            "type": "array",
+            "title": "Prefill"
+          },
+          "features": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Features"
+          },
+          "static": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Static"
+          },
+          "profile": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Profile"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Weights"
+          },
+          "bare_months": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Bare Months"
+          },
+          "stress_calendar": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Stress Calendar"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyOut"
+            },
+            "type": "array",
+            "title": "Strategies"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          },
+          "reports_tier1": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AIReportOut"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Reports Tier1",
+            "description": "One plain-language report per chosen language, or null (see report_status)"
+          },
+          "report_status": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ReportStatus"
+            },
+            "type": "object",
+            "title": "Report Status"
+          },
+          "timings_ms": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Timings Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "field",
+          "warning",
+          "prefill",
+          "features",
+          "static",
+          "profile",
+          "weights",
+          "bare_months",
+          "stress_calendar",
+          "strategies",
+          "gaps",
+          "disclaimer",
+          "reports_tier1",
+          "report_status",
+          "timings_ms"
+        ],
+        "title": "AnalyzeResponse"
+      },
+      "Answers": {
+        "properties": {
+          "current_crops": {
+            "items": {
+              "$ref": "#/components/schemas/CropEntry"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Current Crops"
+          },
+          "not_farming": {
+            "type": "boolean",
+            "title": "Not Farming",
+            "default": false
+          },
+          "water": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "irrigated",
+                  "rainfed",
+                  "mixed",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Water"
+          },
+          "equipment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hand_tools",
+                  "animal",
+                  "small_tractor",
+                  "full_machinery",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipment"
+          },
+          "top_goal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "save_water",
+                  "build_soil",
+                  "earn_more",
+                  "feed_household",
+                  "survive_bad_years"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Goal"
+          },
+          "ranked_goals": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "save_water",
+                "build_soil",
+                "earn_more",
+                "feed_household",
+                "survive_bad_years"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Ranked Goals"
+          },
+          "wont_grow": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Wont Grow"
+          },
+          "sellable_crops": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Sellable Crops"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "Answers",
+        "description": "Quick-mode answers; detailed-mode sections may add more keys (kept, not required)."
+      },
+      "CardOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceOut"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "edit": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Edit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "statement",
+          "value",
+          "confidence",
+          "evidence",
+          "edit"
+        ],
+        "title": "CardOut"
+      },
+      "ComponentOut": {
+        "properties": {
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceOut"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "summary",
+          "evidence",
+          "metrics"
+        ],
+        "title": "ComponentOut"
+      },
+      "CropEntry": {
+        "properties": {
+          "crop": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Crop"
+          },
+          "plant_month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Plant Month"
+          },
+          "harvest_month": {
+            "type": "integer",
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Harvest Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "crop",
+          "plant_month",
+          "harvest_month"
+        ],
+        "title": "CropEntry"
+      },
+      "EvidenceOut": {
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "dataset": {
+            "type": "string",
+            "title": "Dataset"
+          },
+          "native_resolution": {
+            "type": "string",
+            "title": "Native Resolution"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim",
+          "value",
+          "unit",
+          "dataset",
+          "native_resolution",
+          "period",
+          "confidence"
+        ],
+        "title": "EvidenceOut"
+      },
+      "FieldOut": {
+        "properties": {
+          "geom_hash": {
+            "type": "string",
+            "title": "Geom Hash"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "end_month": {
+            "type": "string",
+            "title": "End Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "geom_hash",
+          "lat",
+          "lon",
+          "end_month"
+        ],
+        "title": "FieldOut"
+      },
+      "FollowupRequest": {
+        "properties": {
+          "analysis_payload": {
+            "$ref": "#/components/schemas/AnalyzeResponse",
+            "description": "The /analyze response (guests). Saved analyses will send analysis_id."
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          },
+          "language_level": {
+            "type": "string",
+            "enum": [
+              "farmer",
+              "advanced"
+            ],
+            "title": "Language Level",
+            "default": "farmer"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_payload"
+        ],
+        "title": "FollowupRequest"
+      },
+      "GeometryIn": {
+        "properties": {
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry",
+            "description": "GeoJSON Point (buffered to 250 m) or Polygon/MultiPolygon, EPSG:4326",
+            "examples": [
+              {
+                "coordinates": [
+                  120.9,
+                  15.6
+                ],
+                "type": "Point"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "geometry"
+        ],
+        "title": "GeometryIn"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PrefillResponse": {
+        "properties": {
+          "field": {
+            "$ref": "#/components/schemas/FieldOut"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning",
+            "description": "Friendly message if the spot isn't farmland"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/CardOut"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "warning",
+          "cards",
+          "gaps"
+        ],
+        "title": "PrefillResponse"
+      },
+      "ReportStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "cached",
+              "skipped",
+              "unavailable",
+              "limit",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ReportStatus"
+      },
+      "ShowcaseFarmOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "persona": {
+            "type": "string",
+            "title": "Persona"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "place": {
+            "type": "string",
+            "title": "Place"
+          },
+          "story": {
+            "type": "string",
+            "title": "Story"
+          },
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry"
+          },
+          "report_languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Report Languages"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "True when the pre-computed analysis exists"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "AI model that wrote the stored reports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "persona",
+          "country",
+          "place",
+          "story",
+          "geometry",
+          "report_languages",
+          "available",
+          "generated_at",
+          "model"
+        ],
+        "title": "ShowcaseFarmOut"
+      },
+      "StrategyOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "rotation": {
+            "items": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Rotation"
+          },
+          "calendar": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Calendar"
+          },
+          "components": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "type": "object",
+            "title": "Components"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "why": {
+            "type": "string",
+            "title": "Why"
+          },
+          "changes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "benefits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Benefits"
+          },
+          "risks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Risks"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "expert_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expert Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "title",
+          "rotation",
+          "calendar",
+          "components",
+          "total",
+          "rank",
+          "confidence",
+          "why",
+          "changes",
+          "benefits",
+          "risks",
+          "gaps",
+          "expert_questions"
+        ],
+        "title": "StrategyOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
