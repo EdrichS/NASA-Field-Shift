@@ -7,7 +7,7 @@ API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
 .PHONY: setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
-	ecocrop validate-data load-crops
+	ecocrop validate-data load-crops test-email
 
 # FAO EcoCrop database, via the OpenCLIM/ecocrop repo, pinned to a fixed commit
 ECOCROP_URL := https://raw.githubusercontent.com/OpenCLIM/ecocrop/ea43ecd418fd1a1ea08d32c7dce64b7fae02dec4/EcoCrop_DB.csv
@@ -60,6 +60,10 @@ validate-data:
 # Load EcoCrop ranges + crop traits into the crops table and pest rules into pest_rules
 load-crops: $(ECOCROP_CSV)
 	$(PY) scripts/load_crops.py
+
+# Send one test alert email: make test-email TO=you@example.com
+test-email:
+	$(PY) scripts/send_test_email.py --to $(TO)
 
 # Live database tests: schema, constraints, delete-my-data cascade, cache (needs DATABASE_URL)
 check-db:
