@@ -433,6 +433,7 @@
 
 .confirm-panel {
   gap: 0.85rem;
+  overflow-y: auto;
 }
 
 .confirm-panel .where {
@@ -457,13 +458,60 @@
   background: #f3f6f2;
 }
 
-.land-summary div {
+.summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 1.35rem;
+}
+
+.summary-head h2 {
+  margin: 0;
+  color: #7d847c;
+  font-family: Outfit, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.updated-badge {
+  flex: none;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  background: #d5e6d4;
+  color: #1c3d32;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.swap-pane {
+  display: none;
+}
+
+.swap-pane.is-open {
+  display: block;
+  animation: signup-in 200ms ease;
+}
+
+.land-read {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.land-read div {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
 }
 
-.land-summary dt {
+.land-read dt {
   color: #7d847c;
   font-size: 0.72rem;
   font-weight: 500;
@@ -472,7 +520,7 @@
   text-transform: uppercase;
 }
 
-.land-summary dd {
+.land-read dd {
   margin: 0;
   color: #1c3d32;
   font-size: 0.92rem;
@@ -513,12 +561,35 @@
   outline-offset: 3px;
 }
 
-.adjust-pin {
-  margin: -0.25rem 0 0;
-  color: #3e5649;
-  font-size: 0.84rem;
-  line-height: 1.4;
-  text-align: center;
+.land-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-top: 0.15rem;
+}
+
+.land-edit .field {
+  gap: 0.28rem;
+}
+
+.land-edit .field label {
+  color: #7d847c;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.land-input {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  resize: none;
+}
+
+.land-summary .done-edit {
+  min-height: 2.7rem;
+  margin-top: 0.1rem;
 }
 
 .sat-block {
@@ -602,6 +673,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .swap-pane.is-open,
+  .updated-badge {
+    animation: none;
+  }
+
   .continue {
     transition: none;
   }

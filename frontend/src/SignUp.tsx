@@ -30,6 +30,12 @@ type FieldErrors = {
 
 type Pin = { lat: number; lng: number }
 
+type LandDetails = {
+  terrain: string
+  cover: string
+  weather: string
+}
+
 type LeafletMarker = { setLatLng: (latlng: [number, number]) => void }
 
 type LeafletMap = {
@@ -464,6 +470,7 @@ export default function SignUp({ onBack, onLogin, onCreate }: SignUpProps) {
               onBack={() => setStep(2)}
               onFinish={finishSetup}
               mapNode={mapNode}
+              mapRef={mapRef}
             />
           ) : null}
         </section>
@@ -487,6 +494,7 @@ function ConfirmLand({
   onBack,
   onFinish,
   mapNode,
+  mapRef,
 }: {
   pin: Pin
   units: UnitSystem
@@ -496,13 +504,59 @@ function ConfirmLand({
   onBack: () => void
   onFinish: () => void
   mapNode: RefObject<HTMLDivElement | null>
+  mapRef: RefObject<LeafletMap | null>
 }) {
+  const fieldId = useId()
+  const terrainRef = useRef<HTMLTextAreaElement>(null)
+  const finishRef = useRef<HTMLButtonElement>(null)
   const preview = landPreview(pin.lat, elevationM, units)
+  const [committed, setCommitted] = useState<LandDetails | null>(null)
+  const [draft, setDraft] = useState<LandDetails>(preview)
+  const [editing, setEditing] = useState(false)
+  const [updated, setUpdated] = useState(false)
+  const view = committed ?? preview
+  const draftReady = draft.terrain.trim() !== '' && draft.cover.trim() !== '' && draft.weather.trim() !== ''
+  const canFinish = answer === 'yes' || answer === 'unsure' || (answer === 'no' && updated && !editing)
   const choices: { id: LandAnswer; label: string }[] = [
     { id: 'yes', label: 'Yes' },
     { id: 'no', label: 'No' },
     { id: 'unsure', label: "I don't know" },
   ]
+
+  useEffect(() => {
+    if (!editing) return
+    terrainRef.current?.focus()
+  }, [editing])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => mapRef.current?.invalidateSize(), 260)
+    return () => window.clearTimeout(timer)
+  }, [editing, mapRef])
+
+  function choose(id: LandAnswer) {
+    if (id === 'no') {
+      if (!editing) setDraft(committed ?? preview)
+      setEditing(true)
+    } else {
+      setEditing(false)
+    }
+    onAnswer(id)
+  }
+
+  function saveEdits(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const next = {
+      terrain: draft.terrain.trim(),
+      cover: draft.cover.trim(),
+      weather: draft.weather.trim(),
+    }
+    if (!next.terrain || !next.cover || !next.weather) return
+    setCommitted(next)
+    setDraft(next)
+    setEditing(false)
+    setUpdated(true)
+    window.setTimeout(() => finishRef.current?.focus(), 220)
+  }
 
   return (
     <div className="step-panel locate-panel confirm-panel" key="confirm">
@@ -525,20 +579,81 @@ function ConfirmLand({
       </div>
       <p className="pin-coords">{formatCoord(pin)}</p>
 
-      <dl className="land-summary">
-        <div>
-          <dt>Terrain & elevation</dt>
-          <dd>{preview.terrain}</dd>
+      <div className="land-summary">
+        <div className="summary-head">
+          <h2>Location details</h2>
+          {updated && !editing ? <span className="updated-badge">Updated</span> : null}
         </div>
-        <div>
-          <dt>Land cover / soil appearance</dt>
-          <dd>{preview.cover}</dd>
+        <div className="summary-swap">
+          <div className={editing ? 'swap-pane' : 'swap-pane is-open'} inert={editing}>
+            <div className="swap-inner">
+              <dl className="land-read">
+                <div>
+                  <dt>Terrain & elevation</dt>
+                  <dd>{view.terrain}</dd>
+                </div>
+                <div>
+                  <dt>Land cover / soil appearance</dt>
+                  <dd>{view.cover}</dd>
+                </div>
+                <div>
+                  <dt>Typical weather pattern</dt>
+                  <dd>{view.weather}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+          <div className={editing ? 'swap-pane is-open' : 'swap-pane'} inert={!editing}>
+            <div className="swap-inner">
+              <form className="land-edit" onSubmit={saveEdits}>
+                <div className="field">
+                  <label htmlFor={`${fieldId}-terrain`}>Terrain & elevation</label>
+                  <textarea
+                    ref={terrainRef}
+                    id={`${fieldId}-terrain`}
+                    className="control land-input"
+                    name="terrain"
+                    rows={2}
+                    autoComplete="off"
+                    enterKeyHint="next"
+                    value={draft.terrain}
+                    onChange={(event) => setDraft((current) => ({ ...current, terrain: event.target.value }))}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor={`${fieldId}-cover`}>Land cover / soil appearance</label>
+                  <textarea
+                    id={`${fieldId}-cover`}
+                    className="control land-input"
+                    name="cover"
+                    rows={2}
+                    autoComplete="off"
+                    enterKeyHint="next"
+                    value={draft.cover}
+                    onChange={(event) => setDraft((current) => ({ ...current, cover: event.target.value }))}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor={`${fieldId}-weather`}>Typical weather pattern</label>
+                  <textarea
+                    id={`${fieldId}-weather`}
+                    className="control land-input"
+                    name="weather"
+                    rows={2}
+                    autoComplete="off"
+                    enterKeyHint="done"
+                    value={draft.weather}
+                    onChange={(event) => setDraft((current) => ({ ...current, weather: event.target.value }))}
+                  />
+                </div>
+                <button type="submit" className="continue done-edit" disabled={!draftReady}>
+                  Done
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
-        <div>
-          <dt>Typical weather pattern</dt>
-          <dd>{preview.weather}</dd>
-        </div>
-      </dl>
+      </div>
 
       <div className="choices" role="radiogroup" aria-label="Does this look like your land?">
         {choices.map((choice) => (
@@ -548,16 +663,12 @@ function ConfirmLand({
             className={answer === choice.id ? 'choice is-selected' : 'choice'}
             role="radio"
             aria-checked={answer === choice.id}
-            onClick={() => onAnswer(choice.id)}
+            onClick={() => choose(choice.id)}
           >
             {choice.label}
           </button>
         ))}
       </div>
-
-      {answer === 'no' ? (
-        <p className="adjust-pin">Tap the satellite view below to move your pin, or use the arrow to choose again.</p>
-      ) : null}
 
       <div className="sat-block">
         <p className="sat-badge">NASA Satellite & Earth View</p>
@@ -566,7 +677,7 @@ function ConfirmLand({
         </div>
       </div>
 
-      <button type="button" className="continue" disabled={!answer} onClick={onFinish}>
+      <button ref={finishRef} type="button" className="continue" disabled={!canFinish} onClick={onFinish}>
         Finish Setup
       </button>
     </div>
