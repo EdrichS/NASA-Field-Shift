@@ -19,7 +19,7 @@ Built for the NASA Space Apps Challenge 2026 · Challenge: *Adapting Farms with 
 1. **Find your land:** use your location, tap a point, draw the field boundary, or browse NASA satellite layers by date.
 2. **See what the satellites see:** when the field sits bare, the driest soil months, rain, heat, frost, slope and soil, from years of NASA data. The farmer can correct any card, and the scores follow.
 3. **Answer up to five questions:** current crops, water, equipment, top goal, crops you won't grow. Every question accepts "I don't know".
-4. **Compare rotations:** your current rotation vs. three alternatives (fill the bare window, break the pest cycle, save water) on a 12-month calendar, with benefits, risks, information gaps and questions for a local expert.
+4. **Compare rotations:** your current rotation vs. four alternatives (fill the bare months with legumes or green manure, break the pest cycle, save water, add a cash crop such as a fruit or vegetable) on a 12-month calendar, with benefits, risks, information gaps and questions for a local expert. Every alternative fills each bare window a local crop fits (and names the other crops that fit); a window nothing fits says why and how to protect the soil. Fruit trees that suit the field's climate all year are suggested for bunds and field edges.
 5. **Read it your way:** a plain-language report in up to two languages (e.g. English and Tagalog), technical details only on request, and a printable PDF.
 6. **Get warned (with an account):** storms and other natural events, fires, heavy rain, dry soil and pest-favoring weather near your saved fields, in the app, by email and as phone notifications. One storm alerts every farmer in its path.
 
@@ -34,7 +34,7 @@ NASA + partner data  ──►  12-month field features  ──►  Scoring engi
  period)
 ```
 
-- **The engine decides:** deterministic Python filters crops with FAO EcoCrop ranges and the country's crop list, builds three alternatives and scores water, soil building, erosion, pest cycle, weather risk, income and labor.
+- **The engine decides:** deterministic Python filters crops with FAO EcoCrop ranges and the country's crop list, builds four alternatives and scores water, soil building, erosion, pest cycle, weather risk, income (FAOSTAT national yield × farm-gate price, where known) and labor.
 - **AI only explains:** Grok (xAI) turns the engine's results into a report per language. Any number not in the engine's output is rejected; the ranking never changes.
 - **Alerts:** NASA EONET events are matched with PostGIS against every saved field; FIRMS fires, JAXA GSMaP heavy rain, SMAP dry soil and cited pest-weather rules are checked per field.
 
@@ -49,9 +49,9 @@ NASA + partner data  ──►  12-month field features  ──►  Scoring engi
 | NASA GRACE / GRACE-FO | Regional water-storage trend |
 | NASA SRTM | Slope and erosion risk |
 | NASA EONET · NASA FIRMS | Natural-event and fire alerts |
-| NASA GIBS (incl. HLS 30 m) | Browse maps; PDF map |
+| NASA GIBS (incl. HLS 30 m, Blue Marble) | Browse maps; PDF locator map |
 | JAXA GSMaP · ESA WorldCover | Heavy-rain alerts · land cover |
-| FAOSTAT · FAO EcoCrop · ISRIC SoilGrids | Crops each country grows · crop ranges · soil |
+| FAOSTAT (area, yield, producer prices) · FAO EcoCrop · ISRIC SoilGrids | Crops each country grows and what a hectare is worth · crop ranges · soil |
 
 Every dataset, library and tool, with licenses: [REFERENCES.md](REFERENCES.md).
 
@@ -84,6 +84,7 @@ make check          # lint, tests, data checks, frontend build
 | Command | What it does |
 |---|---|
 | `make showcase` | Recompute the demo farms (with AI reports) and bundle them into the app |
+| `make showcase-engine` | Re-run only the engine on the saved demo-farm data (offline, no AI reports) |
 | `make tunnel` | Public HTTPS link to the running app |
 | `make pages` | Deploy the static demo copy to Cloudflare Pages |
 | `make simulate-storm` | Admin only: simulate a storm near a demo farm (`make clear-simulations` removes it) |

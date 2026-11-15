@@ -82,6 +82,11 @@ ECOCROP_FIELDS = {
 }
 
 
+# EcoCrop rows without a growing period (GMIN/GMAX = 0): FAO-56 Table 11 total crop length,
+# shortest and longest listed region (https://www.fao.org/4/x0490e/x0490e0b.htm).
+CYCLE_FALLBACK = {"Citrullus lanatus": (80, 110)}
+
+
 @dataclass
 class Report:
     errors: list[str] = field(default_factory=list)
@@ -159,8 +164,16 @@ def crop_record(traits: dict[str, str], ecocrop_row: dict[str, str] | None) -> d
         "labor_need": level("labor_need"),
         "traits_source": None if source in ("", TODO) else source,  # NULL = not verified yet
         "notes": traits.get("notes") or None,
-        "ecocrop": ecocrop_record(ecocrop_row) if ecocrop_row else {},
+        "ecocrop": _with_cycle(ecocrop_record(ecocrop_row), traits["scientific_name"])
+        if ecocrop_row else {},
     }
+
+
+def _with_cycle(eco: dict[str, Any], scientific_name: str) -> dict[str, Any]:
+    if not eco.get("cycle_min_days") and scientific_name in CYCLE_FALLBACK:
+        eco["cycle_min_days"], eco["cycle_max_days"] = CYCLE_FALLBACK[scientific_name]
+        eco["cycle_source"] = "FAO-56 Table 11"
+    return eco
 
 
 def pest_rule_record(row: dict[str, str]) -> dict[str, Any]:

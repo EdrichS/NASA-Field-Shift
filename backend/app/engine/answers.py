@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.engine.catalog import CropInfo, resolve
+from app.engine.regional import MarketValue
 from app.engine.rotation import Slot
 
 GOALS = ("save_water", "build_soil", "earn_more", "feed_household", "survive_bad_years")
@@ -29,6 +30,8 @@ class FarmProfile:
     assumptions: list[str] = field(default_factory=list)
     country: str | None = None
     local: dict[str, float] | None = None  # crops grown in the country (ha); None = no filter
+    values: dict[str, MarketValue] | None = None  # FAOSTAT gross value per ha, by crop
+    value_ref: float | None = None  # value per ha of the country's main crop
 
 
 def _month(value: Any) -> int | None:

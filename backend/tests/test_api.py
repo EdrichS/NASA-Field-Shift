@@ -39,7 +39,7 @@ def test_prefill_returns_cards_with_evidence(client, ph_ff):
                for c in body["cards"])
 
 
-def test_analyze_showcase_farm_returns_four_ranked_strategies(client):
+def test_analyze_showcase_farm_returns_five_ranked_strategies(client):
     farm = SHOWCASE[0]
     r = client.post("/analyze", json={"geometry": POINT, "mode": "quick",
                                       "answers": farm["answers"],
@@ -47,9 +47,10 @@ def test_analyze_showcase_farm_returns_four_ranked_strategies(client):
     assert r.status_code == 200, r.text
     body = r.json()
     strategies = body["strategies"]
-    assert len(strategies) == 4
-    assert sorted(s["rank"] for s in strategies) == [1, 2, 3, 4]
-    assert {s["key"] for s in strategies} == {"current", "fill_bare", "break_pest", "save_water"}
+    assert len(strategies) == 5
+    assert sorted(s["rank"] for s in strategies) == [1, 2, 3, 4, 5]
+    assert {s["key"] for s in strategies} == {"current", "fill_bare", "break_pest", "save_water",
+                                              "add_income"}
     assert all(len(s["calendar"]) == 12 for s in strategies)
     assert body["profile"]["water"] == "irrigated"
     assert body["reports_tier1"] == {"en": None, "tl": None}  # no AI configured in this test
@@ -62,7 +63,7 @@ def test_analyze_showcase_farm_returns_four_ranked_strategies(client):
 def test_analyze_just_exploring_needs_no_answers(client):
     r = client.post("/analyze", json={"geometry": POINT, "mode": "exploring"})
     assert r.status_code == 200, r.text
-    assert len(r.json()["strategies"]) == 4
+    assert len(r.json()["strategies"]) >= 4  # current + at least 3 alternatives
     assert r.json()["reports_tier1"] == {"en": None}
 
 

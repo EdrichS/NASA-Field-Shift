@@ -1,7 +1,7 @@
 {
  "farm_id": "tagum-rice",
- "generated_at": "2026-11-15T09:03:13+00:00",
- "model": "grok-4.20-0309-non-reasoning",
+ "generated_at": "2026-11-15T10:43:01+00:00",
+ "model": null,
  "request_key": "9c48165861d95257aea8ea6dec4d083ccb99dc8d8e5ddb58fa7162039b78f2e2",
  "analysis": {
   "analysis_id": null,
@@ -1564,9 +1564,9 @@
   ],
   "strategies": [
    {
-    "key": "fill_bare",
-    "name": "Fill the bare gap",
-    "title": "rice (Jan–Apr) + rice (Jun–Sep) + mungbean (Sep–Jan)",
+    "key": "break_pest",
+    "name": "Break the pest cycle",
+    "title": "rice (Jan–Apr) + sesbania (Apr–Jun) + sweet potato (Jun–Sep) + sesbania (Sep–Jan)",
     "rotation": [
      [
       {
@@ -1576,15 +1576,21 @@
        "new": false
       },
       {
-       "crop": "rice",
+       "crop": "sweet potato",
        "plant_month": 6,
        "harvest_month": 9,
-       "new": false
+       "new": true
       },
       {
-       "crop": "mungbean",
+       "crop": "sesbania",
        "plant_month": 9,
        "harvest_month": 1,
+       "new": true
+      },
+      {
+       "crop": "sesbania",
+       "plant_month": 4,
+       "harvest_month": 6,
        "new": true
       }
      ]
@@ -1601,7 +1607,7 @@
         "new": false
        },
        {
-        "crop": "mungbean",
+        "crop": "sesbania",
         "share": 0.5,
         "year": 1,
         "new": true
@@ -1647,9 +1653,15 @@
         "share": 0.5,
         "year": 1,
         "new": false
+       },
+       {
+        "crop": "sesbania",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -1657,8 +1669,570 @@
      {
       "month": 5,
       "name": "May",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 6,
+      "name": "Jun",
+      "crops": [
+       {
+        "crop": "sweet potato",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "sesbania",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 7,
+      "name": "Jul",
+      "crops": [
+       {
+        "crop": "sweet potato",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 8,
+      "name": "Aug",
+      "crops": [
+       {
+        "crop": "sweet potato",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 9,
+      "name": "Sep",
+      "crops": [
+       {
+        "crop": "sweet potato",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       },
+       {
+        "crop": "sesbania",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 10,
+      "name": "Oct",
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 11,
+      "name": "Nov",
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 12,
+      "name": "Dec",
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     }
+    ],
+    "components": {
+     "water": {
+      "score": 86.5,
+      "summary": "About 162 mm/year of irrigation beyond rainfall",
+      "evidence": [
+       {
+        "claim": "Yearly rainfall (30-year normal)",
+        "value": 2454,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
+        "value": 162,
+        "unit": "mm/year",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice water need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Rice) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Rice (paddy)) + ch.4 paddy water | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sweet potato water need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sesbania water need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "deficit_mm": 162
+      }
+     },
+     "soil": {
+      "score": 92.0,
+      "summary": "Soil covered 100% of the year; legumes 50% of crop time",
+      "evidence": [
+       {
+        "claim": "Share of the year the soil is covered by a crop",
+        "value": 1.0,
+        "unit": "fraction",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sesbania is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "rice root depth",
+        "value": 0.75,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Rice) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Rice (paddy)) + ch.4 paddy water | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sweet potato root depth",
+        "value": 1.25,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sesbania root depth",
+        "value": 0.8,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "cover": 1.0,
+       "legume_share": 0.5,
+       "root_depth_m": 0.9,
+       "cover_crop": true
+      }
+     },
+     "erosion": {
+      "score": 100.0,
+      "summary": "0 mostly bare month(s) on 2° slope",
+      "evidence": [
+       {
+        "claim": "Average slope",
+        "value": 2.37,
+        "unit": "degrees",
+        "dataset": "NASA SRTM v3 (SRTMGL1_003)",
+        "native_resolution": "30 m",
+        "period": "static",
+        "confidence": "high"
+       },
+       {
+        "claim": "Mostly bare months",
+        "value": "none",
+        "unit": "months",
+        "dataset": "Farmer's crop calendar + strategy",
+        "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "bare_months": []
+      }
+     },
+     "pest_cycle": {
+      "score": 90.0,
+      "summary": "3 plant families; same family back-to-back 0 time(s)",
+      "evidence": [
+       {
+        "claim": "Plant families in the rotation, in order",
+        "value": "Poaceae → Fabaceae → Convolvulaceae → Fabaceae",
+        "unit": "families",
+        "dataset": "Crop traits (FAO EcoCrop / team)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "families": [
+        "Convolvulaceae",
+        "Fabaceae",
+        "Poaceae"
+       ]
+      }
+     },
+     "climate_risk": {
+      "score": 90.0,
+      "summary": "3 crop-month(s) overlap heat, frost, dry or very wet months",
+      "evidence": [
+       {
+        "claim": "Apr reached 35 °C or more in 13 of the last 30 years",
+        "value": 13,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "May reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice heat / drought / waterlogging tolerance",
+        "value": "medium / low / high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Rice) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Rice (paddy)) + ch.4 paddy water | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sweet potato heat / drought / waterlogging tolerance",
+        "value": "low / high / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sesbania heat / drought / waterlogging tolerance",
+        "value": "medium / medium / high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       }
+      ],
+      "metrics": {
+       "overlaps": [
+        "rice: heat in Apr",
+        "sesbania: heat in Apr",
+        "sesbania: heat in May"
+       ]
+      }
+     },
+     "income": {
+      "score": 86.3,
+      "summary": "About 4455 USD/ha a year before costs (2.0 harvests)",
+      "evidence": [
+       {
+        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
+        "value": 4455,
+        "unit": "USD/ha/year",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice in the Philippines: about 4.1 t/ha at 362 USD/t",
+        "value": 1493,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       },
+       {
+        "claim": "sweet potato in the Philippines: about 6.2 t/ha at 475 USD/t",
+        "value": 2962,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {
+       "harvests_per_year": 2.0,
+       "gross_usd_ha": 4455
+      }
+     },
+     "labor": {
+      "score": 32.8,
+      "summary": "Hand work 8 points/year (small tractor)",
+      "evidence": [
+       {
+        "claim": "rice hand labor need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Rice) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Rice (paddy)) + ch.4 paddy water | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "sweet potato hand labor need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "sesbania hand labor need",
+        "value": "low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       }
+      ],
+      "metrics": {}
+     }
+    },
+    "total": 87.6,
+    "rank": 1,
+    "confidence": "high",
+    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 2 time(s)). Sweet potato is from the Convolvulaceae family, so they lose their host for a season. The bare months get sesbania (Fabaceae), so the same family rarely follows itself.",
+    "changes": [
+     "Grow sweet potato instead of rice once in the rotation",
+     "Add sesbania from mid-Sep to mid-Jan (also fits: okra, peanut, sunn hemp)",
+     "Add sesbania from mid-Apr to mid-Jun after rice (also fits: string bean, okra, mungbean)"
+    ],
+    "benefits": [
+     "Builds soil: the soil is covered more months; a legume adds nitrogen; deeper roots; a cover crop protects and feeds the soil (+62)",
+     "Less bare soil exposed to rain (+34)",
+     "Breaks pest and disease cycles with a different plant family (+80)",
+     "More to sell or eat (+13)"
+    ],
+    "risks": [
+     "Sweet potato needs well-drained soil; clay soil can stay wet after heavy rain",
+     "Heat of 35 °C+ is common while sesbania grows",
+     "Tight timing: sesbania needs 60+ days and the gap is about 60 days",
+     "More exposure to heat, frost, dry spells or flooding (-8)",
+     "More hand work (-17)"
+    ],
+    "gaps": [
+     "FAO harvest statistics don't count cover crops, so we can't confirm that sesbania seed is sold near you",
+     "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
+    ],
+    "expert_questions": [
+     "Can the field drain well enough for sweet potato, or should it go on raised beds?",
+     "Which sesbania varieties handle heat above 35 °C here?",
+     "Is there a buyer or local market for sweet potato?",
+     "Where can I get good sweet potato and sesbania seed and the right inoculant (rhizobia) for the legumes?",
+     "Is there an early-maturing sesbania variety (under 50 days)?"
+    ]
+   },
+   {
+    "key": "add_income",
+    "name": "Add a cash crop",
+    "title": "rice (Jan–Apr) + string bean (Apr–Jun) + rice (Jun–Sep) + string bean (Sep–Jan)",
+    "rotation": [
+     [
+      {
+       "crop": "rice",
+       "plant_month": 1,
+       "harvest_month": 4,
+       "new": false
+      },
+      {
+       "crop": "rice",
+       "plant_month": 6,
+       "harvest_month": 9,
+       "new": false
+      },
+      {
+       "crop": "string bean",
+       "plant_month": 9,
+       "harvest_month": 1,
+       "new": true
+      },
+      {
+       "crop": "string bean",
+       "plant_month": 4,
+       "harvest_month": 6,
+       "new": true
+      }
+     ]
+    ],
+    "calendar": [
+     {
+      "month": 1,
+      "name": "Jan",
+      "crops": [
+       {
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "string bean",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 2,
+      "name": "Feb",
+      "crops": [
+       {
+        "crop": "rice",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 3,
+      "name": "Mar",
+      "crops": [
+       {
+        "crop": "rice",
+        "share": 1.0,
+        "year": 1,
+        "new": false
+       }
+      ],
+      "bare": 0.0,
+      "stress": []
+     },
+     {
+      "month": 4,
+      "name": "Apr",
+      "crops": [
+       {
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "string bean",
+        "share": 0.5,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
+      "stress": [
+       "heat"
+      ]
+     },
+     {
+      "month": 5,
+      "name": "May",
+      "crops": [
+       {
+        "crop": "string bean",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -1672,9 +2246,15 @@
         "share": 0.5,
         "year": 1,
         "new": false
+       },
+       {
+        "crop": "string bean",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
@@ -1716,7 +2296,7 @@
         "new": false
        },
        {
-        "crop": "mungbean",
+        "crop": "string bean",
         "share": 0.5,
         "year": 1,
         "new": true
@@ -1730,7 +2310,7 @@
       "name": "Oct",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "string bean",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -1744,7 +2324,7 @@
       "name": "Nov",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "string bean",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -1758,7 +2338,7 @@
       "name": "Dec",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "string bean",
         "share": 1.0,
         "year": 1,
         "new": true
@@ -1801,10 +2381,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean water need",
+        "claim": "string bean water need",
         "value": "low",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Beans green) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -1815,12 +2395,12 @@
       }
      },
      "soil": {
-      "score": 67.6,
-      "summary": "Soil covered 83% of the year; legumes 40% of crop time",
+      "score": 79.0,
+      "summary": "Soil covered 100% of the year; legumes 50% of crop time",
       "evidence": [
        {
         "claim": "Share of the year the soil is covered by a crop",
-        "value": 0.83,
+        "value": 1.0,
         "unit": "fraction",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -1828,10 +2408,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean is a legume (adds nitrogen)",
+        "claim": "string bean is a legume (adds nitrogen)",
         "value": true,
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Beans green) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -1846,25 +2426,25 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean root depth",
-        "value": 0.8,
+        "claim": "string bean root depth",
+        "value": 0.6,
         "unit": "m",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Beans green) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        }
       ],
       "metrics": {
-       "cover": 0.83,
-       "legume_share": 0.4,
-       "root_depth_m": 0.77,
+       "cover": 1.0,
+       "legume_share": 0.5,
+       "root_depth_m": 0.68,
        "cover_crop": false
       }
      },
      "erosion": {
-      "score": 89.3,
-      "summary": "3 mostly bare month(s) on 2° slope",
+      "score": 100.0,
+      "summary": "0 mostly bare month(s) on 2° slope",
       "evidence": [
        {
         "claim": "Average slope",
@@ -1877,7 +2457,7 @@
        },
        {
         "claim": "Mostly bare months",
-        "value": "Apr, May, Jun",
+        "value": "none",
         "unit": "months",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -1886,20 +2466,16 @@
        }
       ],
       "metrics": {
-       "bare_months": [
-        "Apr",
-        "May",
-        "Jun"
-       ]
+       "bare_months": []
       }
      },
      "pest_cycle": {
-      "score": 63.3,
-      "summary": "2 plant families; same family back-to-back 1 time(s)",
+      "score": 70.0,
+      "summary": "2 plant families; same family back-to-back 0 time(s)",
       "evidence": [
        {
         "claim": "Plant families in the rotation, in order",
-        "value": "Poaceae → Poaceae → Fabaceae",
+        "value": "Poaceae → Fabaceae → Poaceae → Fabaceae",
         "unit": "families",
         "dataset": "Crop traits (FAO EcoCrop / team)",
         "native_resolution": "crop-level",
@@ -1915,12 +2491,21 @@
       }
      },
      "climate_risk": {
-      "score": 97.5,
-      "summary": "1 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 95.2,
+      "summary": "3 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
        {
         "claim": "Apr reached 35 °C or more in 13 of the last 30 years",
         "value": 13,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "May reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
         "unit": "years of 30",
         "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
         "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
@@ -1937,10 +2522,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean heat / drought / waterlogging tolerance",
-        "value": "high / high / low",
+        "claim": "string bean heat / drought / waterlogging tolerance",
+        "value": "high / low / medium",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Beans green) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -1948,31 +2533,52 @@
       ],
       "metrics": {
        "overlaps": [
-        "rice: heat in Apr"
+        "rice: heat in Apr",
+        "string bean: heat in Apr",
+        "string bean: heat in May"
        ]
       }
      },
      "income": {
-      "score": 100.0,
-      "summary": "2.4 sellable or edible harvest(s) per year",
+      "score": 99.8,
+      "summary": "About 13556 USD/ha a year before costs (4.0 harvests)",
       "evidence": [
        {
-        "claim": "Harvests per year that can be sold or eaten",
-        "value": 2.4,
-        "unit": "harvest-equivalents",
-        "dataset": "Strategy calendar (no market info given)",
-        "native_resolution": "field",
+        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
+        "value": 13556,
+        "unit": "USD/ha/year",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
         "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice in the Philippines: about 4.1 t/ha at 362 USD/t",
+        "value": 1493,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       },
+       {
+        "claim": "string bean in the Philippines: about 7.9 t/ha at 673 USD/t",
+        "value": 5285,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
         "confidence": "low"
        }
       ],
       "metrics": {
-       "harvests_per_year": 3.0
+       "harvests_per_year": 4.0,
+       "gross_usd_ha": 13556
       }
      },
      "labor": {
-      "score": 24.4,
-      "summary": "Hand work 9 points/year (small tractor)",
+      "score": 0.0,
+      "summary": "Hand work 12 points/year (small tractor)",
       "evidence": [
        {
         "claim": "rice hand labor need",
@@ -1984,10 +2590,10 @@
         "confidence": "low"
        },
        {
-        "claim": "mungbean hand labor need",
+        "claim": "string bean hand labor need",
         "value": "high",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Beans green) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Bean) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "low"
@@ -1996,46 +2602,61 @@
       "metrics": {}
      }
     },
-    "total": 82.5,
-    "rank": 1,
+    "total": 83.9,
+    "rank": 2,
     "confidence": "high",
-    "why": "Your field sits bare from mid-Sep to mid-Jan (about 120 days). Mungbean needs as little as 50 days (FAO EcoCrop) and is a legume that adds nitrogen.",
+    "why": "Your field sits bare from mid-Sep to mid-Jan (about 120 days) and mid-Apr to mid-Jun (about 60 days). String bean is a vegetable that fits that window here. It is grown on about 13,384 ha in the Philippines (FAOSTAT). At the national average yield and farm-gate price, one harvest is worth about 5,285 USD per hectare before costs, against about 1,493 USD for rice. Fruit and vegetables take more work and need a buyer nearby.",
     "changes": [
-     "Add mungbean between harvest and the next planting"
+     "Add string bean from mid-Sep to mid-Jan after rice (also fits: okra, eggplant, chili pepper)",
+     "Add string bean from mid-Apr to mid-Jun after rice (also fits: okra, chili pepper, cucumber)"
     ],
     "benefits": [
-     "Builds soil: the soil is covered more months; a legume adds nitrogen (+38)",
-     "Less bare soil exposed to rain (+23)",
-     "Breaks pest and disease cycles with a different plant family (+53)",
-     "More harvests to sell or eat (+20)"
+     "Builds soil: the soil is covered more months; a legume adds nitrogen (+49)",
+     "Less bare soil exposed to rain (+34)",
+     "Breaks pest and disease cycles with a different plant family (+60)",
+     "More to sell or eat (+26)"
     ],
     "risks": [
-     "Mungbean needs well-drained soil; after paddy rice on clay soil the field may stay wet",
-     "More hand work (-25)"
+     "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+     "More hand work (-50)"
     ],
-    "gaps": [],
+    "gaps": [
+     "FAO harvest statistics don't count cover crops, so we can't confirm that sesbania seed is sold near you",
+     "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
+    ],
     "expert_questions": [
-     "Can the field drain well enough for mungbean?",
-     "Is there a buyer or local market for mungbean?",
-     "Where can I get good mungbean seed and the right inoculant (rhizobia)?"
+     "Is there a buyer or local market for string bean?",
+     "Where can I get good string bean seed and the right inoculant (rhizobia) for the legumes?"
     ]
    },
    {
-    "key": "break_pest",
-    "name": "Break the pest cycle",
-    "title": "rice (Jan–Apr) + mungbean (Jun–Sep)",
+    "key": "save_water",
+    "name": "Save water",
+    "title": "peanut (Jan–Apr) + okra (Apr–Jun) + rice (Jun–Sep) + okra (Sep–Jan)",
     "rotation": [
      [
       {
-       "crop": "rice",
+       "crop": "peanut",
        "plant_month": 1,
        "harvest_month": 4,
+       "new": true
+      },
+      {
+       "crop": "rice",
+       "plant_month": 6,
+       "harvest_month": 9,
        "new": false
       },
       {
-       "crop": "mungbean",
-       "plant_month": 6,
-       "harvest_month": 9,
+       "crop": "okra",
+       "plant_month": 9,
+       "harvest_month": 1,
+       "new": true
+      },
+      {
+       "crop": "okra",
+       "plant_month": 4,
+       "harvest_month": 6,
        "new": true
       }
      ]
@@ -2046,13 +2667,19 @@
       "name": "Jan",
       "crops": [
        {
-        "crop": "rice",
+        "crop": "peanut",
         "share": 0.5,
         "year": 1,
-        "new": false
+        "new": true
+       },
+       {
+        "crop": "okra",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
@@ -2060,10 +2687,10 @@
       "name": "Feb",
       "crops": [
        {
-        "crop": "rice",
+        "crop": "peanut",
         "share": 1.0,
         "year": 1,
-        "new": false
+        "new": true
        }
       ],
       "bare": 0.0,
@@ -2074,10 +2701,10 @@
       "name": "Mar",
       "crops": [
        {
-        "crop": "rice",
+        "crop": "peanut",
         "share": 1.0,
         "year": 1,
-        "new": false
+        "new": true
        }
       ],
       "bare": 0.0,
@@ -2088,13 +2715,19 @@
       "name": "Apr",
       "crops": [
        {
-        "crop": "rice",
+        "crop": "peanut",
         "share": 0.5,
         "year": 1,
-        "new": false
+        "new": true
+       },
+       {
+        "crop": "okra",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -2102,8 +2735,15 @@
      {
       "month": 5,
       "name": "May",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "okra",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -2113,13 +2753,19 @@
       "name": "Jun",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "okra",
         "share": 0.5,
         "year": 1,
         "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
@@ -2127,10 +2773,10 @@
       "name": "Jul",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "rice",
         "share": 1.0,
         "year": 1,
-        "new": true
+        "new": false
        }
       ],
       "bare": 0.0,
@@ -2141,10 +2787,10 @@
       "name": "Aug",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "rice",
         "share": 1.0,
         "year": 1,
-        "new": true
+        "new": false
        }
       ],
       "bare": 0.0,
@@ -2155,40 +2801,67 @@
       "name": "Sep",
       "crops": [
        {
-        "crop": "mungbean",
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "okra",
         "share": 0.5,
         "year": 1,
         "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 10,
       "name": "Oct",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "okra",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 11,
       "name": "Nov",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "okra",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 12,
       "name": "Dec",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "okra",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      }
     ],
     "components": {
      "water": {
-      "score": 91.0,
+      "score": 91.1,
       "summary": "About 107 mm/year of irrigation beyond rainfall",
       "evidence": [
        {
@@ -2210,6 +2883,15 @@
         "confidence": "low"
        },
        {
+        "claim": "peanut water need",
+        "value": "medium",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
         "claim": "rice water need",
         "value": "high",
         "unit": "",
@@ -2219,10 +2901,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean water need",
-        "value": "low",
+        "claim": "okra water need",
+        "value": "medium",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Egg plant) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2233,12 +2915,12 @@
       }
      },
      "soil": {
-      "score": 60.3,
-      "summary": "Soil covered 50% of the year; legumes 50% of crop time",
+      "score": 66.3,
+      "summary": "Soil covered 100% of the year; legumes 25% of crop time",
       "evidence": [
        {
         "claim": "Share of the year the soil is covered by a crop",
-        "value": 0.5,
+        "value": 1.0,
         "unit": "fraction",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -2246,10 +2928,19 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean is a legume (adds nitrogen)",
+        "claim": "peanut is a legume (adds nitrogen)",
         "value": true,
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "peanut root depth",
+        "value": 0.75,
+        "unit": "m",
+        "dataset": "FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2264,25 +2955,25 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean root depth",
-        "value": 0.8,
+        "claim": "okra root depth",
+        "value": 0.95,
         "unit": "m",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Egg plant) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        }
       ],
       "metrics": {
-       "cover": 0.5,
-       "legume_share": 0.5,
-       "root_depth_m": 0.78,
+       "cover": 1.0,
+       "legume_share": 0.25,
+       "root_depth_m": 0.85,
        "cover_crop": false
       }
      },
      "erosion": {
-      "score": 66.2,
-      "summary": "8 mostly bare month(s) on 2° slope",
+      "score": 100.0,
+      "summary": "0 mostly bare month(s) on 2° slope",
       "evidence": [
        {
         "claim": "Average slope",
@@ -2295,7 +2986,7 @@
        },
        {
         "claim": "Mostly bare months",
-        "value": "Jan, Apr, May, Jun, Sep, Oct, Nov, Dec",
+        "value": "none",
         "unit": "months",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -2304,25 +2995,16 @@
        }
       ],
       "metrics": {
-       "bare_months": [
-        "Jan",
-        "Apr",
-        "May",
-        "Jun",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec"
-       ]
+       "bare_months": []
       }
      },
      "pest_cycle": {
-      "score": 70.0,
-      "summary": "2 plant families; same family back-to-back 0 time(s)",
+      "score": 90.0,
+      "summary": "3 plant families; same family back-to-back 0 time(s)",
       "evidence": [
        {
         "claim": "Plant families in the rotation, in order",
-        "value": "Poaceae → Fabaceae",
+        "value": "Fabaceae → Malvaceae → Poaceae → Malvaceae",
         "unit": "families",
         "dataset": "Crop traits (FAO EcoCrop / team)",
         "native_resolution": "crop-level",
@@ -2333,13 +3015,14 @@
       "metrics": {
        "families": [
         "Fabaceae",
+        "Malvaceae",
         "Poaceae"
        ]
       }
      },
      "climate_risk": {
-      "score": 97.5,
-      "summary": "1 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 90.0,
+      "summary": "3 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
        {
         "claim": "Apr reached 35 °C or more in 13 of the last 30 years",
@@ -2351,6 +3034,24 @@
         "confidence": "low"
        },
        {
+        "claim": "May reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "peanut heat / drought / waterlogging tolerance",
+        "value": "medium / medium / low",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
         "claim": "rice heat / drought / waterlogging tolerance",
         "value": "medium / low / high",
         "unit": "",
@@ -2360,10 +3061,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "mungbean heat / drought / waterlogging tolerance",
-        "value": "high / high / low",
+        "claim": "okra heat / drought / waterlogging tolerance",
+        "value": "medium / high / low",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Egg plant) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2371,32 +3072,71 @@
       ],
       "metrics": {
        "overlaps": [
-        "rice: heat in Apr"
+        "peanut: heat in Apr",
+        "okra: heat in Apr",
+        "okra: heat in May"
        ]
       }
      },
      "income": {
-      "score": 80.0,
-      "summary": "1.6 sellable or edible harvest(s) per year",
+      "score": 99.5,
+      "summary": "About 12074 USD/ha a year before costs (4.0 harvests)",
       "evidence": [
        {
-        "claim": "Harvests per year that can be sold or eaten",
-        "value": 1.6,
-        "unit": "harvest-equivalents",
-        "dataset": "Strategy calendar (no market info given)",
-        "native_resolution": "field",
+        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
+        "value": 12074,
+        "unit": "USD/ha/year",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
         "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "peanut in the Philippines: about 1.2 t/ha at 934 USD/t",
+        "value": 1155,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice in the Philippines: about 4.1 t/ha at 362 USD/t",
+        "value": 1493,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
+        "confidence": "low"
+       },
+       {
+        "claim": "okra in the Philippines: about 7.6 t/ha at 620 USD/t",
+        "value": 4713,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
         "confidence": "low"
        }
       ],
       "metrics": {
-       "harvests_per_year": 2.0
+       "harvests_per_year": 4.0,
+       "gross_usd_ha": 12074
       }
      },
      "labor": {
-      "score": 49.6,
-      "summary": "Hand work 6 points/year (small tractor)",
+      "score": 0.0,
+      "summary": "Hand work 12 points/year (small tractor)",
       "evidence": [
+       {
+        "claim": "peanut hand labor need",
+        "value": "high",
+        "unit": "",
+        "dataset": "FAO-56 Table 22 (Groundnut (Peanut)) | FAO Irrigation Water Mgmt Manual 3 Table 14 (Peanut) | FAO EcoCrop (heat, drainage, category)",
+        "native_resolution": "crop-level",
+        "period": "",
+        "confidence": "low"
+       },
        {
         "claim": "rice hand labor need",
         "value": "high",
@@ -2407,10 +3147,10 @@
         "confidence": "low"
        },
        {
-        "claim": "mungbean hand labor need",
+        "claim": "okra hand labor need",
         "value": "high",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Egg plant) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "low"
@@ -2419,32 +3159,44 @@
       "metrics": {}
      }
     },
-    "total": 81.5,
-    "rank": 2,
+    "total": 83.6,
+    "rank": 3,
     "confidence": "high",
-    "why": "Growing the Poaceae family again and again lets its pests and diseases carry over (Poaceae family grown 2 time(s)). Mungbean is from the Fabaceae family, so they lose their host for a season.",
+    "why": "Rice is the thirstiest crop in your rotation. Peanut needs about 88 mm less water per year beyond rainfall here and has medium drought tolerance. The bare months get okra (medium water need).",
     "changes": [
-     "Grow mungbean instead of rice once in the rotation"
+     "Grow peanut instead of rice",
+     "Add okra from mid-Sep to mid-Jan after rice (also fits: eggplant, squash, sunn hemp)",
+     "Add okra from mid-Apr to mid-Jun (also fits: mungbean, sunn hemp, cucumber)"
     ],
     "benefits": [
      "Needs less water beyond rainfall (+7)",
-     "Builds soil: a legume adds nitrogen (+30)",
-     "Breaks pest and disease cycles with a different plant family (+60)"
+     "Builds soil: the soil is covered more months; a legume adds nitrogen; deeper roots (+36)",
+     "Less bare soil exposed to rain (+34)",
+     "Breaks pest and disease cycles with a different plant family (+80)",
+     "More to sell or eat (+26)"
     ],
     "risks": [
-     "Mungbean needs well-drained soil; clay soil can stay wet after heavy rain"
+     "Peanut and okra need well-drained soil; after paddy rice on clay soil the field may stay wet",
+     "Heat of 35 °C+ is common while peanut and okra grow",
+     "Fruit and vegetable prices swing more than grain prices; plan where to sell before you plant",
+     "More exposure to heat, frost, dry spells or flooding (-8)",
+     "More hand work (-50)"
     ],
-    "gaps": [],
+    "gaps": [
+     "FAO harvest statistics don't count cover crops, so we can't confirm that sesbania seed is sold near you",
+     "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
+    ],
     "expert_questions": [
-     "Can the field drain well enough for mungbean?",
-     "Is there a buyer or local market for mungbean?",
-     "Where can I get good mungbean seed and the right inoculant (rhizobia)?"
+     "Can the field drain well enough for peanut and okra, or should they go on raised beds?",
+     "Which peanut and okra varieties handle heat above 35 °C here?",
+     "Is there a buyer or local market for peanut and okra?",
+     "Where can I get good peanut and okra seed and the right inoculant (rhizobia) for the legumes?"
     ]
    },
    {
-    "key": "save_water",
-    "name": "Save water",
-    "title": "rice (Jan–Apr) + sweet potato (Jun–Sep)",
+    "key": "fill_bare",
+    "name": "Fill the bare gap",
+    "title": "rice (Jan–Apr) + sesbania (Apr–Jun) + rice (Jun–Sep) + sesbania (Sep–Jan)",
     "rotation": [
      [
       {
@@ -2454,9 +3206,21 @@
        "new": false
       },
       {
-       "crop": "sweet potato",
+       "crop": "rice",
        "plant_month": 6,
        "harvest_month": 9,
+       "new": false
+      },
+      {
+       "crop": "sesbania",
+       "plant_month": 9,
+       "harvest_month": 1,
+       "new": true
+      },
+      {
+       "crop": "sesbania",
+       "plant_month": 4,
+       "harvest_month": 6,
        "new": true
       }
      ]
@@ -2471,9 +3235,15 @@
         "share": 0.5,
         "year": 1,
         "new": false
+       },
+       {
+        "crop": "sesbania",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
@@ -2513,9 +3283,15 @@
         "share": 0.5,
         "year": 1,
         "new": false
+       },
+       {
+        "crop": "sesbania",
+        "share": 0.5,
+        "year": 1,
+        "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -2523,8 +3299,15 @@
      {
       "month": 5,
       "name": "May",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": [
        "heat"
       ]
@@ -2534,13 +3317,19 @@
       "name": "Jun",
       "crops": [
        {
-        "crop": "sweet potato",
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "sesbania",
         "share": 0.5,
         "year": 1,
         "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
@@ -2548,10 +3337,10 @@
       "name": "Jul",
       "crops": [
        {
-        "crop": "sweet potato",
+        "crop": "rice",
         "share": 1.0,
         "year": 1,
-        "new": true
+        "new": false
        }
       ],
       "bare": 0.0,
@@ -2562,10 +3351,10 @@
       "name": "Aug",
       "crops": [
        {
-        "crop": "sweet potato",
+        "crop": "rice",
         "share": 1.0,
         "year": 1,
-        "new": true
+        "new": false
        }
       ],
       "bare": 0.0,
@@ -2576,41 +3365,68 @@
       "name": "Sep",
       "crops": [
        {
-        "crop": "sweet potato",
+        "crop": "rice",
+        "share": 0.5,
+        "year": 1,
+        "new": false
+       },
+       {
+        "crop": "sesbania",
         "share": 0.5,
         "year": 1,
         "new": true
        }
       ],
-      "bare": 0.5,
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 10,
       "name": "Oct",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 11,
       "name": "Nov",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      },
      {
       "month": 12,
       "name": "Dec",
-      "crops": [],
-      "bare": 1.0,
+      "crops": [
+       {
+        "crop": "sesbania",
+        "share": 1.0,
+        "year": 1,
+        "new": true
+       }
+      ],
+      "bare": 0.0,
       "stress": []
      }
     ],
     "components": {
      "water": {
-      "score": 89.7,
-      "summary": "About 123 mm/year of irrigation beyond rainfall",
+      "score": 80.5,
+      "summary": "About 234 mm/year of irrigation beyond rainfall",
       "evidence": [
        {
         "claim": "Yearly rainfall (30-year normal)",
@@ -2623,7 +3439,7 @@
        },
        {
         "claim": "Crop water need beyond rain, per year (Hargreaves ET0 from POWER temperature and sunlight x crop factor - 80% of rain)",
-        "value": 123,
+        "value": 234,
         "unit": "mm/year",
         "dataset": "NASA POWER (Agroclimatology), API v2.10.3 + crop traits",
         "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
@@ -2640,29 +3456,38 @@
         "confidence": "medium"
        },
        {
-        "claim": "sweet potato water need",
+        "claim": "sesbania water need",
         "value": "high",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        }
       ],
       "metrics": {
-       "deficit_mm": 123
+       "deficit_mm": 234
       }
      },
      "soil": {
-      "score": 33.3,
-      "summary": "Soil covered 50% of the year; legumes 0% of crop time",
+      "score": 90.3,
+      "summary": "Soil covered 100% of the year; legumes 50% of crop time",
       "evidence": [
        {
         "claim": "Share of the year the soil is covered by a crop",
-        "value": 0.5,
+        "value": 1.0,
         "unit": "fraction",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
+        "period": "",
+        "confidence": "medium"
+       },
+       {
+        "claim": "sesbania is a legume (adds nitrogen)",
+        "value": true,
+        "unit": "",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
+        "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        },
@@ -2676,25 +3501,25 @@
         "confidence": "medium"
        },
        {
-        "claim": "sweet potato root depth",
-        "value": 1.25,
+        "claim": "sesbania root depth",
+        "value": 0.8,
         "unit": "m",
-        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
        }
       ],
       "metrics": {
-       "cover": 0.5,
-       "legume_share": 0.0,
-       "root_depth_m": 1.0,
-       "cover_crop": false
+       "cover": 1.0,
+       "legume_share": 0.5,
+       "root_depth_m": 0.78,
+       "cover_crop": true
       }
      },
      "erosion": {
-      "score": 66.2,
-      "summary": "8 mostly bare month(s) on 2° slope",
+      "score": 100.0,
+      "summary": "0 mostly bare month(s) on 2° slope",
       "evidence": [
        {
         "claim": "Average slope",
@@ -2707,7 +3532,7 @@
        },
        {
         "claim": "Mostly bare months",
-        "value": "Jan, Apr, May, Jun, Sep, Oct, Nov, Dec",
+        "value": "none",
         "unit": "months",
         "dataset": "Farmer's crop calendar + strategy",
         "native_resolution": "field",
@@ -2716,16 +3541,7 @@
        }
       ],
       "metrics": {
-       "bare_months": [
-        "Jan",
-        "Apr",
-        "May",
-        "Jun",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec"
-       ]
+       "bare_months": []
       }
      },
      "pest_cycle": {
@@ -2734,7 +3550,7 @@
       "evidence": [
        {
         "claim": "Plant families in the rotation, in order",
-        "value": "Poaceae → Convolvulaceae",
+        "value": "Poaceae → Fabaceae → Poaceae → Fabaceae",
         "unit": "families",
         "dataset": "Crop traits (FAO EcoCrop / team)",
         "native_resolution": "crop-level",
@@ -2744,18 +3560,27 @@
       ],
       "metrics": {
        "families": [
-        "Convolvulaceae",
+        "Fabaceae",
         "Poaceae"
        ]
       }
      },
      "climate_risk": {
-      "score": 97.5,
-      "summary": "1 crop-month(s) overlap heat, frost, dry or very wet months",
+      "score": 90.0,
+      "summary": "3 crop-month(s) overlap heat, frost, dry or very wet months",
       "evidence": [
        {
         "claim": "Apr reached 35 °C or more in 13 of the last 30 years",
         "value": 13,
+        "unit": "years of 30",
+        "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
+        "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
+        "period": "1996-2025",
+        "confidence": "low"
+       },
+       {
+        "claim": "May reached 35 °C or more in 12 of the last 30 years",
+        "value": 12,
         "unit": "years of 30",
         "dataset": "NASA POWER (Agroclimatology), API v2.10.3",
         "native_resolution": "0.5° x 0.625° (meteorology, MERRA-2); 1° x 1° (solar, CERES)",
@@ -2772,10 +3597,10 @@
         "confidence": "medium"
        },
        {
-        "claim": "sweet potato heat / drought / waterlogging tolerance",
-        "value": "low / high / low",
+        "claim": "sesbania heat / drought / waterlogging tolerance",
+        "value": "medium / medium / high",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "medium"
@@ -2783,31 +3608,43 @@
       ],
       "metrics": {
        "overlaps": [
-        "rice: heat in Apr"
+        "rice: heat in Apr",
+        "sesbania: heat in Apr",
+        "sesbania: heat in May"
        ]
       }
      },
      "income": {
-      "score": 80.0,
-      "summary": "1.6 sellable or edible harvest(s) per year",
+      "score": 73.6,
+      "summary": "About 2986 USD/ha a year before costs (2.0 harvests)",
       "evidence": [
        {
-        "claim": "Harvests per year that can be sold or eaten",
-        "value": 1.6,
-        "unit": "harvest-equivalents",
-        "dataset": "Strategy calendar (no market info given)",
-        "native_resolution": "field",
+        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
+        "value": 2986,
+        "unit": "USD/ha/year",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
         "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice in the Philippines: about 4.1 t/ha at 362 USD/t",
+        "value": 1493,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
         "confidence": "low"
        }
       ],
       "metrics": {
-       "harvests_per_year": 2.0
+       "harvests_per_year": 2.0,
+       "gross_usd_ha": 2986
       }
      },
      "labor": {
-      "score": 49.6,
-      "summary": "Hand work 6 points/year (small tractor)",
+      "score": 32.8,
+      "summary": "Hand work 8 points/year (small tractor)",
       "evidence": [
        {
         "claim": "rice hand labor need",
@@ -2819,10 +3656,10 @@
         "confidence": "low"
        },
        {
-        "claim": "sweet potato hand labor need",
-        "value": "high",
+        "claim": "sesbania hand labor need",
+        "value": "low",
         "unit": "",
-        "dataset": "FAO-56 Table 22 (Sweet Potato) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category)",
+        "dataset": "FAO-56 Table 22 analog (Green Gram and Cowpeas) | FAO EcoCrop rainfall ranges | FAO EcoCrop (heat, drainage, category) | PROSEA Sesbania rostrata (green manure for lowland rice, incorporated after 45-60 days)",
         "native_resolution": "crop-level",
         "period": "",
         "confidence": "low"
@@ -2831,25 +3668,33 @@
       "metrics": {}
      }
     },
-    "total": 77.2,
-    "rank": 3,
+    "total": 83.5,
+    "rank": 4,
     "confidence": "high",
-    "why": "Rice is the thirstiest crop in your rotation. Sweet potato needs about 72 mm less water per year beyond rainfall here and has high drought tolerance.",
+    "why": "Your field sits bare from mid-Sep to mid-Jan (about 120 days) and mid-Apr to mid-Jun (about 60 days). Sesbania needs as little as 60 days (FAO EcoCrop) and is a green manure: a legume you grow and then mix into the soil to feed it.",
     "changes": [
-     "Grow sweet potato instead of rice"
+     "Add sesbania from mid-Sep to mid-Jan after rice (also fits: string bean, sunn hemp, peanut)",
+     "Add sesbania from mid-Apr to mid-Jun after rice (also fits: string bean, sunn hemp, mungbean)"
     ],
     "benefits": [
-     "Needs less water beyond rainfall (+6)",
+     "Builds soil: the soil is covered more months; a legume adds nitrogen; a cover crop protects and feeds the soil (+60)",
+     "Less bare soil exposed to rain (+34)",
      "Breaks pest and disease cycles with a different plant family (+60)"
     ],
     "risks": [
-     "Sweet potato needs well-drained soil; clay soil can stay wet after heavy rain"
+     "Heat of 35 °C+ is common while sesbania grows",
+     "Tight timing: sesbania needs 60+ days and the gap is about 60 days",
+     "More exposure to heat, frost, dry spells or flooding (-8)",
+     "More hand work (-17)"
     ],
-    "gaps": [],
+    "gaps": [
+     "FAO harvest statistics don't count cover crops, so we can't confirm that sesbania seed is sold near you",
+     "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
+    ],
     "expert_questions": [
-     "Can the field drain well enough for sweet potato?",
-     "Is there a buyer or local market for sweet potato?",
-     "Where can I get good sweet potato seed?"
+     "Which sesbania varieties handle heat above 35 °C here?",
+     "Where can I get good sesbania seed and the right inoculant (rhizobia) for the legumes?",
+     "Is there an early-maturing sesbania variety (under 50 days)?"
     ]
    },
    {
@@ -3171,21 +4016,31 @@
       }
      },
      "income": {
-      "score": 80.0,
-      "summary": "1.6 sellable or edible harvest(s) per year",
+      "score": 73.6,
+      "summary": "About 2986 USD/ha a year before costs (2.0 harvests)",
       "evidence": [
        {
-        "claim": "Harvests per year that can be sold or eaten",
-        "value": 1.6,
-        "unit": "harvest-equivalents",
-        "dataset": "Strategy calendar (no market info given)",
-        "native_resolution": "field",
+        "claim": "Typical gross value per hectare per year, before costs (national average yield x farm-gate price)",
+        "value": 2986,
+        "unit": "USD/ha/year",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
         "period": "",
+        "confidence": "low"
+       },
+       {
+        "claim": "rice in the Philippines: about 4.1 t/ha at 362 USD/t",
+        "value": 1493,
+        "unit": "USD/ha",
+        "dataset": "FAOSTAT crop production + producer prices",
+        "native_resolution": "national",
+        "period": "2022-2024",
         "confidence": "low"
        }
       ],
       "metrics": {
-       "harvests_per_year": 2.0
+       "harvests_per_year": 2.0,
+       "gross_usd_ha": 2986
       }
      },
      "labor": {
@@ -3205,8 +4060,8 @@
       "metrics": {}
      }
     },
-    "total": 69.5,
-    "rank": 4,
+    "total": 69.1,
+    "rank": 5,
     "confidence": "high",
     "why": "The baseline: what you grow now, scored the same way as the alternatives.",
     "changes": [],
@@ -3218,293 +4073,184 @@
   ],
   "gaps": [
    "Weather comes from a ~55 km NASA POWER grid cell: a regional average, not your field",
-   "Soil values are SoilGrids estimates; a soil test would be more accurate"
+   "Soil values are SoilGrids estimates; a soil test would be more accurate",
+   "FAO harvest statistics don't count cover crops, so we can't confirm that sesbania seed is sold near you",
+   "Crop values are national averages (FAOSTAT yields and farm-gate prices) before costs; your own yields and prices will differ"
+  ],
+  "feature_gaps": [],
+  "fruit_ideas": [
+   {
+    "crop": "pineapple",
+    "scientific_name": "Ananas comosus",
+    "kind": "plant",
+    "suitability": 1.0,
+    "country_area_ha": 68140,
+    "value_usd_ha": 16171,
+    "where": "On bunds, raised beds or the field's edge: it needs well-drained soil, and this field stays wet",
+    "evidence": [
+     {
+      "claim": "pineapple fits this field's temperature in every month, its yearly rain and soil pH",
+      "value": 1.0,
+      "unit": "score 0-1",
+      "dataset": "FAO EcoCrop + NASA POWER + ISRIC SoilGrids",
+      "native_resolution": "crop-level",
+      "period": "",
+      "confidence": "medium"
+     },
+     {
+      "claim": "pineapple harvested in Philippines",
+      "value": 68140,
+      "unit": "ha",
+      "dataset": "FAOSTAT crop production",
+      "native_resolution": "national",
+      "period": "latest 3 years",
+      "confidence": "high"
+     },
+     {
+      "claim": "pineapple: typical gross value per hectare before costs",
+      "value": 16171,
+      "unit": "USD/ha",
+      "dataset": "FAOSTAT crop production + producer prices",
+      "native_resolution": "national",
+      "period": "2022-2024",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "crop": "cacao",
+    "scientific_name": "Theobroma cacao",
+    "kind": "tree",
+    "suitability": 1.0,
+    "country_area_ha": 32744,
+    "value_usd_ha": 709,
+    "where": "On bunds, raised beds or the field's edge: it needs well-drained soil, and this field stays wet",
+    "evidence": [
+     {
+      "claim": "cacao fits this field's temperature in every month, its yearly rain and soil pH",
+      "value": 1.0,
+      "unit": "score 0-1",
+      "dataset": "FAO EcoCrop + NASA POWER + ISRIC SoilGrids",
+      "native_resolution": "crop-level",
+      "period": "",
+      "confidence": "medium"
+     },
+     {
+      "claim": "cacao harvested in Philippines",
+      "value": 32744,
+      "unit": "ha",
+      "dataset": "FAOSTAT crop production",
+      "native_resolution": "national",
+      "period": "latest 3 years",
+      "confidence": "high"
+     },
+     {
+      "claim": "cacao: typical gross value per hectare before costs",
+      "value": 709,
+      "unit": "USD/ha",
+      "dataset": "FAOSTAT crop production + producer prices",
+      "native_resolution": "national",
+      "period": "2022-2024",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "crop": "banana",
+    "scientific_name": "Musa acuminata",
+    "kind": "plant",
+    "suitability": 0.9,
+    "country_area_ha": 447347,
+    "value_usd_ha": 7508,
+    "where": "On bunds, raised beds or the field's edge: it needs well-drained soil, and this field stays wet",
+    "evidence": [
+     {
+      "claim": "banana fits this field's temperature in every month, its yearly rain and soil pH",
+      "value": 0.9,
+      "unit": "score 0-1",
+      "dataset": "FAO EcoCrop + NASA POWER + ISRIC SoilGrids",
+      "native_resolution": "crop-level",
+      "period": "",
+      "confidence": "medium"
+     },
+     {
+      "claim": "banana harvested in Philippines",
+      "value": 447347,
+      "unit": "ha",
+      "dataset": "FAOSTAT crop production",
+      "native_resolution": "national",
+      "period": "latest 3 years",
+      "confidence": "high"
+     },
+     {
+      "claim": "banana: typical gross value per hectare before costs",
+      "value": 7508,
+      "unit": "USD/ha",
+      "dataset": "FAOSTAT crop production + producer prices",
+      "native_resolution": "national",
+      "period": "2022-2024",
+      "confidence": "low"
+     }
+    ]
+   },
+   {
+    "crop": "coconut",
+    "scientific_name": "Cocos nucifera",
+    "kind": "tree",
+    "suitability": 0.85,
+    "country_area_ha": 3667598,
+    "value_usd_ha": 681,
+    "where": "On bunds, raised beds or the field's edge: it needs well-drained soil, and this field stays wet",
+    "evidence": [
+     {
+      "claim": "coconut fits this field's temperature in every month, its yearly rain and soil pH",
+      "value": 0.85,
+      "unit": "score 0-1",
+      "dataset": "FAO EcoCrop + NASA POWER + ISRIC SoilGrids",
+      "native_resolution": "crop-level",
+      "period": "",
+      "confidence": "medium"
+     },
+     {
+      "claim": "coconut harvested in Philippines",
+      "value": 3667598,
+      "unit": "ha",
+      "dataset": "FAOSTAT crop production",
+      "native_resolution": "national",
+      "period": "latest 3 years",
+      "confidence": "high"
+     },
+     {
+      "claim": "coconut: typical gross value per hectare before costs",
+      "value": 681,
+      "unit": "USD/ha",
+      "dataset": "FAOSTAT crop production + producer prices",
+      "native_resolution": "national",
+      "period": "2022-2024",
+      "confidence": "low"
+     }
+    ]
+   }
   ],
   "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
   "reports_tier1": {
-   "en": {
-    "tier": 1,
-    "language": "en",
-    "language_level": "farmer",
-    "question": "",
-    "ai_generated": true,
-    "content": {
-     "title": "Your Crop Rotation Report",
-     "summary": "Your current rice-rice rotation scores 69.5. The fill the bare gap option with added mungbean scores highest at 82.5. It covers your soil better and gives one extra harvest each year. Break the pest cycle comes next at 81.5 and uses much less irrigation. Save water with sweet potato scores 77.2 and also cuts water needs. These ideas support your own judgment and local expertise.",
-     "what_satellites_see": "From space this spot looks like 74% cropland and 25% trees. Your field usually looks bare or newly planted from November to January. The soil where roots drink is driest in September and wettest in February. About 2454 mm of rain falls a year, with as little as 5.1 mm per day in April and up to 9.4 mm per day in January. Heat of 35 °C or more is common in April and May. No frost has occurred in the last 30 years.",
-     "bare_and_risky_seasons": "Your current rotation leaves the field bare for eight months including January, April, May, June, September to December. April and May are hot and dry months that bring heat stress. The field has no frost risk.",
-     "strategies": [
-      {
-       "key": "current",
-       "name": "Your current rotation",
-       "headline": "Rice from January to April followed by rice from June to September",
-       "why": "This is the baseline of what you grow now, scored the same way as the other options.",
-       "benefits": [],
-       "risks": [],
-       "information_gaps": [],
-       "expert_questions": [],
-       "rank": 4,
-       "engine_name": "Your current rotation"
-      },
-      {
-       "key": "fill_bare",
-       "name": "Fill the bare gap",
-       "headline": "Rice from January to April, rice from June to September, plus mungbean from September to January",
-       "why": "Your field sits bare from mid-September to mid-January, about 120 days. Mungbean can grow in as little as 50 days and belongs to the bean family that adds nitrogen to the soil.",
-       "benefits": [
-        "The soil stays covered more months and a bean-family crop adds nitrogen",
-        "Less bare soil is left open to rain",
-        "It breaks pest and disease cycles by using a different plant family",
-        "You get more harvests to sell or eat"
-       ],
-       "risks": [
-        "Mungbean needs well-drained soil; after paddy rice on clay soil the field may stay wet",
-        "More hand work"
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Can the field drain well enough for mungbean?",
-        "Is there a buyer or local market for mungbean?",
-        "Where can I get good mungbean seed and the right inoculant?"
-       ],
-       "rank": 1,
-       "engine_name": "Fill the bare gap"
-      },
-      {
-       "key": "break_pest",
-       "name": "Break the pest cycle",
-       "headline": "Rice from January to April plus mungbean from June to September",
-       "why": "Growing the grass family again and again lets its pests and diseases carry over. Mungbean is from the bean family, so the pests lose their host for a season.",
-       "benefits": [
-        "Needs about 88 mm less irrigation a year than now",
-        "A bean-family crop adds nitrogen to the soil",
-        "It breaks pest and disease cycles by using a different plant family"
-       ],
-       "risks": [
-        "Mungbean needs well-drained soil; clay soil can stay wet after heavy rain"
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Can the field drain well enough for mungbean?",
-        "Is there a buyer or local market for mungbean?",
-        "Where can I get good mungbean seed and the right inoculant?"
-       ],
-       "rank": 2,
-       "engine_name": "Break the pest cycle"
-      },
-      {
-       "key": "save_water",
-       "name": "Save water",
-       "headline": "Rice from January to April plus sweet potato from June to September",
-       "why": "Rice is the thirstiest crop in your rotation. Sweet potato needs about 72 mm less water a year beyond rainfall here and handles drought well.",
-       "benefits": [
-        "Needs about 72 mm less irrigation a year than now",
-        "It breaks pest and disease cycles by using a different plant family"
-       ],
-       "risks": [
-        "Sweet potato needs well-drained soil; clay soil can stay wet after heavy rain"
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Can the field drain well enough for sweet potato?",
-        "Is there a buyer or local market for sweet potato?",
-        "Where can I get good sweet potato seed?"
-       ],
-       "rank": 3,
-       "engine_name": "Save water"
-      }
-     ],
-     "idea_to_discuss": "Talk with a local expert about ways to improve drainage on your clay soil so that bean-family crops or sweet potato can grow without waterlogging.",
-     "glossary": [
-      {
-       "term": "evapotranspiration",
-       "meaning": "The water that leaves the field through plant leaves and from the soil surface."
-      },
-      {
-       "term": "NDVI",
-       "meaning": "A measure from satellites that shows how green and healthy the plants look from space."
-      },
-      {
-       "term": "soil moisture anomaly",
-       "meaning": "How much wetter or drier the soil is compared to its usual level."
-      },
-      {
-       "term": "frost risk",
-       "meaning": "The chance that temperatures drop to 0 °C or below and harm the crop."
-      }
-     ],
-     "datasets_line": "This report uses ESA WorldCover land cover, NASA MODIS vegetation greenness, NASA SMAP soil moisture, NASA POWER weather, NASA SRTM elevation, ISRIC SoilGrids soil maps, NASA/GFZ GRACE water storage, FAO crop water needs, FAO irrigation manual and FAO EcoCrop crop ranges.",
-     "disclaimer": "SowSmart supports your own judgment and local agricultural expertise; it does not replace them. Check any change with a local expert before you plant.",
-     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
-    },
-    "checks": {
-     "numbers_ok": true,
-     "retried": false,
-     "unknown_numbers": [],
-     "removed_items": 0
-    },
-    "meta": {
-     "model": "grok-4.20-0309-non-reasoning",
-     "calls": 1,
-     "prompt_version": "2026-11-14.5",
-     "input_tokens": 3296,
-     "cached_tokens": 128,
-     "output_tokens": 1293,
-     "reasoning_tokens": 0,
-     "seconds": 8.48,
-     "cost_usd": 0.007218
-    },
-    "cached": false
-   },
-   "tl": {
-    "tier": 1,
-    "language": "tl",
-    "language_level": "farmer",
-    "question": "",
-    "ai_generated": true,
-    "content": {
-     "title": "Iyong Ulat sa Pag-ikot ng Pananim",
-     "summary": "Ang mungbean na idinagdag sa iyong kasalukuyang pag-ikot ay nakakuha ng pinakamataas na puntos na 82.5. Ito ay nagbibigay ng mas maraming panahon na may takip sa lupa at dagdag na ani. Ang pagpapalit ng isang rice sa mungbean ay sumusunod sa ranggo na 81.5 dahil ito ay nakakatipid ng tubig at nakakabasag ng peste. Ang pagpapalit naman sa sweet potato ay nasa ranggo 3 na may 77.2 dahil nakakatipid ito ng tubig. Ang iyong kasalukuyang pag-ikot ay nasa ranggo 4 na may kabuuang puntos na 69.5. Tandaan na ang SowSmart ay sumusuporta lamang sa iyong sariling pagpapasya at lokal na kaalaman.",
-     "what_satellites_see": "Mula sa kalawakan, ang lugar na ito ay 74 porsiyento na taniman at 25 porsiyento na puno. Karaniwang hubad o bagong tanim ang iyong bukid mula Nobyembre hanggang Enero. Ang lupa ay pinakamatuyo sa Setyembre at pinakamabasa sa Pebrero. May 2454 mm na ulan bawat taon, na may init na 35 °C o higit pa sa Abril hanggang Mayo.",
-     "bare_and_risky_seasons": "Sa iyong kasalukuyang pag-ikot, ang bukid ay hubad sa Enero, Abril, Mayo, Hunyo, Setyembre, Oktubre, Nobyembre at Disyembre. Ang buwan na mainit ay Abril at Mayo. Walang panganib sa lamig sa nakaraang 30 taon.",
-     "strategies": [
-      {
-       "key": "current",
-       "name": "Iyong kasalukuyang pag-ikot",
-       "headline": "Rice mula Enero hanggang Abril kasama rice mula Hunyo hanggang Setyembre",
-       "why": "Ito ang iyong ginagawa ngayon. Ito ay nagsisilbing batayan upang maihambing ang iba pang mga pagpipilian.",
-       "benefits": [],
-       "risks": [],
-       "information_gaps": [],
-       "expert_questions": [],
-       "rank": 4,
-       "engine_name": "Your current rotation"
-      },
-      {
-       "key": "fill_bare",
-       "name": "Punuan ang hubad na bahagi",
-       "headline": "Rice mula Enero hanggang Abril kasama rice mula Hunyo hanggang Setyembre kasama mungbean mula Setyembre hanggang Enero",
-       "why": "Ang iyong bukid ay hubad mula kalagitnaan ng Setyembre hanggang kalagitnaan ng Enero. Ang mungbean ay mabilis lumaki at mula sa pamilya ng buto na nagdaragdag ng nitrogen sa lupa.",
-       "benefits": [
-        "Mas maraming buwan na may takip sa lupa at nagdaragdag ng nitrogen mula sa mungbean",
-        "Mas kaunti ang hubad na lupa na nalalantad sa ulan",
-        "Nakakabasag ng peste at sakit dahil sa ibang uri ng halaman",
-        "Mas maraming ani na maibebenta o makakain"
-       ],
-       "risks": [
-        "Ang mungbean ay nangangailangan ng lupa na mabilis maubos ang tubig. Pagkatapos ng basang palayan sa luwad na lupa ay maaaring manatiling basa ang bukid.",
-        "Mas maraming gawaing kamay"
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Mabilis bang maubos ang tubig sa bukid para sa mungbean?",
-        "May bumibili ba o lokal na pamilihan para sa mungbean?",
-        "Saan makakakuha ng magandang binhi ng mungbean at tamang inoculant na rhizobia?"
-       ],
-       "rank": 1,
-       "engine_name": "Fill the bare gap"
-      },
-      {
-       "key": "break_pest",
-       "name": "Basagin ang siklo ng peste",
-       "headline": "Rice mula Enero hanggang Abril kasama mungbean mula Hunyo hanggang Setyembre",
-       "why": "Ang paulit-ulit na pagtatanim ng pamilya ng damo na kasama ang palay ay nagpapahintulot sa peste at sakit na manatili. Ang mungbean ay mula sa pamilya ng buto kaya mawawalan sila ng tirahan sa isang panahon.",
-       "benefits": [
-        "Nangangailangan ng mas kaunting tubig bukod sa ulan",
-        "Nagdaragdag ng nitrogen sa lupa mula sa mungbean",
-        "Nakakabasag ng peste at sakit dahil sa ibang uri ng halaman"
-       ],
-       "risks": [
-        "Ang mungbean ay nangangailangan ng lupa na mabilis maubos ang tubig. Ang luwad na lupa ay maaaring manatiling basa pagkatapos ng malakas na ulan."
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Mabilis bang maubos ang tubig sa bukid para sa mungbean?",
-        "May bumibili ba o lokal na pamilihan para sa mungbean?",
-        "Saan makakakuha ng magandang binhi ng mungbean at tamang inoculant na rhizobia?"
-       ],
-       "rank": 2,
-       "engine_name": "Break the pest cycle"
-      },
-      {
-       "key": "save_water",
-       "name": "Makipagtipid sa tubig",
-       "headline": "Rice mula Enero hanggang Abril kasama kamote mula Hunyo hanggang Setyembre",
-       "why": "Ang palay ay ang pinaka-uhaw na pananim sa iyong pag-ikot. Ang kamote ay nangangailangan ng mas kaunting tubig at matatag sa tagtuyot.",
-       "benefits": [
-        "Nangangailangan ng mas kaunting tubig bukod sa ulan",
-        "Nakakabasag ng peste at sakit dahil sa ibang uri ng halaman"
-       ],
-       "risks": [
-        "Ang kamote ay nangangailangan ng lupa na mabilis maubos ang tubig. Ang luwad na lupa ay maaaring manatiling basa pagkatapos ng malakas na ulan."
-       ],
-       "information_gaps": [],
-       "expert_questions": [
-        "Mabilis bang maubos ang tubig sa bukid para sa kamote?",
-        "May bumibili ba o lokal na pamilihan para sa kamote?",
-        "Saan makakakuha ng magandang binhi ng kamote?"
-       ],
-       "rank": 3,
-       "engine_name": "Save water"
-      }
-     ],
-     "idea_to_discuss": "Tanungin ang isang lokal na dalubhasa tungkol sa pagdaragdag ng isa pang pananim na mabilis lumaki upang maprotektahan ang lupa sa mga buwan na madalas itong hubad.",
-     "glossary": [
-      {
-       "term": "evapotranspiration",
-       "meaning": "Ang dami ng tubig na nawawala sa lupa dahil sa init at sa pag-inom ng halaman."
-      },
-      {
-       "term": "NDVI",
-       "meaning": "Isang paraan upang sukatin mula sa kalawakan kung gaano kalusog at berde ang mga halaman."
-      },
-      {
-       "term": "soil moisture anomaly",
-       "meaning": "Kung ang basa o tuyo ng lupa ay naiiba sa karaniwan sa nakaraang panahon."
-      },
-      {
-       "term": "frost risk",
-       "meaning": "Ang posibilidad na magkaroon ng lamig na maaaring makasira sa mga halaman."
-      }
-     ],
-     "datasets_line": "Ang pangunahing datos ay mula sa ESA WorldCover land cover, NASA MODIS vegetation greenness, NASA SMAP soil moisture, NASA POWER weather, NASA SRTM elevation, ISRIC SoilGrids soil maps, NASA/GFZ GRACE water storage, FAO crop water needs, FAO irrigation manual at FAO EcoCrop crop ranges.",
-     "disclaimer": "Sumusuporta ang SowSmart sa iyong sariling paghatol at lokal na kaalaman sa agrikultura; hindi nito pinapalitan ang mga iyon. Suriin ang anumang pagbabago sa isang lokal na dalubhasa bago magtanim.",
-     "idea_label": "AI-suggested idea to discuss with your local expert (not scored by SowSmart)"
-    },
-    "checks": {
-     "numbers_ok": true,
-     "retried": false,
-     "unknown_numbers": [],
-     "removed_items": 0
-    },
-    "meta": {
-     "model": "grok-4.20-0309-non-reasoning",
-     "calls": 1,
-     "prompt_version": "2026-11-14.5",
-     "input_tokens": 3331,
-     "cached_tokens": 128,
-     "output_tokens": 1877,
-     "reasoning_tokens": 0,
-     "seconds": 17.11,
-     "cost_usd": 0.008722
-    },
-    "cached": false
-   }
+   "en": null,
+   "tl": null
   },
   "report_status": {
    "en": {
-    "status": "ok",
+    "status": "skipped",
     "message": ""
    },
    "tl": {
-    "status": "ok",
+    "status": "skipped",
     "message": ""
    }
   },
   "timings_ms": {
-   "data": 577,
-   "engine": 2413,
-   "reports": 17152
+   "data": 0,
+   "engine": 65,
+   "reports": 0
   }
  }
 }

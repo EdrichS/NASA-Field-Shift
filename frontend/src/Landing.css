@@ -103,6 +103,67 @@
   box-sizing: border-box;
 }
 
+/* Guest plots kept on this device: one index card each, actions as plain links. */
+.my-plots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.my-plots h2 {
+  font-family: var(--font-body);
+}
+
+.plot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plot-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.85rem 0.15rem;
+}
+
+.plot-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.plot-row .name-edit {
+  margin-bottom: 0.2rem;
+}
+
+.plot-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.plot-row .name-edit + .plot-meta {
+  padding-bottom: 0.55rem;
+}
+
+.plot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+}
+
+.plot-actions .link-button {
+  min-height: 2.75rem;
+  font-size: 0.95rem;
+}
+
 .landing .demo-farms {
   margin-top: 0.2rem;
 }

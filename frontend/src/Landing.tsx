@@ -1,4 +1,7 @@
+import { useRef, useState } from 'react'
 import type { ShowcaseFarm } from './api'
+import { NameInput } from './PlotName'
+import { bestMatch, type Plot } from './plots'
 import './Landing.css'
 
 type LandingProps = {
@@ -9,12 +12,17 @@ type LandingProps = {
   onLogin: () => void
   onSignUp: () => void
   onGuest: () => void
+  /** Guest analyses kept on this device, newest first. */
+  plots: Plot[]
+  onOpenPlot: (id: string) => void
+  onRenamePlot: (id: string, name: string) => void
+  onDeletePlot: (id: string) => void
 }
 
 /** The mark under the wordmark: a year of 12 months, green when growing, outlined when bare. */
 const YEAR_MARK = [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1]
 
-export default function Landing({ farms, live, onDemo, onLogin, onSignUp, onGuest }: LandingProps) {
+export default function Landing({ farms, live, onDemo, onLogin, onSignUp, onGuest, plots, onOpenPlot, onRenamePlot, onDeletePlot }: LandingProps) {
   return (
     <main className="landing" data-testid="landing">
       <div className="landing-cluster">
@@ -56,6 +64,25 @@ export default function Landing({ farms, live, onDemo, onLogin, onSignUp, onGues
           </div>
         ) : null}
 
+        {plots.length ? (
+          <section className="my-plots" aria-labelledby="plots-h">
+            <h2 id="plots-h" className="cap">
+              Your plots on this device
+            </h2>
+            <ul className="plot-list">
+              {plots.map((plot) => (
+                <PlotRow
+                  key={plot.id}
+                  plot={plot}
+                  onOpen={() => onOpenPlot(plot.id)}
+                  onRename={(name) => onRenamePlot(plot.id, name)}
+                  onDelete={() => onDeletePlot(plot.id)}
+                />
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         {farms.length ? (
           <section className="demo-farms" aria-labelledby="demo-h">
             <h2 id="demo-h">{live ? 'Or open a demo farm' : 'Open a demo farm'}</h2>
@@ -74,5 +101,51 @@ export default function Landing({ farms, live, onDemo, onLogin, onSignUp, onGues
         <p className="landing-note">SowSmart supports your judgment and local expertise. It never replaces them.</p>
       </div>
     </main>
+  )
+}
+
+function PlotRow({ plot, onOpen, onRename, onDelete }: { plot: Plot; onOpen: () => void; onRename: (name: string) => void; onDelete: () => void }) {
+  const [renaming, setRenaming] = useState(false)
+  const renameButton = useRef<HTMLButtonElement>(null)
+  const top = bestMatch(plot)
+  const date = new Date(plot.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
+  function remove() {
+    if (window.confirm(`Delete "${plot.name}"? This only removes it from this device.`)) onDelete()
+  }
+
+  return (
+    <li className="index-card plot-row">
+      {renaming ? (
+        <NameInput
+          value={plot.name}
+          returnFocus={renameButton}
+          onSave={(name) => {
+            setRenaming(false)
+            onRename(name)
+          }}
+          onCancel={() => setRenaming(false)}
+        />
+      ) : (
+        <h3>{plot.name}</h3>
+      )}
+      <p className="plot-meta">
+        Analyzed {date}
+        {top ? ` · Best match: ${top}` : ''}
+      </p>
+      {renaming ? null : (
+        <div className="plot-actions">
+          <button type="button" className="link-button" onClick={onOpen} aria-label={`Open ${plot.name}`}>
+            Open
+          </button>
+          <button ref={renameButton} type="button" className="link-button" onClick={() => setRenaming(true)} aria-label={`Rename ${plot.name}`}>
+            Rename
+          </button>
+          <button type="button" className="link-button danger" onClick={remove} aria-label={`Delete ${plot.name}`}>
+            Delete
+          </button>
+        </div>
+      )}
+    </li>
   )
 }

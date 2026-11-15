@@ -79,11 +79,11 @@ WET = [5.0] * 12
 # --- the Philippines showcase, end to end --------------------------------------------------------
 
 
-def test_showcase_gives_current_plus_three_alternatives():
+def test_showcase_gives_current_plus_four_alternatives():
     result = run_engine(PH, PH_ANSWERS, CATALOG)
     keys = [s.key for s in result.strategies]
-    assert sorted(keys) == ["break_pest", "current", "fill_bare", "save_water"]
-    assert [s.rank for s in result.strategies] == [1, 2, 3, 4]
+    assert sorted(keys) == ["add_income", "break_pest", "current", "fill_bare", "save_water"]
+    assert [s.rank for s in result.strategies] == [1, 2, 3, 4, 5]
     assert result.disclaimer == DISCLAIMER
 
 

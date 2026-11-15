@@ -73,7 +73,7 @@ export type CalendarMonth = {
 export type Component = { score: number; summary: string; evidence: Evidence[] }
 
 export type Strategy = {
-  key: 'current' | 'fill_bare' | 'break_pest' | 'save_water' | string
+  key: 'current' | 'fill_bare' | 'break_pest' | 'save_water' | 'add_income' | string
   name: string
   title: string
   rotation: { crop: string; plant_month: number; harvest_month: number; new: boolean }[][]
@@ -143,6 +143,18 @@ export type ReportStatus = {
   message: string
 }
 
+/** A fruit tree or plant for bunds or field edges: a long-term idea, not scored. */
+export type FruitIdea = {
+  crop: string
+  scientific_name: string
+  kind: 'tree' | 'plant'
+  suitability: number
+  country_area_ha: number | null
+  value_usd_ha: number | null
+  where: string
+  evidence: Evidence[]
+}
+
 export type AnalyzeResponse = {
   analysis_id: string | null
   field: FieldInfo
@@ -150,12 +162,13 @@ export type AnalyzeResponse = {
   prefill: Card[]
   features: unknown
   static: Record<string, unknown>
-  profile: { mode: string; water: string; equipment: string; goals: string[]; wont_grow: string[]; rotation_source: string }
+  profile: { mode: string; water: string; equipment: string; goals: string[]; wont_grow: string[]; rotation_source: string; country?: string | null }
   weights: Record<string, number>
   bare_months: { satellite: number[]; current_rotation?: number[]; [k: string]: unknown }
   stress_calendar: StressMonth[]
   strategies: Strategy[]
   gaps: string[]
+  fruit_ideas?: FruitIdea[]
   disclaimer: string
   reports_tier1: Record<string, AIReport | null>
   report_status: Record<string, ReportStatus>

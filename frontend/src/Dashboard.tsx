@@ -38,6 +38,7 @@ const STRATEGY_NAMES: Record<string, string> = {
   fill_bare: 'Fill the bare gap',
   break_pest: 'Break the pest cycle',
   save_water: 'Save water',
+  add_income: 'Add a cash crop',
 }
 
 /** "Fires nearby (NASA FIRMS)" -> ["Fires nearby", "NASA FIRMS"], for a name line and a source line. */
@@ -168,11 +169,16 @@ export default function Dashboard(props: DashboardProps) {
                           ? `${f.analyzed_at ? `Analyzed ${new Date(f.analyzed_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} · ` : ''}Best match: ${STRATEGY_NAMES[f.top_strategy] ?? f.top_strategy}`
                           : 'Not analyzed yet'}
                       </p>
-                      {f.analysis_id ? (
-                        <button type="button" className="link-button" onClick={() => onOpenPlan(f.analysis_id!)}>
-                          Open plan <span aria-hidden="true">›</span>
+                      <div className="field-actions">
+                        {f.analysis_id ? (
+                          <button type="button" className="link-button" onClick={() => onOpenPlan(f.analysis_id!)}>
+                            Open plan <span aria-hidden="true">›</span>
+                          </button>
+                        ) : null}
+                        <button type="button" className="link-button is-quiet" onClick={() => setTab('fields')} aria-label={`Rename or delete ${f.name}`}>
+                          Rename / delete
                         </button>
-                      ) : null}
+                      </div>
                     </li>
                   ))}
                 </ul>

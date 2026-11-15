@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas import LANGUAGES
 
-PROMPT_VERSION = "2026-11-14.5"
+PROMPT_VERSION = "2026-11-15.1"
 TIER1_MAX_OUTPUT_TOKENS = 2500
 TIER2_MAX_OUTPUT_TOKENS = 2000
 MAX_EVIDENCE = 40
@@ -37,7 +37,7 @@ class _Strict(BaseModel):
 
 
 class StrategyText(_Strict):
-    key: Literal["current", "fill_bare", "break_pest", "save_water"]
+    key: Literal["current", "fill_bare", "break_pest", "save_water", "add_income"]
     name: str = Field(max_length=60, description="The strategy's name, in the report language")
     headline: str = Field(max_length=160, description="One plain line: what changes")
     why: str = Field(max_length=600, description="Why the engine suggested it")
@@ -57,7 +57,7 @@ class Tier1Report(_Strict):
     summary: str = Field(max_length=900, description="3 to 5 short sentences")
     what_satellites_see: str = Field(max_length=600, description="2 or 3 short sentences")
     bare_and_risky_seasons: str = Field(max_length=600, description="2 or 3 short sentences")
-    strategies: list[StrategyText] = Field(max_length=4)
+    strategies: list[StrategyText] = Field(max_length=5)
     idea_to_discuss: str = Field(max_length=400)
     glossary: list[GlossaryTerm] = Field(max_length=6)
     datasets_line: str = Field(max_length=400)
@@ -122,7 +122,8 @@ Rules:{_SHARED_RULES.format(glossary=", ".join(GLOSSARY))}- {_language_rules(lan
   farmer's current rotation. Cover all of the strategy's benefits, risks, gaps and questions
   (keep every risk), describing changes in words ("needs much less water"), not score points.
 - idea_to_discuss: one practical idea to talk over with a local expert that the engine did not
-  score. Keep it general, with no numbers.
+  score. Keep it general, with no numbers. If input.fruit_trees_for_field_edges is not empty,
+  you may build it on one of those trees (they are long-term ideas, not part of any strategy).
 - glossary: only terms you actually used.
 - datasets_line: one short sentence naming the main datasets, using the names in input.datasets.
 - disclaimer: input.disclaimer, translated faithfully.
@@ -197,7 +198,8 @@ _COMPARED = (("water", "deficit_mm", "irrigation_need_mm_per_year"),
              ("soil", "root_depth_m", "average_root_depth_m"),
              ("erosion", "bare_months", "mostly_bare_months"),
              ("pest_cycle", "families", "plant_families"),
-             ("income", "harvests_per_year", "harvests_per_year"))
+             ("income", "harvests_per_year", "harvests_per_year"),
+             ("income", "gross_usd_ha", "gross_value_usd_per_ha_per_year_before_costs"))
 
 
 def _metric(s: dict[str, Any], comp: str, metric: str) -> float | None:
@@ -245,6 +247,8 @@ def compact_input(analysis: dict[str, Any]) -> dict[str, Any]:
         "what_satellites_see": [c["statement"] for c in analysis.get("prefill", [])],
         "stress_months": _stress_months(analysis),
         "strategies": [_strategy(s, current) for s in strategies],
+        "fruit_trees_for_field_edges": [
+            {"crop": f["crop"], "where": f["where"]} for f in analysis.get("fruit_ideas", [])],
         "information_gaps": analysis.get("gaps", []),
         "datasets": _short_names(_datasets(analysis)),
         "disclaimer": analysis.get("disclaimer", ""),

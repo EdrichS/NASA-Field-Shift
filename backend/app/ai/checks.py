@@ -1,7 +1,7 @@
 """The "no new numbers" check: every number in an AI report must come from its input.
 
 Allowed: any number found in the input (as a value or inside a string), its usual roundings, the
-percent form of shares (0.35 -> 35), and a few small counts (0-4 strategies, 12 months).
+percent form of shares (0.35 -> 35), and a few small counts (0-5 strategies, 12 months).
 Decimal commas and thousands separators are both accepted ("74,8", "2,721").
 """
 
@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-FREE = {0.0, 1.0, 2.0, 3.0, 4.0, 12.0}
+FREE = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 12.0}
 _IN_REPORT = re.compile(r"(?<![\w.,])\d+(?:[.,]\d+)*")  # skips digits inside words (MOD13Q1)
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 

@@ -8,7 +8,7 @@ export const COMPONENT_LABELS: Record<string, { label: string; plain: string }> 
   erosion: { label: 'Erosion protection', plain: 'Slope × months the soil is bare' },
   pest_cycle: { label: 'Pest-cycle break', plain: 'Changing plant family so pests lose their host' },
   climate_risk: { label: 'Weather risk', plain: 'Frost, heat, dry spells or very wet months during the crops' },
-  income: { label: 'Income fit', plain: 'Harvests to sell or eat, and fit with your market' },
+  income: { label: 'Income fit', plain: 'Harvests to sell or eat, valued at national yields and farm-gate prices where known' },
   labor: { label: 'Labor fit', plain: 'Work needed compared with your equipment' },
 }
 
@@ -35,6 +35,7 @@ export const BASE_GLOSSARY: { term: string; meaning: string }[] = [
   { term: 'Frost risk', meaning: 'The chance that nights get cold enough (0 °C or below) to damage crops.' },
   { term: 'Legume', meaning: 'Plants of the bean family (beans, peas, mungbean, cowpea) that add nitrogen to the soil.' },
   { term: 'Cover crop', meaning: 'A crop grown to protect and feed the soil between main crops, not mainly to harvest.' },
+  { term: 'Green manure', meaning: 'A cover crop (often a legume such as sesbania) that is mixed into the soil while green, to feed the next crop.' },
 ]
 
 export const STRESS_LABELS: Record<string, { label: string; icon: string; plain: string }> = {
@@ -57,8 +58,14 @@ const KNOWN_CROPS: Record<string, string> = {
   peanut: '#8a6440',
   sunflower: '#a35f7a',
   canola: '#b5651d',
+  sesbania: '#6e7d2c',
+  'string bean': '#2f6f8f',
+  okra: '#a0526e',
+  eggplant: '#5c4a86',
+  'chili pepper': '#b0453a',
+  watermelon: '#c25668',
 }
-const PALETTE = ['#4d7a55', '#c99548', '#5674a0', '#9b5b4a', '#7a6aa0', '#8f8a3e', '#3f7f78', '#8a6440']
+const PALETTE = ['#4d7a55', '#c99548', '#5674a0', '#9b5b4a', '#7a6aa0', '#8f8a3e', '#3f7f78', '#8a6440', '#6e7d2c', '#2f6f8f', '#a0526e', '#5c4a86']
 
 /** One distinct color per crop, in the order the crops are listed. */
 export function cropColors(crops: string[]): Record<string, string> {

@@ -1107,3 +1107,53 @@
 .ys-legend b {
   font-size: 0.7rem;
 }
+
+/* Plot names: the name with a Rename link (Results header) and the rename box (also on the
+   start screen's plot list). */
+.plot-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.9rem;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.plot-name strong {
+  overflow-wrap: anywhere;
+}
+
+.plot-name .link-button {
+  min-height: 2.75rem;
+  font-size: 0.9rem;
+}
+
+.name-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.name-edit input {
+  width: 100%;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem; /* 16px or more, so phones don't zoom in */
+}
+
+.results-head .name-edit {
+  margin-top: 0.4rem;
+}
+
+.name-edit input:focus {
+  outline: 3px solid var(--sun);
+  outline-offset: 1px;
+}

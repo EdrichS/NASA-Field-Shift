@@ -130,7 +130,7 @@ def test_scrub_removes_only_offending_items_and_sentences():
 def test_compact_input_is_small_and_has_no_location(analysis):
     data = prompts.compact_input(analysis)
     text = prompts.as_user_message(data)
-    assert len(text) < 12_000  # about 3k tokens at most (budget rule: keep prompts small)
+    assert len(text) < 16_000  # about 4k tokens for 5 strategies (budget: keep prompts small)
     assert "120.9" not in text and "15.6" not in text and "coordinates" not in text
     assert [s["key"] for s in data["strategies"]][0] == "current"
     assert any(d.startswith("NASA MODIS") for d in data["datasets"])
@@ -146,7 +146,7 @@ def test_strategies_carry_precomputed_changes_versus_now(analysis):
     data = prompts.compact_input(analysis)
     by_key = {s["key"]: s for s in data["strategies"]}
     assert by_key["current"]["vs_current"] == {}
-    water = by_key["break_pest"]["vs_current"]["irrigation_need_mm_per_year"]
+    water = by_key["save_water"]["vs_current"]["irrigation_need_mm_per_year"]
     assert water["change"] == water["with_this"] - water["now"] < 0
     assert all(set(v) == {"now", "with_this", "change"}
                for s in data["strategies"] for v in s["vs_current"].values())
@@ -327,7 +327,7 @@ def test_ai_failure_still_returns_the_comparison(api, monkeypatch):
     monkeypatch.setattr(routes, "get_llm", lambda: FakeGrok(
         lambda r: httpx.Response(401, text="no")).client())
     r = api.post("/analyze", json={"geometry": POINT})
-    assert r.status_code == 200 and len(r.json()["strategies"]) == 4
+    assert r.status_code == 200 and len(r.json()["strategies"]) >= 4
     assert r.json()["reports_tier1"] == {"en": None}
     assert r.json()["report_status"]["en"]["status"] == "failed"
 

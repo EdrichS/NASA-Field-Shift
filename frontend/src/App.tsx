@@ -3,6 +3,7 @@ import {
   ApiError,
   analyze,
   getMe,
+  renameField,
   saveAnalysis,
   savedAnalysis,
   serverUp,
@@ -17,6 +18,7 @@ import {
 } from './api'
 import Analyzing from './Analyzing'
 import Landing from './Landing'
+import { addPlot, defaultPlotName, getPlot, listPlots, removePlot, renamePlot, type Plot } from './plots'
 import { useSession } from './session'
 import type { SetupResult } from './SignUp'
 
@@ -29,7 +31,17 @@ type Screen =
   | { name: 'landing' }
   | { name: 'setup'; guest: boolean }
   | { name: 'analyzing'; setup: SetupResult }
-  | { name: 'results'; analysis: AnalyzeResponse; demo?: ShowcaseFarm; offline?: boolean; request?: AnalyzeRequest; fieldName?: string }
+  | {
+      name: 'results'
+      analysis: AnalyzeResponse
+      demo?: ShowcaseFarm
+      offline?: boolean
+      request?: AnalyzeRequest
+      fieldName?: string
+      /** The saved field on the server (signed in) or the plot on this device (guest). */
+      fieldId?: string
+      plotId?: string
+    }
   | { name: 'dashboard' }
 
 // A guest who taps Save goes to Auth0 and comes back; the results wait in this tab meanwhile.
@@ -69,6 +81,7 @@ function Screens() {
   const [me, setMe] = useState<Me | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [live, setLive] = useState<boolean | null>(null)
+  const [plots, setPlots] = useState<Plot[]>(listPlots)
   const started = useRef(false)
 
   useEffect(() => {
@@ -163,9 +176,18 @@ function Screens() {
     setError(undefined)
     setSavedId(null)
     const request = requestOf(setup)
-    const fieldName = setup.detailed?.fields[0]?.name?.trim() || `Field ${(me?.fields.length ?? 0) + 1}`
+    const typedName = setup.detailed?.fields[0]?.name?.trim()
+    const fieldName = typedName || `Field ${(me?.fields.length ?? 0) + 1}`
     try {
       const analysis = await analyze(request)
+      if (!session.signedIn) {
+        // Guests: kept on this device, to reopen, rename or delete from the start screen.
+        const name = typedName || defaultPlotName(analysis)
+        const plot = addPlot(request, analysis, name)
+        if (plot) setPlots(listPlots())
+        setScreen({ name: 'results', analysis, request, fieldName: name, plotId: plot?.id })
+        return
+      }
       setScreen({ name: 'results', analysis, request, fieldName })
       const token = await session.token()
       if (token) {
@@ -174,7 +196,7 @@ function Screens() {
           await updateMe(token, { display_name: setup.displayName || me?.display_name || null, language: setup.reportLanguages[0], units: setup.units })
           const saved = await saveAnalysis(token, request, analysis, fieldName, inputMode(request))
           setSavedId(saved.analysis_id)
-          setScreen({ name: 'results', analysis: { ...analysis, analysis_id: saved.analysis_id }, request, fieldName })
+          setScreen({ name: 'results', analysis: { ...analysis, analysis_id: saved.analysis_id }, request, fieldName, fieldId: saved.field_id })
           void refreshMe()
         } catch (e) {
           setError(e instanceof ApiError ? `Your results are here, but saving failed: ${e.message}` : 'Saving failed.')
@@ -201,6 +223,7 @@ function Screens() {
     try {
       const saved = await saveAnalysis(token, request, analysis, fieldName, inputMode(request))
       setSavedId(saved.analysis_id)
+      setScreen((s) => (s.name === 'results' && s.analysis === analysis ? { ...s, fieldId: saved.field_id } : s))
       setNotice(`Saved "${fieldName}" to your account.`)
       void refreshMe()
     } catch (e) {
@@ -213,10 +236,41 @@ function Screens() {
     if (!token) return
     try {
       const analysis = await savedAnalysis(token, id)
+      const field = me?.fields.find((f) => f.analysis_id === id)
       setSavedId(id)
-      setScreen({ name: 'results', analysis })
+      setScreen({ name: 'results', analysis, fieldName: field?.name, fieldId: field?.id })
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Could not open this plan.')
+    }
+  }
+
+  function openPlot(id: string) {
+    const plot = getPlot(id)
+    if (!plot) {
+      setPlots(listPlots())
+      setError('This plot is no longer on this device.')
+      return
+    }
+    setError(undefined)
+    setSavedId(null)
+    window.scrollTo(0, 0)
+    setScreen({ name: 'results', analysis: plot.analysis, request: plot.request, fieldName: plot.name, plotId: plot.id })
+  }
+
+  // Renaming on the results screen: the plot on this device, the saved field, and the name used by Save.
+  async function renameResult(name: string) {
+    if (screen.name !== 'results') return
+    const { plotId, fieldId, fieldName: before } = screen
+    setScreen((s) => (s.name === 'results' ? { ...s, fieldName: name } : s))
+    if (plotId) setPlots(renamePlot(plotId, name))
+    const token = fieldId ? await session.token() : null
+    if (!fieldId || !token) return
+    try {
+      await renameField(token, fieldId, name)
+      void refreshMe()
+    } catch (e) {
+      setScreen((s) => (s.name === 'results' && s.fieldName === name ? { ...s, fieldName: before } : s))
+      setError(e instanceof ApiError ? e.message : 'Could not rename this field.')
     }
   }
 
@@ -286,6 +340,9 @@ function Screens() {
           offline={screen.offline}
           title={farm?.name}
           subtitle={farm ? `${farm.place}, ${farm.country}` : undefined}
+          name={farm ? undefined : fieldName}
+          onRename={farm ? undefined : (name) => void renameResult(name)}
+          geometry={request?.geometry ?? farm?.geometry}
           canSave={!farm && !!request}
           saved={!!savedId || !!screen.analysis.analysis_id}
           saveLabel={session.signedIn ? 'Save' : 'Sign up to save'}
@@ -327,6 +384,10 @@ function Screens() {
         onLogin={() => session.login()}
         onSignUp={() => session.login({ signup: true })}
         onGuest={() => setScreen({ name: 'setup', guest: true })}
+        plots={plots}
+        onOpenPlot={openPlot}
+        onRenamePlot={(id, name) => setPlots(renamePlot(id, name))}
+        onDeletePlot={(id) => setPlots(removePlot(id))}
       />
     </>
   )

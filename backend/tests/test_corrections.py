@@ -66,7 +66,8 @@ def test_soil_test_ph_overrides_soilgrids(ph_ff, catalog):
 
 def test_bad_correction_values_are_ignored(ph_ff, catalog):
     result = run(ph_ff, catalog, {"slope": "cliff", "heat": "lots", "bare_months": [13, "x"]})
-    assert len(result["strategies"]) == 4
+    assert [s["title"] for s in result["strategies"]] == \
+        [s["title"] for s in run(ph_ff, catalog, {})["strategies"]]
 
 
 # --- regional crops (FAOSTAT) and no "unknown crop" -------------------------------------------
@@ -83,13 +84,16 @@ def test_blank_crops_never_show_unknown_crop(ph_ff, catalog):
 
 
 def test_suggestions_stay_with_crops_the_country_grows(ph_ff, catalog):
-    from app.engine.regional import local_crops
+    from app.engine.regional import local_crops, tracked_crops
 
     local = local_crops("Philippines")
     assert local and "rice" in local and "pearl millet" not in local and "sorghum" not in local
     result = run_engine(ph_ff, ANSWERS, catalog, country="Philippines").to_dict()
     new = {c["crop"] for s in result["strategies"] for y in s["rotation"] for c in y if c["new"]}
-    assert new and new <= set(local)
+    # cover crops FAOSTAT never records (sunn hemp, sesbania) are the only exception
+    untracked_covers = {n for n, c in catalog.items() if c.is_cover} - tracked_crops()
+    assert new and new - untracked_covers <= set(local)
+    assert "buckwheat" not in new  # a cover crop FAOSTAT records, but not in the Philippines
 
 
 def test_blank_crops_assume_the_countrys_main_crop(ph_ff, catalog):

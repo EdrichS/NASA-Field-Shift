@@ -18,8 +18,8 @@
    "tl"
   ],
   "available": true,
-  "generated_at": "2026-11-15T09:03:13+00:00",
-  "model": "grok-4.20-0309-non-reasoning"
+  "generated_at": "2026-11-15T10:43:01+00:00",
+  "model": null
  },
  {
   "id": "iowa-corn-soybean",
@@ -39,7 +39,7 @@
    "en"
   ],
   "available": true,
-  "generated_at": "2026-11-15T09:03:27+00:00",
-  "model": "grok-4.20-0309-non-reasoning"
+  "generated_at": "2026-11-15T10:43:01+00:00",
+  "model": null
  }
 ]

@@ -5,6 +5,7 @@ explained in the report and challenged by a local expert.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -41,6 +42,11 @@ TOLERANCE = {"low": 0.0, "medium": 0.5, "high": 0.85, None: 0.5}
 LABOR_POINTS = {"low": 1, "medium": 2, "high": 3, None: 2}
 EQUIPMENT_FACTOR = {"hand_tools": 1.0, "animal": 0.9, "small_tractor": 0.7,
                     "full_machinery": 0.4}
+# Income from FAOSTAT values: 100 * (1 - exp(-value / (INCOME_SCALE * main crop's value))), so
+# two harvests of the country's main crop score about 74 and the score keeps rising, ever more
+# slowly, with more or richer harvests (no cliff where extra harvests stop counting).
+INCOME_SCALE = 1.5
+TYPICAL_HARVEST = 0.8  # a crop with no FAOSTAT value counts as 0.8 of the main crop's value
 
 
 @dataclass
@@ -109,8 +115,21 @@ def water_deficit_mm(year: list[Slot], ctx: FieldContext, catalog: dict[str, Cro
     return total
 
 
+@dataclass(frozen=True)
+class Market:
+    """FAOSTAT gross value per hectare by crop in the field's country, and its main crop."""
+    country: str
+    values: dict[str, Any]  # crop -> regional.MarketValue
+    ref_crop: str
+
+    @property
+    def ref_value(self) -> float:
+        return self.values[self.ref_crop].value_usd_ha
+
+
 def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str, CropInfo],
-                   water: str, equipment: str, sellable: set[str]) -> dict[str, ComponentScore]:
+                   water: str, equipment: str, sellable: set[str],
+                   market: Market | None = None) -> dict[str, ComponentScore]:
     rain_f = ctx.ff.features["rain"]
     slots = [s for y in years for s in y]
     n_years = len(years)
@@ -209,8 +228,9 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
     climate_c = ComponentScore(climate_score, f"{len(hits)} crop-month(s) overlap heat, frost, "
                                "dry or very wet months", climate_ev, {"overlaps": hits[:12]})
 
-    # 6. Income: harvests per year that can be sold or eaten
-    value = 0.0
+    # 6. Income: harvests per year that can be sold or eaten, worth their typical value per
+    # hectare where FAOSTAT has a yield and a farm-gate price for the country
+    value, gross = 0.0, 0.0
     for slot in slots:
         c = crops[slot.crop]
         if c.is_cover:
@@ -220,14 +240,38 @@ def score_rotation(years: list[list[Slot]], ctx: FieldContext, catalog: dict[str
         else:
             v = 0.8
         value += v
-    income_score = _clamp(100 * min(1.0, value / n_years / 2))
-    income_ev = [Evidence("Harvests per year that can be sold or eaten",
-                          round(value / n_years, 1), "harvest-equivalents",
-                          "Strategy calendar; farmer's sellable crops" if sellable
-                          else "Strategy calendar (no market info given)", "field", "", "low")]
+        if market and not c.is_cover:
+            known = market.values.get(c.name)
+            worth = known.value_usd_ha if known else TYPICAL_HARVEST * market.ref_value
+            gross += worth * (0.625 if sellable and c.name not in sellable else 1.0)
     harvests = sum(1 for slot in slots if not crops[slot.crop].is_cover) / n_years
-    income_c = ComponentScore(income_score, f"{value / n_years:.1f} sellable or edible harvest(s)"
-                              " per year", income_ev, {"harvests_per_year": round(harvests, 2)})
+    if market:
+        gross /= n_years
+        income_score = _clamp(100 * (1 - math.exp(-gross / (INCOME_SCALE
+                                                             * market.ref_value))))
+        income_ev = [Evidence(
+            "Typical gross value per hectare per year, before costs (national average yield x "
+            "farm-gate price)", round(gross), "USD/ha/year",
+            "FAOSTAT crop production + producer prices", "national", "", "low")]
+        income_ev += [Evidence(
+            f"{name} in {market.country}: about {mv.yield_t_ha:.1f} t/ha at "
+            f"{round(mv.price_usd_t)} USD/t", round(mv.value_usd_ha), "USD/ha",
+            "FAOSTAT crop production + producer prices", "national", mv.price_years, "low")
+            for name, mv in ((n, market.values[n]) for n in crops if n in market.values)]
+        income_c = ComponentScore(income_score, f"About {round(gross)} USD/ha a year before costs"
+                                  f" ({harvests:.1f} harvests)", income_ev,
+                                  {"harvests_per_year": round(harvests, 2),
+                                   "gross_usd_ha": round(gross)})
+    else:
+        income_score = _clamp(100 * min(1.0, value / n_years / 2))
+        income_ev = [Evidence("Harvests per year that can be sold or eaten",
+                              round(value / n_years, 1), "harvest-equivalents",
+                              "Strategy calendar; farmer's sellable crops" if sellable
+                              else "Strategy calendar (no market info given)", "field", "",
+                              "low")]
+        income_c = ComponentScore(income_score, f"{value / n_years:.1f} sellable or edible "
+                                  "harvest(s) per year", income_ev,
+                                  {"harvests_per_year": round(harvests, 2)})
 
     # 7. Labor: hand work per year, eased by machinery
     points = sum(LABOR_POINTS[crops[s.crop].labor_need] for s in slots) / n_years

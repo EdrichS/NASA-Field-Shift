@@ -7,7 +7,7 @@ API    ?= http://localhost:8000
 WEB    ?= http://localhost:5173
 
 .PHONY: regional-crops bundle-demo vapid pages tunnel simulate-storm clear-simulations setup dev-backend dev-frontend check check-setup check-db migrate features smoke \
-	ecocrop validate-data load-crops test-email contracts showcase
+	ecocrop validate-data load-crops test-email contracts showcase showcase-engine perennials
 
 # FAO EcoCrop database, via the OpenCLIM/ecocrop repo, pinned to a fixed commit
 ECOCROP_URL := https://raw.githubusercontent.com/OpenCLIM/ecocrop/ea43ecd418fd1a1ea08d32c7dce64b7fae02dec4/EcoCrop_DB.csv
@@ -88,6 +88,16 @@ contracts:
 showcase:
 	$(if $(XAI_MODEL),XAI_MODEL=$(XAI_MODEL) )$(PY) scripts/precache_showcase.py
 	$(PY) scripts/bundle_demo.py
+
+# Re-run only the engine on the saved showcase features (offline, free; drops the AI reports, so
+# run `make showcase` afterwards for the demo)
+showcase-engine:
+	$(PY) scripts/precache_showcase.py --from-stored --no-ai
+	$(PY) scripts/bundle_demo.py
+
+# Fruit trees for the "beyond the rotation" ideas: EcoCrop ranges -> data/perennials.csv
+perennials: $(ECOCROP_CSV)
+	$(PY) scripts/build_perennials.py
 
 # Browser-push (VAPID) keys -> .env.push (gitignored); safe to re-run
 vapid:

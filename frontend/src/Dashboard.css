@@ -197,6 +197,12 @@
   margin-bottom: -0.5rem;
 }
 
+.plan-card .link-button.is-quiet {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
 /* Fields: one index card per field, actions as plain links, alert choices in ruled rows. */
 .field-card {
   display: flex;

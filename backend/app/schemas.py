@@ -161,6 +161,9 @@ class AnalyzeResponse(BaseModel):
     stress_calendar: list[dict[str, Any]]
     strategies: list[StrategyOut]
     gaps: list[str]
+    fruit_ideas: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Fruit trees and plants for bunds or field edges: long-term ideas, not scored")
     disclaimer: str
     reports_tier1: dict[str, AIReportOut | None] = Field(
         description="One plain-language report per chosen language, or null (see report_status)")

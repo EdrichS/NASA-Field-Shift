@@ -19,7 +19,7 @@ def test_committed_showcase_analysis_is_complete_and_current(farm):
     entry = showcase.stored(farm["id"])
     assert entry is not None, "run `make showcase` to pre-compute this farm"
     analysis = AnalyzeResponse.model_validate(entry["analysis"])
-    assert len(analysis.strategies) == 4
+    assert len(analysis.strategies) >= 4  # current + 3 or 4 alternatives
     assert entry["request_key"] == showcase.request_key(showcase.request_for(farm)), \
         "the farm's answers changed since the last `make showcase`"
     for lang in farm["report_languages"]:
@@ -27,7 +27,7 @@ def test_committed_showcase_analysis_is_complete_and_current(farm):
         assert report is not None and report.checks["numbers_ok"], lang
         assert report.meta["prompt_version"] == PROMPT_VERSION, \
             "the prompt changed since the last `make showcase`"
-        assert len(report.content["strategies"]) == 4
+        assert len(report.content["strategies"]) == len(analysis.strategies)
 
 
 def test_showcase_endpoints_list_and_serve_the_farms():
@@ -35,7 +35,7 @@ def test_showcase_endpoints_list_and_serve_the_farms():
     assert [f["id"] for f in farms] == [f["id"] for f in FARMS]
     assert all(f["available"] and f["generated_at"] for f in farms)
     r = client.get(f"/showcase/{FARMS[0]['id']}")
-    assert r.status_code == 200 and len(r.json()["strategies"]) == 4
+    assert r.status_code == 200 and len(r.json()["strategies"]) == 5
     assert client.get("/showcase/nowhere").status_code == 404
     assert client.get("/showcase/..%2F..%2F.env").status_code == 404
 

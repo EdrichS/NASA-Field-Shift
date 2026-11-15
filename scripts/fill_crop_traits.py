@@ -27,6 +27,8 @@ Sources and rules:
 - cover_crop_role: SARE "Managing Cover Crops Profitably" (3rd ed.) for cover and green-manure
   species; food, feed and cash crops are "none".
   https://www.sare.org/resources/managing-cover-crops-profitably-3rd-edition/
+- cover_crop_role for sesbania: PROSEA (Plant Resources of South-East Asia), Sesbania rostrata.
+  https://uses.plantnet-project.org/en/Sesbania_rostrata_(PROSEA)
 - labor_need: team estimate of hand labor without machinery (transplanting, hand harvesting).
 """
 
@@ -39,7 +41,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.data.crops import TRAIT_COLUMNS, TRAITS_CSV, load_ecocrop, read_csv  # noqa: E402
+from app.data.crops import (  # noqa: E402
+    CYCLE_FALLBACK,
+    TRAIT_COLUMNS,
+    TRAITS_CSV,
+    load_ecocrop,
+    read_csv,
+)
 
 FAO56 = "FAO-56 Table 22"
 T14 = "FAO Irrigation Water Mgmt Manual 3 Table 14"
@@ -71,6 +79,11 @@ ROOT_DEPTH = {
     "squash": (1.0, 1.5, "Pumpkin Winter Squash"),
     "sunflower": (0.8, 1.5, "Sunflower"),
     "canola": (1.0, 1.5, "Rapeseed Canola"),
+    "watermelon": (0.8, 1.5, "Watermelon"),
+    "melon": (0.8, 1.5, "Melons"),
+    "cucumber": (0.7, 1.2, "Cucumber"),
+    "eggplant": (0.7, 1.2, "Egg plant"),
+    "string bean": (0.5, 0.7, "Beans green"),
 }
 # Not in Table 22: closest listed relative, marked estimate.
 ROOT_DEPTH_ESTIMATE = {
@@ -78,6 +91,9 @@ ROOT_DEPTH_ESTIMATE = {
     "hairy vetch": (0.6, 0.9, "Beans dry and Pulses"),
     "sunn hemp": (0.6, 1.0, "Green Gram and Cowpeas"),
     "buckwheat": (0.5, 0.7, "Beans green"),
+    "okra": (0.7, 1.2, "Egg plant"),
+    "pak choi": (0.3, 0.5, "Spinach"),
+    "sesbania": (0.6, 1.0, "Green Gram and Cowpeas"),
 }
 # FAO Table 14: crop -> (min mm, max mm, drought sensitivity, table row)
 WATER = {
@@ -99,12 +115,21 @@ WATER = {
     "chili pepper": (600, 900, "medium-high", "Pepper"),
     "squash": (400, 600, "medium-high", "Melon (analog)"),
     "sunflower": (600, 1000, "low-medium", "Sunflower"),
+    "melon": (400, 600, "medium-high", "Melon"),
+    "watermelon": (400, 600, "medium-high", "Melon (analog)"),
+    "cucumber": (400, 600, "medium-high", "Melon (analog)"),
+    "eggplant": (400, 800, "medium-high", "Tomato (analog)"),
+    "string bean": (300, 500, "medium-high", "Bean"),
+    "pak choi": (350, 500, "medium-high", "Cabbage (analog)"),
 }
 SENSITIVITY_TO_TOLERANCE = {"low": "high", "low-medium": "medium", "medium-high": "low",
                             "high": "low"}
 COVER_ROLE = {"cereal rye": "cover", "oats": "cover", "buckwheat": "cover",
               "hairy vetch": "green_manure", "red clover": "green_manure",
-              "sunn hemp": "green_manure"}
+              "sunn hemp": "green_manure", "sesbania": "green_manure"}
+# Green manures SARE doesn't cover: crop -> source of the cover role.
+COVER_ROLE_SOURCE = {"sesbania": "PROSEA Sesbania rostrata (green manure for lowland rice, "
+                                 "incorporated after 45-60 days)"}
 # Team estimate: hand labor per hectare without machinery.
 LABOR = {
     "rice": "high", "maize": "medium", "mungbean": "high", "peanut": "high", "soybean": "medium",
@@ -113,7 +138,9 @@ LABOR = {
     "cereal rye": "low", "alfalfa": "medium", "red clover": "low", "hairy vetch": "low",
     "sunn hemp": "low", "buckwheat": "low", "common bean": "medium", "onion": "high",
     "tomato": "high", "cabbage": "high", "chili pepper": "high", "squash": "medium",
-    "sunflower": "medium", "canola": "medium",
+    "sunflower": "medium", "canola": "medium", "watermelon": "medium", "melon": "medium",
+    "cucumber": "high", "eggplant": "high", "okra": "high", "string bean": "high",
+    "pak choi": "medium", "sesbania": "low",
 }
 # EcoCrop has no drainage entry for these: general agronomy, marked estimate.
 WATERLOGGING_ESTIMATE = {"maize": "low", "soybean": "low", "peanut": "low", "cassava": "low",
@@ -180,8 +207,12 @@ def fill(row: dict[str, str], eco: dict[str, str]) -> dict[str, str]:
     row["forage"] = "yes" if "forage" in (eco.get("CAT") or "").lower() else "no"
     row["cover_crop_role"] = COVER_ROLE.get(crop, "none")
     sources.append(f"{ECO} (heat, drainage, category)")
-    if crop in COVER_ROLE:
+    if crop in COVER_ROLE_SOURCE:
+        sources.append(COVER_ROLE_SOURCE[crop])
+    elif crop in COVER_ROLE:
         sources.append(SARE)
+    if row["scientific_name"] in CYCLE_FALLBACK:
+        sources.append("FAO-56 Table 11 (growing period)")
     row["labor_need"] = LABOR[crop]
     estimates.append("labor need")
 

@@ -109,6 +109,15 @@ class FieldFeatures:
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
+    @classmethod
+    def from_analysis(cls, analysis: dict[str, Any]) -> FieldFeatures:
+        """Rebuild the features stored in an analysis response (a showcase file), so the engine
+        can run again without calling NASA POWER or Earth Engine."""
+        field_ = analysis["field"]
+        return cls(field_["geom_hash"], field_["lon"], field_["lat"], field_["end_month"],
+                   {k: Feature(**v) for k, v in analysis["features"].items()},
+                   analysis["static"], list(analysis.get("feature_gaps") or []))
+
 
 # --- helpers (pure) --------------------------------------------------------------------------
 

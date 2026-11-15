@@ -1,11 +1,15 @@
 """Pre-compute both showcase farms, Tier 1 reports included, into data/showcase/<id>.json.
 
-  python scripts/precache_showcase.py [--only tagum-rice] [--no-ai]
+  python scripts/precache_showcase.py [--only tagum-rice] [--no-ai] [--from-stored]
 
 Runs the same code as /analyze. Reports use XAI_MODEL from .env; for the demo recording run
   XAI_MODEL=grok-4.7 python scripts/precache_showcase.py
 (an environment variable overrides .env). A farm whose reports fail is not saved, so a good
 earlier file is never replaced by a worse one. Each AI call is one paid request (~$0.01).
+
+--from-stored re-runs the engine (and the reports, unless --no-ai) on the satellite and weather
+features already saved in data/showcase/<id>.json: no NASA POWER or Earth Engine calls, for when
+only the engine or crop data changed.
 """
 
 from __future__ import annotations
@@ -21,13 +25,19 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.api import showcase  # noqa: E402
 from app.api.routes import run_analysis  # noqa: E402
 from app.config import get_settings  # noqa: E402
-from app.features.harmonize import build_field_features, store_features  # noqa: E402
+from app.features.harmonize import (  # noqa: E402
+    FieldFeatures,
+    build_field_features,
+    store_features,
+)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--only", help="one farm id")
     parser.add_argument("--no-ai", action="store_true", help="comparison only, no Grok calls")
+    parser.add_argument("--from-stored", action="store_true",
+                        help="reuse the features in the saved showcase file (offline engine run)")
     args = parser.parse_args()
 
     farms = [f for f in showcase.farms() if not args.only or f["id"] == args.only]
@@ -39,11 +49,20 @@ def main() -> int:
         print(f"\n== {farm['name']} ({farm['id']})")
         body = showcase.request_for(farm, generate_reports=not args.no_ai)
         t0 = time.perf_counter()
-        ff, daily = build_field_features(body.geometry)
-        if get_settings().database_url.get_secret_value():
-            rows = store_features(ff, daily)
-            print(f"   TigerData: {rows}")
-        result = run_analysis(body)
+        saved = showcase.stored(farm["id"]) if args.from_stored else None
+        if args.from_stored and saved is None:
+            print("   ❌ no saved showcase file to reuse")
+            ok_all = False
+            continue
+        if saved is not None:
+            ff = FieldFeatures.from_analysis(saved["analysis"])
+            result = run_analysis(body, features=ff, country=farm.get("country"))
+        else:
+            ff, daily = build_field_features(body.geometry)
+            if get_settings().database_url.get_secret_value():
+                rows = store_features(ff, daily)
+                print(f"   TigerData: {rows}")
+            result = run_analysis(body)
         print(f"   analyzed in {time.perf_counter() - t0:.1f} s; gaps: {len(result['gaps'])}")
         for s in sorted(result["strategies"], key=lambda s: s["rank"]):
             print(f"   #{s['rank']} {s['name']}: {s['title']} [{s['total']}]")

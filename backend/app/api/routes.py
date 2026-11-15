@@ -125,17 +125,21 @@ def prefill(body: GeometryIn, tasks: BackgroundTasks) -> dict[str, Any]:
 
 
 def run_analysis(body: AnalyzeRequest, *, tasks: BackgroundTasks | None = None,
-                 allow_ai: Callable[[], bool] | None = None) -> dict[str, Any]:
-    """The full analysis behind /analyze (also used by scripts/precache_showcase.py)."""
+                 allow_ai: Callable[[], bool] | None = None,
+                 features: FieldFeatures | None = None,
+                 country: str | None = None) -> dict[str, Any]:
+    """The full analysis behind /analyze (also used by scripts/precache_showcase.py, which can
+    pass stored features and the country to re-run the engine offline)."""
     t0 = time.perf_counter()
-    ff = get_features(body.geometry, tasks)
+    ff = features or get_features(body.geometry, tasks)
     t1 = time.perf_counter()
     if unusable(ff):
         raise HTTPException(status_code=422, detail=field_warning(ff))
     answers = body.answers.model_dump()
     answers["mode"] = body.mode
     try:
-        result = run_engine(ff, answers, crop_catalog(), country=get_country(ff)).to_dict()
+        result = run_engine(ff, answers, crop_catalog(),
+                            country=country or get_country(ff)).to_dict()
     except ValueError as exc:  # e.g. NASA POWER unavailable for this spot right now
         raise HTTPException(status_code=503,
                             detail=f"Not enough data to analyze yet: {exc}") from exc
@@ -154,6 +158,8 @@ def run_analysis(body: AnalyzeRequest, *, tasks: BackgroundTasks | None = None,
         "stress_calendar": result["stress_calendar"],
         "strategies": result["strategies"],
         "gaps": result["gaps"],
+        "feature_gaps": ff.gaps,
+        "fruit_ideas": result["fruit_ideas"],
         "disclaimer": result["disclaimer"],
     }
     if body.generate_reports:

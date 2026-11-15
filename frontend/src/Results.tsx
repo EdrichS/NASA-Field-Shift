@@ -3,17 +3,20 @@
 // rotation), each with its score, reasons, risks and gaps. Tier 2 (detailed follow-up with
 // sources) only runs when the farmer asks.
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import type { Geometry } from 'geojson'
 import {
   ApiError,
   followup,
   type AIReport,
   type AnalyzeResponse,
+  type FruitIdea,
   type ReportStatus,
   type Strategy,
   type StrategyText,
   type Tier1Content,
   type Tier2Content,
 } from './api'
+import PlotName from './PlotName'
 import PrintReport from './PrintReport'
 import { BASE_GLOSSARY, COMPONENT_LABELS, expertQuestions, languageName, strategyColors, stripScore } from './reportText'
 import YearStrip, { rowFromStrategy } from './YearStrip'
@@ -23,6 +26,11 @@ export type ResultsProps = {
   analysis: AnalyzeResponse
   title?: string
   subtitle?: string
+  /** The farmer's name for this plot or field; shown with Rename when onRename is set. */
+  name?: string
+  onRename?: (name: string) => void
+  /** The analyzed point or drawn field, for the field photo in the PDF. */
+  geometry?: Geometry
   demo?: boolean
   offline?: boolean
   canSave?: boolean
@@ -64,7 +72,7 @@ function newCropColor(colors: Record<string, string>, s: Strategy) {
   return crop ? colors[crop] : undefined
 }
 
-export default function Results({ analysis, title, subtitle, demo, offline, canSave, saved, saveLabel = 'Save', onSave, onBack, getToken }: ResultsProps) {
+export default function Results({ analysis, title, subtitle, name, onRename, geometry, demo, offline, canSave, saved, saveLabel = 'Save', onSave, onBack, getToken }: ResultsProps) {
   const languages = Object.keys(analysis.reports_tier1)
   const [language, setLanguage] = useState(languages[0] ?? 'en')
   const report = analysis.reports_tier1[language] ?? null
@@ -136,6 +144,7 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
           <div className="results-head">
             <p className="cap">{demo ? 'Demo farm' : 'Your results'}{subtitle ? ` · ${subtitle}` : ''}</p>
             <h1 className="results-title">{content?.title ?? title ?? 'Your rotation options'}</h1>
+            {!demo && name ? <PlotName name={name} onRename={onRename} /> : null}
           </div>
 
           <div ref={tabsRef} className="rtabs" role="tablist" aria-label="Overview and options" onKeyDown={onTabKey}>
@@ -209,7 +218,7 @@ export default function Results({ analysis, title, subtitle, demo, offline, canS
             })}
         </div>
 
-        <PrintReport analysis={analysis} language={language} content={content} names={names} title={title} subtitle={subtitle} demo={demo} />
+        <PrintReport analysis={analysis} language={language} content={content} names={names} title={title ?? name} subtitle={subtitle} demo={demo} geometry={geometry} />
       </div>
     </main>
   )
@@ -320,6 +329,8 @@ function Overview({
         </ol>
       </section>
 
+      {analysis.fruit_ideas?.length ? <FruitIdeas ideas={analysis.fruit_ideas} country={analysis.profile?.country} /> : null}
+
       <section className="index-card band-ai r-card" aria-labelledby="sum-h">
         <div className="card-head">
           <h2 id="sum-h" className="card-h">Summary</h2>
@@ -385,6 +396,33 @@ function Overview({
         <p>{content?.disclaimer ?? analysis.disclaimer}</p>
       </aside>
     </>
+  )
+}
+
+/** Fruit trees and plants for bunds or field edges: long-term ideas the engine does not score. */
+function FruitIdeas({ ideas, country }: { ideas: FruitIdea[]; country?: string | null }) {
+  return (
+    <section className="r-sec" aria-labelledby="fruit-h">
+      <h2 id="fruit-h" className="r-h2">Beyond the rotation: fruit for the field's edges</h2>
+      <p className="helper">
+        Long-term ideas, not scored with the options above. Each one suits this field's weather in every month (FAO EcoCrop) and is grown
+        {country ? ` in ${country}` : ' in your country'} (FAOSTAT), so plants, know-how and buyers exist.
+      </p>
+      <ul className="ruled fact-list">
+        {ideas.map((f) => (
+          <li key={f.crop}>
+            <strong>
+              {f.crop.charAt(0).toUpperCase() + f.crop.slice(1)} <span className="cap">{f.kind === 'tree' ? 'tree' : 'fruit plant'}</span>
+            </strong>
+            <span>
+              {f.where}.
+              {f.country_area_ha ? ` Grown on about ${f.country_area_ha.toLocaleString('en')} ha nationally` : ''}
+              {f.value_usd_ha ? `; typical harvest worth about ${f.value_usd_ha.toLocaleString('en')} USD per hectare a year before costs (national average).` : f.country_area_ha ? '.' : ''}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
